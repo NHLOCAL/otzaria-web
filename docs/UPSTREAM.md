@@ -81,8 +81,9 @@ https://api.github.com/repos/Otzaria/SeforimLibrary/releases/latest
 
 ```bash
 LIBRARY_PROFILE=full npm run sync
-node scripts/sync-companions.mjs
 ```
+
+הסנכרון המלא כולל גם את חבילת צילומי הבבלי.
 
 ניתן לבדוק אם מקור צילומי הבבלי השתנה ללא הורדת הארכיון:
 

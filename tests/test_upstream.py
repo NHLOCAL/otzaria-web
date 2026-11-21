@@ -68,6 +68,14 @@ class UpstreamTests(unittest.TestCase):
                 parser.close()
                 add.assert_called_once_with('b-1', {'src': 'a&b'})
 
+    def test_new_visual_markup_requires_an_adapter_instead_of_disappearing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = media.MediaCollector(Path(directory) / 'media')
+            for tag in ('svg', 'math'):
+                with self.subTest(tag=tag), self.assertRaisesRegex(ValueError, 'add a safe renderer'):
+                    parser = media.ImageParser(collector, 'b-1')
+                    parser.feed('<' + tag + '><text>source content</text></' + tag + '>')
+
     def test_rejects_paths_that_escape_snapshot(self):
         with tempfile.TemporaryDirectory() as directory:
             for path in ('../secret', '/absolute', 'book/../../secret', 'book\\secret', 'book/./secret', '\0file'):

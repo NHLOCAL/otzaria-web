@@ -53,19 +53,38 @@ export function sanitizeInline(value, {images=null}={}) {
   return parseFragment(String(value)).childNodes.map(node => safeNode(node,images)).join('');
 }
 
+function incompleteTag(value) {
+  let tag=false,quote='',expectValue=false,unquoted=false;
+  for(let i=0;i<value.length;i++){
+    const char=value[i];
+    if(!tag){if(char==='<'&&/[a-z/!]/i.test(value[i+1]||'')){tag=true;expectValue=false;unquoted=false;}}
+    else if(quote){if(char===quote)quote='';}
+    else if(unquoted){if(char==='>'){tag=false;unquoted=false;}else if(/\s/.test(char))unquoted=false;}
+    else if(char==='>')tag=false;
+    else if(expectValue){if(!/\s/.test(char)){if(char==='"'||char==="'")quote=char;else unquoted=true;expectValue=false;}}
+    else if(char==='=')expectValue=true;
+  }
+  return tag;
+}
+
 // Upstream TXT is line-oriented text with a small set of HTML heading/inline tags.
 // A real HTML parser removes executable markup, including malformed/nested markup.
 export function tokenize(source, {images=null}={}) {
   const tokens=[];
   const lines=source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').replace(/\u0000/g, '').split('\n');
-  lines.forEach((line, index) => {
-    if (!line.trim()) return;
+  for(let index=0;index<lines.length;index++){
+    const sourceLine=index+1;
+    let line=lines[index];
+    // Some official database rows split an HTML start tag from its attributes.
+    // Parse the complete tag while retaining the first original line's anchor.
+    while(incompleteTag(line)&&index+1<lines.length&&/^\s*(?:[a-z_:][\w:.-]*\s*=|\/?>)/i.test(lines[index+1]))line+='\n'+lines[++index];
+    if (!line.trim()) continue;
     let pending=[];
     const flush=()=>{
       if (!pending.length) return;
       const html=pending.map(node => safeNode(node,images)).join('').trim();
       const text=pending.map(node => textOf(node,images)).join('').trim();
-      if (text) tokens.push({kind:'paragraph', html, text, line:index+1});
+      if (text) tokens.push({kind:'paragraph', html, text, line:sourceLine});
       pending=[];
     };
     const consume=node=>{
@@ -73,7 +92,7 @@ export function tokenize(source, {images=null}={}) {
       if (/^h[1-6]$/.test(node.tagName || '')) {
         flush();
         const text=textOf(node,images).trim();
-        if (text) tokens.push({kind:'heading',level:Number(node.tagName[1]),text,html:escapeHtml(text),line:index+1});
+        if (text) tokens.push({kind:'heading',level:Number(node.tagName[1]),text,html:escapeHtml(text),line:sourceLine});
       } else if (blocks.has(node.tagName)) {
         flush();
         for (const child of node.childNodes || []) consume(child);
@@ -82,7 +101,7 @@ export function tokenize(source, {images=null}={}) {
     };
     for(const node of parseFragment(line).childNodes) consume(node);
     flush();
-  });
+  }
   return tokens;
 }
 

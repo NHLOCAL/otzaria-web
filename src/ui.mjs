@@ -194,11 +194,12 @@ ${sourceNote(book, baseUrl)}
 </div></div>`;
 }
 
-export function searchPage({ baseUrl = '/' } = {}) {
+export function searchPage({ baseUrl = '/', categories = [] } = {}) {
+  const searchCategories = [...new Set(categories.map(category => category.title).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
   return `<section class="page-heading search-heading"><h1>חיפוש בספרייה</h1><p>שם ספר, מילה או ציטוט. אפשר לחפש גם בלי ניקוד.</p>${searchForm(baseUrl, { searchPage: true, id: 'search-query' })}</section>
 <section class="search-results-region" data-search-region aria-label="תוצאות חיפוש">
 <noscript><div class="notice"><p>החיפוש המלא פועל בדפדפן ודורש JavaScript. כל הספרים והטקסטים פתוחים לקריאה גם בלעדיו.</p><a href="${e(sitePath(baseUrl, 'catalog/index.html'))}">לגלישה בספרייה לפי נושא</a></div></noscript>
-<div class="search-controls" data-search-controls hidden><label for="search-category">תחום לימוד</label><select id="search-category" data-search-category><option value="">כל התחומים</option></select></div>
+<div class="search-controls" data-search-controls hidden><label for="search-category">תחום לימוד</label><select id="search-category" data-search-category><option value="">כל התחומים</option>${searchCategories.map(category => `<option value="${e(category)}">${e(category)}</option>`).join('')}</select></div>
 <p class="search-status" data-search-status role="status" aria-live="polite">הקלידו בשדה החיפוש כדי להתחיל.</p>
 <ol class="search-results" data-search-results></ol>
 <button class="button button-outline load-more" type="button" data-search-more hidden>תוצאות נוספות</button>

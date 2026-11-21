@@ -38,6 +38,19 @@ test('verified source images survive image-only lines without executable attribu
   assert.doesNotMatch(sections[0].html,/onerror|data:image/);
   assert.match(sections[0].text,/media\/example.png/);
 });
+test('HTML image tags split across database rows retain the image and original starting line',()=>{
+  const source='data:image/png;base64,fixture';
+  const images=new Map([[hash(source,64),{url:'/media/image.png',width:40,height:30}]]);
+  const sections=parseBook(`<h1>ספר</h1>\n<img\nsrc="${source}" alt="איור > פירוש" >\nהמשך`,{id:'book'},{images,lineIds:[10,11,12,13]});
+  assert.match(sections[0].html,/<img class="book-illustration"/);
+  assert.match(sections[0].html,/id="p-l11" data-source-line="2"/);
+  assert.match(sections[0].html,/id="p-l13" data-source-line="4"/);
+  assert.doesNotMatch(sections[0].html,/data:image|base64|src=&quot;/);
+});
+test('orphan tag endings cannot consume the next database paragraph or heading',()=>{
+  const result=tokenize('<h1>ספר</h1>\nפתיח <b\n<b>תשובה</b>\nסיום</small\n<h2>המשך</h2>\nטקסט');
+  assert.deepEqual(result.map(t=>[t.text,t.line]),[['ספר',1],['פתיח',2],['תשובה',3],['סיום',4],['המשך',5],['טקסט',6]]);
+});
 test('long rich paragraphs retain inline formatting, images and every word across pages',()=>{
   const source='data:image/png;base64,fixture';
   const images=new Map([[hash(source,64),{url:'/media/image.png',width:40,height:30}]]);

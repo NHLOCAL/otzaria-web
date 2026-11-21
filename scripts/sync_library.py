@@ -567,6 +567,19 @@ def swap_snapshot(staging, output):
         shutil.rmtree(backup)
 
 
+def write_active_archive_receipt(root, state):
+    """Allow bounded cache retention without coupling it to public snapshots."""
+    destination = root / '.cache/upstream/active-database-archives.json'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {'files': [part['sha256'] + '.part' for part in state['manifest']['parts']], 'archiveSha256': state['manifest']['sha256']}
+    temporary = destination.with_suffix('.partial-' + uuid.uuid4().hex)
+    try:
+        temporary.write_bytes(json_bytes(receipt))
+        temporary.replace(destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def run(args):
     root = Path(args.root).resolve()
     output = Path(args.output).resolve() if args.output else root / '.cache/library'
@@ -592,6 +605,7 @@ def run(args):
         return status
     if not changed:
         validate_snapshot(output)
+        write_active_archive_receipt(root, state)
         return {**status, 'published': len(previous['books']), 'output': str(output)}
     database = database_file(root, state)
     staging = output.with_name(output.name + '.next-' + uuid.uuid4().hex)
@@ -603,6 +617,7 @@ def run(args):
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
         raise
+    write_active_archive_receipt(root, state)
     return {**status, **catalog['counts'], 'output': str(output)}
 
 

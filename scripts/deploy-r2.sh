@@ -82,8 +82,8 @@ rclone copy "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --exclude-from 
 rclone copy "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --include-from "$OTZARIA_TEMP/entrypoints.txt"
 
 # Delete removed content only after successful publication. Keep historical
-# Pagefind fragments so a browser with a cached search bootstrap still works.
-rclone sync "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --delete-after --exclude '/pagefind/**' --exclude '/build-manifest.json' --exclude '/.otzaria-managed.json' --exclude '/_headers' --exclude '/.nojekyll'
+# Pagefind fragments and content-addressed images so cached pages still work.
+rclone sync "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --delete-after --exclude '/pagefind/**' --exclude '/media/*.png' --exclude '/media/*.jpg' --exclude '/build-manifest.json' --exclude '/.otzaria-managed.json' --exclude '/_headers' --exclude '/.nojekyll'
 
 # This is also the scheduled preflight's completion marker. Never replace it
 # before every content/discovery upload and removal above has succeeded.

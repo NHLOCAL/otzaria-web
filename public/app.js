@@ -175,6 +175,21 @@ if (searchRegion) {
   let shown = 0;
   let desiredCategory = new URLSearchParams(location.search).get('category') || '';
   const batchSize = 15;
+  const mergeConcurrency = 4;
+
+  function setCategoryOptions(categories) {
+    const values = [...new Set(categories.filter(category => typeof category === 'string' && category))].sort((a, b) => a.localeCompare(b, 'he'));
+    categorySelect.replaceChildren(new Option('כל התחומים', ''));
+    for (const category of values) categorySelect.append(new Option(category, category));
+    if (values.includes(desiredCategory)) categorySelect.value = desiredCategory;
+    else desiredCategory = '';
+    controls.hidden = values.length === 0;
+  }
+
+  // Category names are already in the HTML. No index/filter chunks are needed
+  // to show the control, and the labels do not imply query-specific counts.
+  const initialCategories = [...categorySelect.options].map(option => option.value).filter(Boolean);
+  if (initialCategories.length) setCategoryOptions(initialCategories);
 
   async function loadSearch() {
     if (!pagefindPromise) {
@@ -188,18 +203,23 @@ if (searchRegion) {
           if (url.origin !== location.origin || !url.pathname.startsWith(base) || !url.pathname.endsWith('/')) throw new Error('Invalid search bundle path');
           return url.pathname;
         });
+        const categories = manifest.shards.flatMap(shard => Array.isArray(shard.categories) ? shard.categories : []);
+        if (categories.length) setCategoryOptions(categories);
         const api = await import(`${bundlePaths[0]}pagefind.js`);
-        await api.options({ baseUrl: '/', excerptLength: 34, highlightParam: 'highlight' });
-        for (const bundlePath of bundlePaths.slice(1)) await api.mergeIndex(bundlePath, { baseUrl: '/', language: 'he', highlightParam: 'highlight' });
-        const available = await api.filters();
-        const categories = Object.keys(available.category || {}).sort((a, b) => a.localeCompare(b, 'he'));
-        categories.forEach(category => {
-          const option = document.createElement('option'); option.value = category; option.textContent = category; categorySelect.append(option);
-        });
-        if (categories.includes(desiredCategory)) categorySelect.value = desiredCategory;
-        else desiredCategory = '';
-        controls.hidden = categories.length === 0;
-        return api;
+        try {
+          await api.options({ baseUrl: '/', excerptLength: 34, highlightParam: 'highlight' });
+          // Each merge owns a separate index pointer. Bounded parallel loading
+          // avoids serial network round trips without flooding large libraries.
+          for (let start = 1; start < bundlePaths.length; start += mergeConcurrency) {
+            const merges = await Promise.allSettled(bundlePaths.slice(start, start + mergeConcurrency).map(bundlePath => api.mergeIndex(bundlePath, { baseUrl: '/', language: 'he', highlightParam: 'highlight' })));
+            const failed = merges.find(result => result.status === 'rejected');
+            if (failed) throw failed.reason;
+          }
+          return api;
+        } catch (error) {
+          await api.destroy().catch(() => {});
+          throw error;
+        }
       })();
       pagefindPromise.catch(() => { pagefindPromise = null; });
     }

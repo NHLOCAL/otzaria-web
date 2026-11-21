@@ -116,6 +116,8 @@ try {
   const genesis = catalog.books.find(book => book.id === 'b-1' || book.title === 'בראשית');
   assert(genesis, 'The smoke corpus must include Genesis');
   const genesisMetadata = JSON.parse(await fs.readFile(path.join(config.outputDir, 'books', genesis.id, 'book.json'), 'utf8'));
+  const genesisIds = new Set([genesis.id, ...(genesisMetadata.editions || []).map(edition => edition.id)]);
+  const isGenesis = pathname => genesisIds.has(pathname.split('/books/')[1]?.split('/')[0]);
   const firstSection = genesisMetadata.sections[0];
   const firstReading = new URL(firstSection.url, origin).href;
   const bookUrl = new URL(genesis.url, origin).href;
@@ -147,7 +149,11 @@ try {
     await settledSearch(page);
     const links = await page.locator('.search-result h2 a').evaluateAll(elements => elements.map(element => element.href));
     unpointedResults = links.map(checkResultHref);
-    assert(unpointedResults.some(url => url.includes(`/books/${genesis.id}/`)), 'Genesis was absent from the first page of results for its opening verse');
+    // Every upstream edition is part of the corpus. Federation can rank a
+    // pointed edition above the primary one without losing the source text.
+    assert(unpointedResults.some(isGenesis), 'No Genesis edition appeared on the first results page');
+    const excerpts = await page.locator('.search-result .result-excerpt').allTextContents();
+    assert(excerpts.some((excerpt, index) => isGenesis(unpointedResults[index]) && normalize(excerpt).includes('בראשית ברא')), 'The opening verse was not present in a Genesis search excerpt');
     await screenshot('search-desktop');
     return { status: await page.locator('[data-search-status]').innerText(), resultsShown: links.length };
   });
@@ -159,6 +165,18 @@ try {
     const links = await page.locator('.search-result h2 a').evaluateAll(elements => elements.map(element => element.href));
     assert.deepEqual(links.map(checkResultHref), unpointedResults, 'Niqqud changed search results');
     return { resultPathsEqual: true };
+  });
+
+  await step('Quoted phrase search finds the opening verse across editions', async () => {
+    await page.locator('[data-search-input]').fill('"בראשית ברא"');
+    await page.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+    await settledSearch(page);
+    const links = await page.locator('.search-result h2 a').evaluateAll(elements => elements.map(element => element.href));
+    const paths = links.map(checkResultHref);
+    assert(paths.some(url => url.includes(`/books/${genesis.id}/`)), 'Exact opening-verse search lost the primary text');
+    const excerpts = await page.locator('.search-result .result-excerpt').allTextContents();
+    assert(excerpts.length > 0 && excerpts.every(excerpt => normalize(excerpt).includes('בראשית ברא')), 'Quoted search returned an excerpt without the exact phrase');
+    return { resultsShown: paths.length, editions: [...new Set(paths.map(url => url.split('/books/')[1]?.split('/')[0]))] };
   });
 
   let selectedReader;
@@ -251,7 +269,8 @@ try {
   await step('Empty search and no-match states remain usable', async () => {
     await page.goto(localUrl('search.html'), { waitUntil: 'networkidle' });
     await expectUI(page.locator('[data-search-status]')).toContainText('הקלידו');
-    await page.locator('[data-search-input]').fill('זזזזבדיקתמילהשאינהקיימתזזזז');
+    // Exact phrase mode avoids Pagefind's intentional prefix fallback to זז.
+    await page.locator('[data-search-input]').fill('"זזזזבדיקתמילהשאינהקיימתזזזז"');
     await page.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
     await expectUI(page.locator('[data-search-status]')).toContainText('לא נמצאו');
     await expectUI(page.locator('.search-result')).toHaveCount(0);

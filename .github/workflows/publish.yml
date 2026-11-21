@@ -60,7 +60,7 @@ jobs:
     needs: preflight
     if: needs.preflight.outputs.build_required == 'true'
     runs-on: ${{ vars.BUILD_RUNNER || 'ubuntu-latest' }}
-    timeout-minutes: 120
+    timeout-minutes: 360
     permissions:
       contents: read
       pages: read
@@ -101,6 +101,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run sync
+      - name: Bound compressed archives on the disposable runner
+        if: runner.environment == 'github-hosted'
+        run: python3 scripts/prune_archive_cache.py
       - name: Release expanded database on the disposable runner
         if: runner.environment == 'github-hosted'
         run: rm -rf .cache/upstream/databases

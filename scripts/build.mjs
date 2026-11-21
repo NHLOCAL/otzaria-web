@@ -141,7 +141,7 @@ for(const sourceBook of catalog.books){
     const relative=`books/${book.id}/${section.id}.html`;
     const neighbours=brief.slice(Math.max(0,i-35),i+36);
     await page(relative,`${book.title} | ${section.title}`,`${book.title}, ${section.title}. ${section.text.replace(/\s+/g,' ').slice(0,145)}`,ui.readingPage({book:enriched,section,sections:neighbours,previous:brief[i-1]||null,next:brief[i+1]||null,baseUrl:config.basePath}),{breadcrumbs:[...crumb,{name:section.title,url:pathFor(relative)}],lastmod:book.updatedAt,jsonLd:[{'@context':'https://schema.org','@type':'Chapter',name:section.title,inLanguage:'he',url:absoluteUrl(config,relative),isPartOf:{'@id':absoluteUrl(config,`books/${book.id}/index.html`),'@type':'Book',name:book.title},isAccessibleForFree:true}]});
-    searchPages.push({path:relative,bookId:book.id,category:book.categories[0],bytes:Buffer.byteLength(section.html)});
+    searchPages.push({path:relative,bookId:book.id,familyId:book.editionOf||book.id,category:book.categories[0],bytes:Buffer.byteLength(section.html)});
   }
   sectionCount+=sections.length;
   books.push({...enriched,sections:undefined,file:undefined});

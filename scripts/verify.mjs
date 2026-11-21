@@ -3,16 +3,19 @@ import path from 'node:path';
 import { parse } from 'parse5';
 import { getConfig } from '../src/config.mjs';
 
+const htmlOnly=process.argv.includes('--html-only');
+if(process.argv.slice(2).some(arg=>arg!=='--html-only'))throw new Error('Unknown verification option');
 const config=getConfig();const root=config.outputDir;const failures=[];const cache=new Map();let count=0;
 async function* walk(dir){for(const entry of await fs.readdir(dir,{withFileTypes:true})){const item=path.join(dir,entry.name);if(entry.isDirectory())yield*walk(item);else yield item;}}
 function nodes(node,out=[]){if(node.tagName)out.push(node);for(const child of node.childNodes||[])nodes(child,out);return out;}
 const attr=(node,name)=>node.attrs?.find(a=>a.name===name)?.value;
 const memoFile=async p=>{if(!cache.has(p))cache.set(p,await fs.access(p).then(()=>true,()=>false));return cache.get(p);};
 const manifest=JSON.parse(await fs.readFile(path.join(root,'build-manifest.json'),'utf8'));
-if(manifest.search.status!=='ready') failures.push('Search index is not complete');
+if(!htmlOnly&&manifest.search.status!=='ready') failures.push('Search index is not complete');
 for await(const file of walk(root)){
   if(!file.endsWith('.html'))continue;
   const relative=path.relative(root,file);const content=await fs.readFile(file,'utf8');const all=nodes(parse(content));count++;
+  if(count%25000===0)console.log(`Verified structure and links in ${count} HTML documents`);
   const html=all.find(n=>n.tagName==='html');
   if(attr(html,'lang')!=='he'||attr(html,'dir')!=='rtl') failures.push(`${relative}: missing Hebrew RTL document attributes`);
   if(all.filter(n=>n.tagName==='h1').length!==1)failures.push(`${relative}: expected exactly one H1`);
@@ -40,4 +43,4 @@ for await(const file of walk(root)){
 }
 if(count!==manifest.counts.htmlPages)failures.push('HTML count does not match build manifest');
 if(failures.length){console.error(failures.slice(0,50).join('\n'));throw new Error(`${failures.length} static verification failure(s)`);}
-console.log(`Verified ${count} HTML documents: Hebrew/RTL, canonical URLs, internal links, anchors, structured data, complete search bodies, and deployment base.`);
+console.log(`Verified ${count} HTML documents: Hebrew/RTL, canonical URLs, internal links, anchors, structured data, complete search bodies, and deployment base.${htmlOnly?' HTML-only mode: search readiness must be checked separately.':''}`);

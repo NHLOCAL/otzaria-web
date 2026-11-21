@@ -14,7 +14,10 @@ const requested=Number(process.env.SEARCH_SHARDS || Math.min(64,Math.max(1,Math.
 if(!Number.isSafeInteger(requested)||requested<1||requested>128) throw new Error('SEARCH_SHARDS must be an integer from 1 to 128');
 const buckets=Array.from({length:requested},()=>[]);
 for(const page of input.pages){
-  const value=createHash('sha256').update(page.bookId).digest().readUInt32BE(0);
+  // Keep editions of one work in the same index so they share term statistics.
+  // Otherwise raw per-index BM25 scores can let one edition dominate results.
+  const familyId=page.familyId||page.bookId.replace(/-v-\d+$/,'');
+  const value=createHash('sha256').update(familyId).digest().readUInt32BE(0);
   buckets[value%requested].push(page);
 }
 const shards=[];

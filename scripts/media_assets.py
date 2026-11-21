@@ -15,7 +15,7 @@ import re
 import struct
 
 MAX_IMAGE_BYTES = 16 * 1024 * 1024
-IMAGE_TAG = re.compile(r'<img\b', re.IGNORECASE)
+IMAGE_TAG = re.compile(r'<(?:img|svg|math)\b', re.IGNORECASE)
 DATA_IMAGE = re.compile(r'^data:(image/(?:png|jpeg|jpg|gif|webp));base64,(.*)$', re.IGNORECASE | re.DOTALL)
 
 
@@ -79,6 +79,8 @@ class ImageParser(HTMLParser):
         self.book_id = book_id
 
     def handle_starttag(self, tag, attributes):
+        if tag in ('svg', 'math'):
+            raise ValueError('Unsupported canonical visual markup in ' + self.book_id + ': ' + tag + '; add a safe renderer before publishing this release')
         if tag == 'img':
             # The HTML standard keeps the first duplicate attribute.
             attrs = {}
