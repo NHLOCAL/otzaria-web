@@ -1,0 +1,123 @@
+# פריסה ועדכון של אוצריא ברשת
+
+## סביבת הייצור: קבצים סטטיים ב-Cloudflare R2
+
+הספרייה המלאה מיועדת ל-R2 עם דומיין משלכם ו-CDN של Cloudflare. כל דף קריאה הוא קובץ HTML שנבנה מראש. אין שרת אפליקציה, בסיס נתונים בזמן הביקור, פונקציית חיפוש בתשלום או צורך ב-Worker כדי לקרוא ספר.
+
+R2 מתאים להיקף הספרייה משום שאין בו מגבלת נפח כולל או מספר אובייקטים לדלי. Cloudflare Pages ו-Workers Static Assets מוגבלים ל-20,000 קבצים במסלול החינמי ול-100,000 במסלולים בתשלום; גם מקטעי אינדקס החיפוש נספרים. GitHub Pages מוגבל לאתר של 1 GB. לכן תמיכה טכנית בבנייה ל-Pages אינה הבטחה שהספרייה המלאה נכנסת במכסותיו.
+
+מקורות רשמיים: [מגבלות R2](https://developers.cloudflare.com/r2/platform/limits/), [מגבלות Pages](https://developers.cloudflare.com/pages/platform/limits/), [מגבלות Workers](https://developers.cloudflare.com/workers/platform/limits/), [מגבלות GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
+
+## הגדרה ראשונית של Cloudflare
+
+1. צרו דלי R2 ייעודי וריק לאתר, בסוג האחסון Standard. אין להשתמש בדלי המכיל קבצים של פרויקט אחר.
+2. חברו אליו דומיין או תת-דומיין של הפרויקט דרך **R2 > Bucket > Settings > Custom Domains**. כתובת `r2.dev` מיועדת לבדיקה, ומוגבלת בקצב; היא אינה כתובת הייצור.
+3. צרו פרטי גישה ל-S3 API עם הרשאות **Object Read & Write** לדלי הזה בלבד.
+4. הגדירו ב-GitHub את המשתנים והסודות שבטבלה הבאה.
+5. הפעילו ידנית את **Synchronize and publish library** עם `profile=full` ו-`target=cloudflare-r2`. לאחר מכן אותו תהליך רץ מדי יום ובכל שינוי ב-`main`.
+
+| סוג | שם | ערך |
+| --- | --- | --- |
+| Repository variable | `SITE_URL` | מקור הדומיין, למשל `https://library.example.org`, ללא נתיב |
+| Repository variable | `BASE_PATH` | `/` עבור דומיין ייעודי |
+| Repository variable | `CLOUDFLARE_ACCOUNT_ID` | מזהה חשבון Cloudflare |
+| Repository variable | `R2_BUCKET` | שם הדלי הייעודי |
+| Repository variable | `R2_PREFIX` | בדרך כלל ריק; אם מפרסמים בתיקייה, חייב להתאים ל-`BASE_PATH` |
+| Repository secret | `R2_ACCESS_KEY_ID` | מזהה מפתח S3 של R2 |
+| Repository secret | `R2_SECRET_ACCESS_KEY` | המפתח הסודי של S3 |
+| Repository variable, אופציונלי | `BUILD_RUNNER` | תווית runner בעל דיסק/זיכרון גדולים יותר; ברירת המחדל `ubuntu-latest` |
+| Repository variable, אופציונלי | `KEEP_FULL_ARTIFACT` | `true` לשמירת עותק מלא של `dist` ב-Actions למשך שלושה ימים |
+
+אין להוסיף סודות לקוד או לקובצי התצורה. כשפרטי הפריסה אינם מוגדרים, התהליך עדיין מייבא, בונה, מאנדקס ובודק. הוא שומר דוחות ומציין במפורש שהפרסום לא בוצע. אין ליצור דלי או לרכוש שירות מתוך תהליך הבנייה.
+
+### כתובת דף הבית
+
+R2 מגיש מפתחות אובייקטים בדיוק כפי שנשמרו ואינו מוסיף `index.html` לתיקייה. כל הקישורים באתר כוללים קובץ מפורש: `/index.html`, `/catalog/index.html`, `/books/<id>/index.html` וכדומה.
+
+כדי שכתובת הדומיין לבדה תפתח את דף הבית, הוסיפו כלל URL Rewrite ב-Cloudflare:
+
+```text
+תנאי: http.host eq "library.example.org" and http.request.uri.path eq "/"
+נתיב חדש: /index.html
+```
+
+החליפו את שם הדומיין. אין צורך בכלל שמפנה כל נתיב חסר לדף הבית. נתיב ספר שאינו קיים צריך להחזיר 404, ולא HTML תקין לכאורה של עמוד אחר. הדף `404.html` זמין לשילוב בהתאמה אישית של שגיאות, אך R2 אינו מפעיל אותו אוטומטית.
+
+### מטמון, כותרות וגישה לזחלנים
+
+ההעלאה מגדירה `Cache-Control: public,max-age=300` ומשתמשת ב-Content-Type המתאים לסוג הקובץ. הוסיפו Cache Rule לדומיין האתר כדי שגם HTML ייכנס למטמון, תוך כיבוד TTL המקור. ודאו שלא הוגדר TTL כפוי ארוך לקובצי קטלוג, מפות אתר או bootstrap של החיפוש.
+
+קובץ `_headers` מופק לתאימות Cloudflare Pages; R2 אינו מפרש אותו. כותרות אבטחה נוספות אפשר להגדיר ב-Response Header Transform Rules של הדומיין. אין להפנות קובצי JavaScript, WASM או אינדקס לעמוד HTML בעת שגיאה.
+
+`robots.txt` מתיר גישה ומפנה למפת האתר. ודאו שגם כללי ה-WAF ומדיניות Search / Agent / Training של Cloudflare מתירים את הגישה הרצויה. Robots אינו גובר על חסימת תעבורה בשכבת CDN. קובצי HTML, TXT ו-JSON נגישים ללא התחברות וללא הרצת JavaScript.
+
+מקור: [דלי R2 ציבורי ודומיינים](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+
+## מה עושה תהליך העדכון
+
+`publish.yml` רץ ב-03:23 UTC מדי יום, על push ל-`main`, ובבקשה ידנית. הבנייה נעשית ב-GitHub Actions, ולכן אינה כפופה למגבלת 20 הדקות של מערכת הבנייה ב-Cloudflare Pages.
+
+1. בריצה מתוזמנת משווה את מניפסט האתר המפורסם לגרסת קוד האתר, למניפסט מסד הנתונים הרשמי ול-checksum של חבילת צילומי הבבלי. אם שלושתם זהים והאתר המפורסם מלא ובעל חיפוש תקין, מדלג על הבנייה וההעלאה.
+2. כשנדרשת בנייה, מתקין Node 24, תלות החיפוש הנעולה ודרישות Python של יבוא הספרייה.
+3. משחזר מטמון של ההפצה ומוריד את ההפצה הרשמית הנדרשת. היבוא מאמת תקינות ושומר זיהוי מקור.
+4. בונה את כל הספרים בפרופיל `full`, מאנדקס ומריץ בדיקות תוכן, קישורים ומכסות.
+5. שומר `build-manifest.json`, `search-manifest.json` ודוח גודל כארטיפקטים של הריצה.
+6. מעלה ל-R2 רק קבצים שהשתנו לפי checksum. שינוי באותו אורך אינו מתפספס.
+7. מעלה דפי קריאה ונכסים לפני הקטלוג, מפות האתר ומניפסטי הכניסה. לאחר העלאה מוצלחת מסיר דפי תוכן שכבר אינם קיימים בפלט. `build-manifest.json` הציבורי מועלה בנפרד רק בסיום, כסימון להשלמת הפרסום לצורך בדיקת העדכון הבאה.
+
+ההעלאה מבוצעת עם [rclone ל-R2](https://developers.cloudflare.com/r2/examples/rclone/) דרך S3 API. השוואת checksum מונעת העלאה מחדש רק משום שזמן היצירה המקומי השתנה. אינדקסים ישנים תחת `pagefind/` נשמרים כדי שדפדפן המחזיק bootstrap קודם במטמון עדיין יוכל להשלים חיפוש. יש להביא את הצטברותם בחשבון במעקב נפח; ניקוי שלהם דורש המתנה מעבר לזמן המטמון ובדיקה שאין עדיין bootstrap פעיל המפנה אליהם.
+
+הפריסה אינה עסקה אטומית לכל הדלי: במשך ההעלאה ייתכן שילוב זמני של דפים משתי גרסאות. כשל בהורדה, בבנייה או בבדיקה מונע כניסה לשלב הפרסום. כשל בהעלאת גוף התוכן מונע פרסום של מניפסטי הכניסה החדשים. אין כאן הבטחה ל-rollback אוטומטי של אובייקט שכבר הוחלף. לחזרה לגרסה קודמת יש לבנות מחדש את אותה גרסת מקור ואותה גרסת אתר ולפרסם את הפלט המאומת.
+
+סקריפט הפריסה מסמן בעלות ב-`.otzaria-managed.json`. הוא מסרב לסנכרן לתיקייה לא ריקה שאין בה סימון של הפרויקט, כדי שלא למחוק נתונים זרים. הסרת ספרים מתבצעת רק בתוך הדלי או הקידומת הייעודיים, אחרי הצלחת ההעלאות.
+
+### לוח זמנים ומשאבי הבנייה
+
+לוחות הזמנים של GitHub יכולים להתעכב בעומס, ולעיתים ריצות מתוזמנות אינן מתחילות. בריפו ציבורי, חוסר פעילות של 60 יום יכול להשבית את התזמון; ניתן להפעיל מחדש דרך Actions. זהו עדכון תקופתי, לא התחייבות לזמן אמת. [תיעוד GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
+
+ההפצה המלאה גדולה. יש מקום בדיסק עבור הארכיון, בסיס הנתונים המחולץ, טקסטים מיובאים, HTML ואינדקסים גם יחד. ה-workflow מפנה רכיבי Android, .NET ו-GHC שאינם נחוצים מתוך runner זמני של GitHub בלבד; הוא אינו מוחק אותם ב-runner פרטי. אם ההפצה גדלה מעבר למשאבי המכונה, הגדירו `BUILD_RUNNER` מתאים. ריצת בדיקה של `starter` אינה מדידה של משאבי ההפצה המלאה.
+
+כדי לצמצם את שיא צריכת הדיסק במכונה הזמנית, מסד הנתונים המחולץ נמחק אחרי שהיבוא אומת, ותמונות המצב של הטקסטים וה-PDF נמחקות אחרי שבניית HTML וקובצי הנתונים הסתיימה בהצלחה. האינדוקס והבדיקות הבאות קוראים את `dist` ואת רשימת עמודי החיפוש, ולא זקוקים עוד לעותקי המקור. הארכיונים הדחוסים נשארים למטמון Actions. פינוי זה מתבצע רק ב-runner שמסומן `github-hosted`; ב-runner פרטי נשמרים מטמוני המקור. פקודת הבנייה המקומית אינה מוחקת אותם.
+
+בדיקת הריצה המתוזמנת מורידה רק מניפסטים ומטאדאטה. היא מדלגת על הבנייה רק אחרי אימות שהאתר כולל בדיוק את אותה גרסת קוד ואותן שתי חבילות מקור. שינוי מקור, מניפסט ישן ללא `codeRevision`, היעדר פריסה ראשונה, חיפוש שלא הושלם או בעיה בקריאת האתר מחזירים את התהליך לבנייה רגילה. push ל-`main` והפעלה ידנית תמיד בונים, גם ללא שינוי בספרים. המטמון מצמצם הורדות, וההעלאה מצמצמת כתיבות. מטמוני Actions הם עזר ויכולים להימחק; הם אינם העותק היחיד של נתוני המקור.
+
+## עלות
+
+לפי [מחירון R2](https://developers.cloudflare.com/r2/pricing/), Standard כולל 10 GB-month, מיליון פעולות Class A ו-10 מיליון פעולות Class B בחודש ללא חיוב. מעבר לכך: $0.015 ל-GB-month, $4.50 למיליון פעולות Class A ו-$0.36 למיליון פעולות Class B. תעבורה יוצאת מהאחסון אינה מחויבת. התמחור תלוי בפועל בנפח, בפעולות ובמטמון, ויכול להשתנות.
+
+מדדו את הפלט המלא ואת התעבורה לפני הערכת הוצאה חודשית. אין להסיק מחיר סופי מגודל קובצי הטקסט בלבד: HTML, קובצי הורדה, מקטעי חיפוש וגרסאות מטמון ישנות מוסיפים נפח. שמירת ארטיפקטים מלאים ב-Actions היא אפשרות נפרדת ועשויה לצרוך מכסת אחסון נוספת.
+
+## בנייה מקומית מלאה
+
+נדרשים Node 24, Python 3.12 ומעלה וכלי `zstd`.
+
+```bash
+npm ci
+python3 -m pip install -r scripts/requirements.txt
+LIBRARY_PROFILE=full npm run sync
+LIBRARY_PROFILE=full SOURCE_CATALOG=.cache/library/catalog.json SITE_URL=https://library.example.org BASE_PATH=/ DEPLOY_TARGET=cloudflare-r2 npm run build
+LIBRARY_PROFILE=full SOURCE_CATALOG=.cache/library/catalog.json SITE_URL=https://library.example.org BASE_PATH=/ npm run verify
+BASE_PATH=/ npm run serve
+```
+
+לבדיקה מהירה ללא הורדת הספרייה המלאה:
+
+```bash
+LIBRARY_PROFILE=starter SOURCE_CATALOG=data/starter/catalog.json BASE_PATH=/ npm run build
+LIBRARY_PROFILE=starter SOURCE_CATALOG=data/starter/catalog.json BASE_PATH=/ npm run verify
+BASE_PATH=/ npm run serve
+```
+
+`starter` הוא אוסף פיתוח מפורש. בניית `full` נכשלת אם קטלוג מלא לא קיים או אם פרופיל הקטלוג אינו מתאים. היא אינה מחליפה אותו בשקט באוסף פיתוח.
+
+## תאימות Pages לאוסף קטן
+
+אפשר לפרוס פלט שמתאים למכסות גם ל-GitHub Pages או ל-Cloudflare Pages.
+
+- GitHub: בחרו **Settings > Pages > Build and deployment > GitHub Actions**. הפעילו ידנית `publish.yml` עם `target=github-pages`, `profile=starter`, והתאימו את `SITE_URL` ו-`BASE_PATH` לכתובת הפרויקט. התהליך בודק שהשירות מופעל ומדלג על הפריסה כשהוא חסר.
+- Cloudflare Pages: פלט הבנייה הוא `dist`, ללא Functions. הגדירו `BASE_PATH=/`, `SITE_URL` של הדומיין, `DEPLOY_TARGET=cloudflare-pages`, ופרופיל תוכן מתאים. לבנייה ממקור חי השתמשו ב-`npm run sync && npm run build && npm run verify`, עם כלי היבוא הנדרשים בסביבת הבנייה; לחלופין העלו פלט שכבר נבנה ב-Actions.
+- במסלול Pages בתשלום, `CF_PAGES_FILE_LIMIT=100000` מאפשר את מכסת הבדיקה הגדולה. יש להגדיר גם `PAGES_WRANGLER_MAJOR_VERSION=4` בפרויקט בהתאם לתיעוד Cloudflare. שינוי משתנה הבדיקה אינו משדרג את חשבון האחסון.
+
+שינוי במאגר המקור אינו מפעיל מעצמו Git integration של Cloudflare Pages. התהליך היומי שסופק מפרסם ל-R2; אם בוחרים בפריסה אחרת, יש לחבר אותה במפורש לתהליך העדכון.
+
+באתר פרויקט של GitHub, קובץ `/otzaria-web/robots.txt` אינו `robots.txt` בשורש הדומיין. ברירת המחדל עדיין מתירה סריקה, ואת מפת האתר אפשר להגיש ב-Search Console; דומיין ייעודי מאפשר שליטה מלאה בנתיב השורש.
