@@ -108,16 +108,29 @@ jobs:
         if: runner.environment == 'github-hosted'
         run: rm -rf .cache/upstream/databases
       - name: Build complete HTML and static data
-        run: node scripts/build.mjs
+        run: |
+          started=$SECONDS
+          trap 'status=$?; echo "HTML rendering: $((SECONDS - started)) seconds (exit $status)"; df -h .; free -h; exit "$status"' EXIT
+          node scripts/build.mjs
       - name: Release imported snapshots after successful rendering
         if: runner.environment == 'github-hosted'
         run: rm -rf .cache/library .cache/companions .cache/external
       - name: Index, enforce budgets and verify
         run: |
+          phase="Core search indexing"
+          started=$SECONDS
+          trap 'status=$?; echo "$phase: $((SECONDS - started)) seconds (exit $status)"; df -h .; free -h; exit "$status"' EXIT
           node scripts/index-search.mjs
+          echo "$phase: $((SECONDS - started)) seconds"
+          phase="External catalog indexing"
+          started=$SECONDS
           node scripts/index-external-search.mjs
+          echo "$phase: $((SECONDS - started)) seconds"
+          phase="Size and HTML verification"
+          started=$SECONDS
           node scripts/check-size.mjs
           npm run verify
+          echo "$phase: $((SECONDS - started)) seconds"
       - name: Keep build inventory
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
