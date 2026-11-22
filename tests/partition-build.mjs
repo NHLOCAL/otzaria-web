@@ -8,8 +8,8 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { ROOT } from '../src/config.mjs';
 
-const workspace=path.join(ROOT,`.cache/partition-test-${process.pid}`);
-await fs.mkdir(workspace,{recursive:true});
+await fs.mkdir(path.join(ROOT,'.cache'),{recursive:true});
+const workspace=await fs.mkdtemp(path.join(ROOT,'.cache/partition-test-'));
 for(const directory of ['scripts','src','public','data'])await fs.cp(path.join(ROOT,directory),path.join(workspace,directory),{recursive:true,filter:file=>!file.includes('__pycache__')});
 for(const file of ['package.json','package-lock.json'])await fs.copyFile(path.join(ROOT,file),path.join(workspace,file));
 await fs.symlink(path.join(ROOT,'node_modules'),path.join(workspace,'node_modules'),'dir');
@@ -40,8 +40,13 @@ let success=false;
 try{
   await node('scripts/build.mjs',{OUTPUT_DIR:'dist-reference'});
   const expected=await htmlInventory(path.join(workspace,'dist-reference'));
-  await node('scripts/prepare-build-parts.mjs');
+  await node('scripts/prepare-build-parts.mjs',{GITHUB_OUTPUT:'.cache/plan-outputs.txt'});
   const originalPlan=await json('.cache/build-plan.json');
+  const planOutputs=await fs.readFile(path.join(workspace,'.cache/plan-outputs.txt'),'utf8');
+  const matrix=JSON.parse(planOutputs.split('\n').find(line=>line.startsWith('matrix=')).slice(7));
+  assert.ok(matrix.include.reduce((sum,item)=>sum+item.partition_cache_bytes,0)<=9_000_000_000);
+  assert.ok(matrix.include.every(item=>item.search_cache_bytes<=Math.min(512*1024**2,item.partition_cache_bytes)));
+  assert.ok(originalPlan.matrix.include.every(item=>!Object.hasOwn(item,'partition_cache_bytes')),'retention budgets must not mutate the immutable source plan');
   for(let index=0;index<2;index++){
     const part=originalPlan.matrix.include[index];
     const listing=await run('tar',['--zstd','-tf',`.cache/transfer/${part.source}`]);
@@ -51,12 +56,16 @@ try{
     assert.equal((await json('dist/build-manifest.json')).partial,true);
     await node('scripts/verify.mjs',{},1);
     await node('scripts/index-search.mjs');
-    await node('scripts/package-build-part.mjs',{BUILD_PARTITION:`${index}/2`});
+    const cacheBudget=index===0?0:matrix.include[index].partition_cache_bytes;
+    await node('scripts/package-build-part.mjs',{BUILD_PARTITION:`${index}/2`,PARTITION_CACHE_MAX_BYTES:String(cacheBudget),GITHUB_OUTPUT:`.cache/package-${index}.txt`});
+    const packageOutputs=await fs.readFile(path.join(workspace,`.cache/package-${index}.txt`),'utf8');
+    assert.ok(packageOutputs.includes(`cacheable=${index!==0}\n`),'overflow disables caching without dropping the usable archive');
   }
   // Mimic a fresh assembly machine: no book sources, no generated output and
   // no receipts from earlier workers remain outside the archives.
   for(const directory of ['dist','data/starter','data/starter-external','.cache/render-parts','.cache/search-parts','.cache/search-records'])await fs.rm(path.join(workspace,directory),{recursive:true,force:true});
   await run('tar',['--zstd','-xf','.cache/transfer/source-global.tar.zst']);
+  assert.deepEqual(await json('.cache/build-plan.json'),originalPlan,'packed source plan remains unchanged after cache allocation');
   assert.equal(await fs.access(path.join(workspace,'data/starter/books')).then(()=>true,()=>false),false);
   await run('tar',['--zstd','-xf','.cache/transfer/result-000.tar.zst']);
   await node('scripts/build.mjs',{BUILD_ASSEMBLE:'1'},1);
@@ -93,7 +102,7 @@ try{
   await node('scripts/prepare-build-parts.mjs');
   assert.ok((await json('.cache/build-plan.json')).matrix.include.some((item,i)=>item.fingerprint!==newPlan.matrix.include[i].fingerprint));
   await node('scripts/build.mjs',{BUILD_ASSEMBLE:'1'},1);
-  console.log(JSON.stringify({status:'passed',basePath:environment.BASE_PATH,books:manifest.counts.books,readingPages:manifest.counts.sections,htmlPages:manifest.counts.htmlPages,identicalHtmlAndTextFiles:expected.size,checks:['real partition archives','exact coverage','missing partition rejected','same-size corruption rejected','all HTML/TXT identical','search finalized','all HTML verified','cross-build cache reuse','metadata invalidation'],commands},null,2));
+  console.log(JSON.stringify({status:'passed',basePath:environment.BASE_PATH,books:manifest.counts.books,readingPages:manifest.counts.sections,htmlPages:manifest.counts.htmlPages,identicalHtmlAndTextFiles:expected.size,checks:['real partition archives','bounded cache allocation','immutable source plan','over-budget archive remains usable','exact coverage','missing partition rejected','same-size corruption rejected','all HTML/TXT identical','search finalized','all HTML verified','cross-build cache reuse','metadata invalidation'],commands},null,2));
   success=true;
 }finally{
   if(success)await fs.rm(workspace,{recursive:true,force:true});

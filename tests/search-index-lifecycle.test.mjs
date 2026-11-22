@@ -36,7 +36,7 @@ async function fixture(t) {
   });
   const run = (extra = {}) => spawnSync(process.execPath, ['scripts/index-search.mjs'], {cwd: ROOT, encoding: 'utf8', timeout: 120000, env: {...process.env, OUTPUT_DIR: outputName, BASE_PATH: '/', SEARCH_INPUT: inputFile, SEARCH_CACHE_DIR: cache, SEARCH_CONCURRENCY: '1', ...extra}});
   const manifest = () => fs.readFile(path.join(output, 'build-manifest.json'), 'utf8').then(JSON.parse);
-  return {output, pages, render, run, manifest};
+  return {output, cache: path.join(ROOT, cache), pages, render, run, manifest};
 }
 
 test('real Pagefind cold build, new-build reuse and single-category content invalidation', async t => {
@@ -56,6 +56,15 @@ test('real Pagefind cold build, new-build reuse and single-category content inva
   const search = (await f.manifest()).search;
   assert.equal(search.builtShards, 1);
   assert.equal(search.reusedShards, 1);
+  await fs.access(path.join(f.output, 'pagefind/pagefind-highlight.js'));
+  // A smaller matrix allocation must bound an already restored cache even
+  // when every current index is reused and no cache-write path executes.
+  await f.render();
+  result = f.run({SEARCH_CACHE_MAX_BYTES: '0'});
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal((await f.manifest()).search.reusedShards, 2);
+  assert.equal((await f.manifest()).search.status, 'ready');
+  assert.deepEqual(await fs.readdir(f.cache), []);
   await fs.access(path.join(f.output, 'pagefind/pagefind-highlight.js'));
 });
 

@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ROOT, getConfig } from '../src/config.mjs';
 import { archiveFiles, bookInputs, bookPartition, codeFingerprint, fileHash, listFiles, partKey, partitionFingerprint, relativeFile, sha256 } from '../src/build-parts.mjs';
+import { allocateBuildCaches } from '../src/build-cache-plan.mjs';
 
 const config = getConfig();
 const total = Number(process.env.BUILD_PARTITIONS || 8);
@@ -56,9 +57,11 @@ const plan = {
 await fs.mkdir(path.join(ROOT, '.cache/transfer'), { recursive: true });
 const planFile = '.cache/build-plan.json';
 await fs.writeFile(path.join(ROOT, planFile), JSON.stringify(plan));
+const sourceArchiveBytes = [];
 for (const [index, group] of groups.entries()) {
   const item = plan.matrix.include[index];
   const bytes = await archiveFiles(path.join(ROOT, '.cache/transfer', item.source), [...group.files, planFile]);
+  sourceArchiveBytes.push(bytes);
   console.log(`${item.key}: ${item.books} books, ${(bytes / 1024 / 1024).toFixed(1)} MiB compressed source`);
 }
 const global = [...shared, planFile];
@@ -71,5 +74,18 @@ for (const group of [...externalCatalog.providers, ...externalCatalog.mappings])
 if (catalog.media) global.push(...await listFiles(path.resolve(directory, 'media')));
 if (config.profile === 'full') global.push(...await listFiles(path.dirname(companions)));
 await archiveFiles(path.join(ROOT, '.cache/transfer/source-global.tar.zst'), global);
-if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(plan.matrix)}\npartitions=${total}\nbuilt_at=${builtAt}\n`);
+// Cache policy affects retention, not rendered content. Keep the immutable
+// source plan already packed into every archive unchanged; only Actions needs
+// these size-derived budgets, which are also retained as a diagnostic report.
+const cachePlan = allocateBuildCaches(sourceArchiveBytes);
+const matrix = { include: plan.matrix.include.map((item, index) => ({ ...item,
+  partition_cache_bytes: cachePlan.allocations[index].partitionCacheBytes,
+  search_cache_bytes: cachePlan.allocations[index].searchCacheBytes,
+})) };
+await fs.mkdir(path.join(ROOT, '.cache/performance'), { recursive: true });
+await fs.writeFile(path.join(ROOT, '.cache/performance/cache-plan.json'), JSON.stringify({
+  schemaVersion: 1, policy: 'compressed-source-proportional-v1',
+  ...cachePlan, allocations: cachePlan.allocations.map((item, index) => ({ key: partKey(index), ...item })),
+}, null, 2));
+if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\npartitions=${total}\nbuilt_at=${builtAt}\n`);
 console.log(`Prepared ${total} independent build parts; every family and its editions share a worker.`);

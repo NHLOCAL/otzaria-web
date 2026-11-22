@@ -2,7 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ROOT, getConfig } from '../src/config.mjs';
 import { archiveFiles, listFiles, parsePartition, partKey, readBuildPlan } from '../src/build-parts.mjs';
+import { partitionCacheBudget } from '../src/build-cache-plan.mjs';
 
+const maximumCacheBytes = partitionCacheBudget(process.env.PARTITION_CACHE_MAX_BYTES);
 const part = parsePartition(process.env.BUILD_PARTITION);
 if (!part) throw new Error('Packaging requires BUILD_PARTITION');
 const config = getConfig();
@@ -20,6 +22,6 @@ for (const directory of ['books', 'pagefind']) {
 // overwrite another worker's entry points or supply a stale build plan.
 const scoped = files.filter(file => !file.startsWith(`${path.relative(ROOT, config.outputDir)}/pagefind/`) || file.includes('/pagefind/shard-'));
 const bytes = await archiveFiles(path.join(ROOT, '.cache/transfer', item.result), scoped);
-const cacheable = bytes <= 512 * 1024 * 1024;
+const cacheable = bytes <= maximumCacheBytes;
 if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `cacheable=${cacheable}\narchive_bytes=${bytes}\n`);
-console.log(`${item.result}: ${(bytes / 1024 / 1024).toFixed(1)} MiB; within 512 MiB result cache budget: ${cacheable}`);
+console.log(`${item.result}: ${(bytes / 1024 / 1024).toFixed(1)} MiB; within ${(maximumCacheBytes / 1024 / 1024).toFixed(1)} MiB result cache budget (${maximumCacheBytes} bytes): ${cacheable}`);

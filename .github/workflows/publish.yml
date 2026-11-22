@@ -16,6 +16,7 @@ on:
       - 'scripts/profile-command.mjs'
       - 'scripts/check-build-resources.mjs'
       - 'src/build-parts.mjs'
+      - 'src/build-cache-plan.mjs'
       - 'src/search-*.mjs'
       - 'src/text.mjs'
       - 'src/config.mjs'
@@ -161,7 +162,10 @@ jobs:
         env:
           MIN_FREE_DISK_GIB: ${{ env.LIBRARY_PROFILE == 'full' && '32' || '2' }}
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          if ! MIN_MEMORY_GIB=0 node scripts/check-build-resources.mjs prepare-initial; then
+            echo 'Initial free disk is below the build threshold; removing unused SDKs.'
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          fi
           sudo apt-get update -qq
           sudo apt-get install -y zstd
           node scripts/check-build-resources.mjs prepare
@@ -278,6 +282,7 @@ jobs:
           include-hidden-files: true
 
   build-part:
+    name: Build ${{ matrix.key }} (${{ matrix.books }} books)
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -288,8 +293,9 @@ jobs:
     env:
       BUILD_PARTITION: ${{ matrix.index }}/${{ needs.prepare.outputs.partitions }}
       BUILD_DATE: ${{ needs.prepare.outputs.built_at }}
-      SEARCH_CONCURRENCY: '1'
-      SEARCH_CACHE_MAX_BYTES: '536870912'
+      SEARCH_CONCURRENCY: '2'
+      PARTITION_CACHE_MAX_BYTES: ${{ matrix.partition_cache_bytes }}
+      SEARCH_CACHE_MAX_BYTES: ${{ matrix.search_cache_bytes }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -308,10 +314,13 @@ jobs:
       - name: Prepare an independent standard runner
         if: steps.partition-cache.outputs.cache-hit != 'true'
         env:
-          MIN_FREE_DISK_GIB: '8'
+          MIN_FREE_DISK_GIB: '12'
           MIN_MEMORY_GIB: '6'
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          if ! MIN_MEMORY_GIB=0 node scripts/check-build-resources.mjs partition-initial; then
+            echo 'Initial free disk is below the build threshold; removing unused SDKs.'
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          fi
           sudo apt-get update -qq
           sudo apt-get install -y zstd
           node scripts/check-build-resources.mjs partition
@@ -348,8 +357,8 @@ jobs:
         if: steps.partition-cache.outputs.cache-hit != 'true'
         id: package
         run: node scripts/profile-command.mjs package -- node scripts/package-build-part.mjs
-      - name: Save bounded reusable search shards
-        if: steps.partition-cache.outputs.cache-hit != 'true'
+      - name: Save bounded shard fallback only when the whole result exceeds its budget
+        if: steps.partition-cache.outputs.cache-hit != 'true' && steps.package.outputs.cacheable == 'false' && matrix.search_cache_bytes > 0
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .cache/search-cache
@@ -364,7 +373,7 @@ jobs:
         if: steps.partition-cache.outputs.cache-hit == 'true'
         env:
           PART_KEY: ${{ matrix.key }}
-        run: echo "Reused the content-verified completed partition $PART_KEY. Assembly will verify its source fingerprint and exact page coverage." >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Restored the exact completed partition $PART_KEY. Assembly will verify its source fingerprint and exact page coverage." >> "$GITHUB_STEP_SUMMARY"
       - name: Upload the completed partition
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -402,7 +411,10 @@ jobs:
         env:
           MIN_FREE_DISK_GIB: ${{ env.LIBRARY_PROFILE == 'full' && '40' || '2' }}
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          if ! MIN_MEMORY_GIB=0 node scripts/check-build-resources.mjs assemble-initial; then
+            echo 'Initial free disk is below the build threshold; removing unused SDKs.'
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          fi
           sudo apt-get update -qq
           sudo apt-get install -y zstd rclone
           node scripts/check-build-resources.mjs assemble
@@ -442,6 +454,10 @@ jobs:
         run: node scripts/profile-command.mjs size-check -- node scripts/check-size.mjs
       - name: Verify every HTML page and link
         run: node scripts/profile-command.mjs verify -- npm run verify
+      - name: Verify global queries with the generated native search engine
+        run: node scripts/profile-command.mjs search-global -- node scripts/search-smoke.mjs --mode worker
+      - name: Verify category queries load only relevant search indexes
+        run: node scripts/profile-command.mjs search-scoped -- node scripts/search-smoke.mjs --mode worker --category 'תנ״ך'
       - name: Publish changed objects to the configured R2 destination
         if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true' && env.DEPLOY_TARGET == 'cloudflare-r2'
         env:
@@ -473,6 +489,7 @@ jobs:
             .cache/build-plan.json
             .cache/build-size.json
             .cache/verification.json
+            .cache/search-results
             dist/build-manifest.json
             dist/search-manifest.json
             dist/external/search-manifest.json

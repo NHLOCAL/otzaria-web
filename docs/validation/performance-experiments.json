@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-11-22T04:50:16.307800+00:00",
-  "scope": "Local controlled experiments; full GitHub matrix verification is recorded separately. No mobile or CDN performance claim.",
+  "scope": "Controlled local experiments, full GitHub matrix verification and Chromium CI. No mobile or CDN performance claim.",
   "baselineGitHub": {
     "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44972240960",
     "jobUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44972240960/job/137054363857",
@@ -505,6 +505,9 @@
       "identicalHtmlAndTextFiles": 1687,
       "checks": [
         "real partition archives",
+        "bounded cache allocation",
+        "immutable source plan",
+        "over-budget archive remains usable",
         "exact coverage",
         "missing partition rejected",
         "same-size corruption rejected",
@@ -517,137 +520,137 @@
       "commands": [
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 2.1003150230000003,
+          "seconds": 2.034873737,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.24993832800000018,
+          "seconds": 0.2672699660000003,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
-          "seconds": 0.02950831999999991,
+          "seconds": 0.029187385000000177,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 1.6221886509999999,
+          "seconds": 1.5566863720000002,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.07545978000000014,
+          "seconds": 0.08319879999999921,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 4.339499105000001,
+          "seconds": 4.700573069000001,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
-          "seconds": 0.31782920599999853,
+          "seconds": 0.2849932090000002,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
-          "seconds": 0.009190322000000379,
+          "seconds": 0.01052494900000056,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.4871608930000002,
+          "seconds": 0.5542503480000014,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.0653066089999993,
+          "seconds": 0.079071856999999,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 2.0942310269999997,
+          "seconds": 1.9437784589999991,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
-          "seconds": 0.15022207999999956,
+          "seconds": 0.13024497899999915,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
-          "seconds": 0.005965063999999984,
+          "seconds": 0.006198091000000204,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
-          "seconds": 0.39358592199999837,
+          "seconds": 0.26486206799999856,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.5542081739999994,
+          "seconds": 0.5535594529999999,
           "exitCode": 1
         },
         {
           "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
-          "seconds": 0.0709817699999985,
+          "seconds": 0.04047929399999885,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.11035143199999947,
+          "seconds": 0.21611679600000025,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.5689442770000005,
+          "seconds": 0.7159835710000007,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 0.18703741400000035,
+          "seconds": 0.18896231799999988,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
-          "seconds": 0.14754124200000115,
+          "seconds": 0.17391255199999978,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
-          "seconds": 0.32243497100000057,
+          "seconds": 0.23209527300000082,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.8049082659999985,
+          "seconds": 1.169176175999999,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.20936064299999999,
+          "seconds": 0.24523377100000107,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.5799592149999989,
+          "seconds": 0.641507118999998,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 0.17409811700000136,
+          "seconds": 0.19616138099999808,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.5626804439999978,
+          "seconds": 0.2635592019999967,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.1167870649999968,
+          "seconds": 0.3539663270000019,
           "exitCode": 1
         }
       ]
@@ -661,6 +664,9 @@
       "identicalHtmlAndTextFiles": 1687,
       "checks": [
         "real partition archives",
+        "bounded cache allocation",
+        "immutable source plan",
+        "over-budget archive remains usable",
         "exact coverage",
         "missing partition rejected",
         "same-size corruption rejected",
@@ -673,137 +679,137 @@
       "commands": [
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 2.317515277,
+          "seconds": 2.071109704,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.24582930699999997,
+          "seconds": 0.2640269790000002,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
-          "seconds": 0.024662687999999888,
+          "seconds": 0.02679666100000031,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 1.578065481,
+          "seconds": 1.5347597389999996,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.07457322000000022,
+          "seconds": 0.08087129099999947,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 5.178298311,
+          "seconds": 4.594982314000001,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
-          "seconds": 0.29533825799999974,
+          "seconds": 0.278022019,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
-          "seconds": 0.010520594999999957,
+          "seconds": 0.01212185800000043,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.46901163199999973,
+          "seconds": 0.5671993129999992,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.05987931000000026,
+          "seconds": 0.07105333900000005,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 2.2306263080000006,
+          "seconds": 2.031411970000001,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
-          "seconds": 0.1405435639999996,
+          "seconds": 0.1386817689999989,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
-          "seconds": 0.005892775000000256,
+          "seconds": 0.006045251000001372,
           "exitCode": 0
         },
         {
           "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
-          "seconds": 0.390324971,
+          "seconds": 0.2754974929999989,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.593403413,
+          "seconds": 0.5601347330000008,
           "exitCode": 1
         },
         {
           "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
-          "seconds": 0.047191541999998664,
+          "seconds": 0.02757471599999917,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.10923137500000121,
+          "seconds": 0.20514688099999875,
           "exitCode": 1
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.6368744500000012,
+          "seconds": 0.7024019590000007,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 0.1849311409999991,
+          "seconds": 0.1901898369999999,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
-          "seconds": 0.16197857400000065,
+          "seconds": 0.15029478799999924,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
-          "seconds": 0.3672959920000012,
+          "seconds": 0.18190431399999943,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
-          "seconds": 0.8478005440000015,
+          "seconds": 1.064230422999999,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.23899611399999776,
+          "seconds": 0.2621760350000004,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.7760992709999991,
+          "seconds": 0.6218484749999988,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
-          "seconds": 0.23853528200000074,
+          "seconds": 0.19156948599999668,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
-          "seconds": 0.2432427459999999,
+          "seconds": 0.2515342290000008,
           "exitCode": 0
         },
         {
           "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
-          "seconds": 0.10805988900000012,
+          "seconds": 0.11902646099999765,
           "exitCode": 1
         }
       ]
@@ -1396,5 +1402,971 @@
     "download": "HTTP 403 from the Playwright Chromium download CDN",
     "installedExecutable": "/usr/bin/chromium",
     "reason": "The execution environment denied Chromium socket() creation. Browser UI assertions have not run locally. CI runs the real Playwright browser gate separately."
+  },
+  "githubStarterValidation": {
+    "commit": "c9d08b75f82562521c2f262e55398600d030c50f",
+    "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44986830540",
+    "jobUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44986830540/job/137099123125",
+    "artifactUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44986830540/artifacts/14740446931",
+    "nodeTests": 88,
+    "pythonTests": 41,
+    "partitionBasePaths": [
+      "/",
+      "/otzaria-web/"
+    ],
+    "browser": {
+      "startedAt": "2026-11-22T04:52:08.020Z",
+      "finishedAt": "2026-11-22T04:52:24.420Z",
+      "status": "passed",
+      "viewports": {
+        "desktop": {
+          "width": 1488,
+          "height": 1056
+        },
+        "mobile": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      "steps": [
+        {
+          "name": "Preview server serves actual built HTML",
+          "status": "passed",
+          "milliseconds": 171,
+          "details": {
+            "url": "http://127.0.0.1:4175/index.html"
+          }
+        },
+        {
+          "name": "Desktop home, fonts, semantic content, and layout",
+          "status": "passed",
+          "milliseconds": 642,
+          "details": {
+            "fonts": {
+              "ui": true,
+              "reading": true
+            },
+            "sizing": {
+              "viewport": 1488,
+              "document": 1488
+            }
+          }
+        },
+        {
+          "name": "Real unpointed Hebrew query returns complete-text results",
+          "status": "passed",
+          "milliseconds": 336,
+          "details": {
+            "status": "נמצאו 309 תוצאות, מוצגות 15.",
+            "resultsShown": 15
+          }
+        },
+        {
+          "name": "Niqqud and plain Hebrew queries agree",
+          "status": "passed",
+          "milliseconds": 73,
+          "details": {
+            "resultPathsEqual": true
+          }
+        },
+        {
+          "name": "Quoted phrase search finds the opening verse across editions",
+          "status": "passed",
+          "milliseconds": 63,
+          "details": {
+            "resultsShown": 5,
+            "editions": [
+              "b-1",
+              "b-1-v-5",
+              "b-1-v-6",
+              "b-1-v-7",
+              "b-1-v-3"
+            ]
+          }
+        },
+        {
+          "name": "Category filter and search result navigation",
+          "status": "passed",
+          "milliseconds": 755,
+          "details": {
+            "category": "תנ״ך",
+            "url": "http://127.0.0.1:4175/books/b-1/s-2.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90"
+          }
+        },
+        {
+          "name": "Search terms highlight in pointed source text",
+          "status": "passed",
+          "milliseconds": 52,
+          "details": {
+            "highlights": 7
+          }
+        },
+        {
+          "name": "Reader typography, theme persistence, and bookmark",
+          "status": "passed",
+          "milliseconds": 781,
+          "details": {
+            "initialSize": 25,
+            "largerSize": 27,
+            "persistedSize": 27
+          }
+        },
+        {
+          "name": "Saved page is discoverable from the home page",
+          "status": "passed",
+          "milliseconds": 1169,
+          "details": {
+            "restored": "/books/b-1/s-2.html"
+          }
+        },
+        {
+          "name": "Book continuation restores the last reading section",
+          "status": "passed",
+          "milliseconds": 2183,
+          "details": {
+            "lastPath": "/books/b-1/s-34.html"
+          }
+        },
+        {
+          "name": "Empty search and no-match states remain usable",
+          "status": "passed",
+          "milliseconds": 805
+        },
+        {
+          "name": "A fresh category search loads only relevant shard metadata",
+          "status": "passed",
+          "milliseconds": 984,
+          "details": {
+            "category": "תנ״ך",
+            "scopedShards": 2,
+            "allShards": 9,
+            "wasmRequests": 2,
+            "peakConcurrentDownloads": 8
+          }
+        },
+        {
+          "name": "A failed worker chunk is visible and a new query retries successfully",
+          "status": "passed",
+          "milliseconds": 1021,
+          "details": {
+            "failureVisible": true,
+            "retrySucceeded": true
+          }
+        },
+        {
+          "name": "Complete source and chapter navigation without JavaScript",
+          "status": "passed",
+          "milliseconds": 669,
+          "details": {
+            "paragraphs": 31,
+            "characters": 2333,
+            "nextChapter": "http://127.0.0.1:4175/books/b-1/s-34.html"
+          }
+        },
+        {
+          "name": "Mobile home, readable text, and accessible contents",
+          "status": "passed",
+          "milliseconds": 1289,
+          "details": {
+            "homeSize": {
+              "viewport": 390,
+              "document": 390
+            },
+            "readerSize": {
+              "viewport": 390,
+              "document": 390
+            }
+          }
+        },
+        {
+          "name": "External records and verified local-reader links work without JavaScript",
+          "status": "passed",
+          "milliseconds": 860,
+          "details": {
+            "providerPages": 5,
+            "recordId": "external-hebrewbooks-14020",
+            "localBook": "b-1"
+          }
+        },
+        {
+          "name": "External title search loads on demand and filters its own provider index",
+          "status": "passed",
+          "milliseconds": 771,
+          "details": {
+            "query": "מקראות גדולות - בראשית",
+            "target": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "isolatedIndex": true,
+            "quotedSourceTitle": true
+          }
+        },
+        {
+          "name": "External author search preserves source identity and does not invent local mappings",
+          "status": "passed",
+          "milliseconds": 646,
+          "details": {
+            "author": "שטיינר, צבי יהודה בן אהרן",
+            "providerUrl": "https://tablet.otzar.org/book/book.php?book=1",
+            "localMappings": 0
+          }
+        },
+        {
+          "name": "External catalogue and metadata remain readable on mobile",
+          "status": "passed",
+          "milliseconds": 1140,
+          "details": {
+            "landingSize": {
+              "viewport": 390,
+              "document": 390
+            },
+            "recordSize": {
+              "viewport": 390,
+              "document": 390
+            }
+          }
+        },
+        {
+          "name": "No JavaScript errors or failed static asset requests",
+          "status": "passed",
+          "milliseconds": 0,
+          "details": {
+            "consoleErrors": 0,
+            "runtimeErrors": 0,
+            "failedRequests": 0,
+            "warnings": []
+          }
+        }
+      ],
+      "console": [],
+      "pageErrors": [],
+      "networkFailures": []
+    },
+    "screenshots": 12
+  },
+  "localFullHtml": {
+    "method": "One sequential local render, not the GitHub matrix. Same full source release; no baseline timing on identical hardware. Other focused validation processes ran concurrently.",
+    "build": {
+      "schemaVersion": 1,
+      "label": "full-html",
+      "startedAt": "2026-11-22T04:36:31.266Z",
+      "completedAt": "2026-11-22T04:55:02.390Z",
+      "wallTimeMs": 1111123.1,
+      "exitCode": 0,
+      "signal": null,
+      "launchError": null,
+      "sampledPeakRssBytes": 1750388736,
+      "sampledPeakProcessCount": 1,
+      "sampleCount": 4435,
+      "sampleIntervalMs": 250,
+      "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+      "before": {
+        "memoryTotalBytes": 10451427328,
+        "memoryFreeBytes": 9585786880,
+        "memoryAvailableToProcessBytes": 9585786880,
+        "diskAvailableBytes": 55707328512,
+        "diskTotalBytes": 67586535424,
+        "cpuCount": 9
+      },
+      "after": {
+        "memoryTotalBytes": 10451427328,
+        "memoryFreeBytes": 8745619456,
+        "memoryAvailableToProcessBytes": 8745619456,
+        "diskAvailableBytes": 25151016960,
+        "diskTotalBytes": 67586535424,
+        "cpuCount": 9
+      }
+    },
+    "counts": {
+      "books": 9799,
+      "baseBooks": 8258,
+      "editions": 1541,
+      "pdfs": 38,
+      "images": 1358,
+      "missingSourceImages": 82,
+      "sourceLinks": 7001655,
+      "sections": 378696,
+      "htmlPages": 390614,
+      "sourceBytes": 6710214495,
+      "externalRecords": 223835,
+      "externalProviders": 2,
+      "externalHtmlPages": 1370,
+      "externalMappings": 29463
+    },
+    "verification": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "htmlOnly": true,
+      "documents": 390614,
+      "files": 421493,
+      "workers": 4,
+      "durationSeconds": 221.55038814300002,
+      "failureCount": 0,
+      "failures": []
+    },
+    "verificationProfile": {
+      "schemaVersion": 1,
+      "label": "full-verify-html",
+      "startedAt": "2026-11-22T04:55:26.613Z",
+      "completedAt": "2026-11-22T04:59:08.347Z",
+      "wallTimeMs": 221732.6,
+      "exitCode": 0,
+      "signal": null,
+      "launchError": null,
+      "sampledPeakRssBytes": 1009618944,
+      "sampledPeakProcessCount": 1,
+      "sampleCount": 886,
+      "sampleIntervalMs": 250,
+      "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+      "before": {
+        "memoryTotalBytes": 10451427328,
+        "memoryFreeBytes": 8992878592,
+        "memoryAvailableToProcessBytes": 8992878592,
+        "diskAvailableBytes": 25151012864,
+        "diskTotalBytes": 67586535424,
+        "cpuCount": 9
+      },
+      "after": {
+        "memoryTotalBytes": 10451427328,
+        "memoryFreeBytes": 8828801024,
+        "memoryAvailableToProcessBytes": 8828801024,
+        "diskAvailableBytes": 25150976000,
+        "diskTotalBytes": 67586535424,
+        "cpuCount": 9
+      }
+    }
+  },
+  "firstGitHubFullPartitions": {
+    "runId": 44986830561,
+    "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44986830561",
+    "commit": "c9d08b7",
+    "rows": [
+      {
+        "partition": 0,
+        "resultZipBytes": 1149437818,
+        "resultArtifactId": 14741205256,
+        "resultZipSha256": "sha256:0fc8857712783420b83ef61a07187462dfd64611eb2762dc870031f02751b634",
+        "sourceZipBytes": 237887952,
+        "rawSourceBytes": 876835430,
+        "renderSeconds": 111.408,
+        "indexSeconds": 573.405,
+        "packageSeconds": 8.236,
+        "indexSampledPeakRssBytes": 5000855552,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -75695994
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 1116371744,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -33066074
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 1177353524,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 27915706
+          }
+        }
+      },
+      {
+        "partition": 1,
+        "resultZipBytes": 1490558887,
+        "resultArtifactId": 14741071123,
+        "resultZipSha256": "sha256:6db88950efc79a8fd28ebccd87637c0a8849fa5e58bb4267b4de21131f686ffd",
+        "sourceZipBytes": 314393806,
+        "rawSourceBytes": 1115135474,
+        "renderSeconds": 178.863,
+        "indexSeconds": 729.382,
+        "packageSeconds": 8.71,
+        "indexSampledPeakRssBytes": 5023830016,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -416817063
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 1383294518,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -107264369
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 1555995806,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 65436919
+          }
+        }
+      },
+      {
+        "partition": 2,
+        "resultZipBytes": 1159737895,
+        "resultArtifactId": 14741095618,
+        "resultZipSha256": "sha256:b3a9f42df13241bd3ad51636671563be59e024ff79c36af137662f8284229fdd",
+        "sourceZipBytes": 244736635,
+        "rawSourceBytes": 911931096,
+        "renderSeconds": 149.967,
+        "indexSeconds": 581.485,
+        "packageSeconds": 7.526,
+        "indexSampledPeakRssBytes": 5234421760,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -85996071
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 1155682826,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -4055069
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 1211248982,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 51511087
+          }
+        }
+      },
+      {
+        "partition": 3,
+        "resultZipBytes": 1438594140,
+        "resultArtifactId": 14741146078,
+        "resultZipSha256": "sha256:9b582c88a653badd6120e14de48a7dda5104dbf723cca97a0c2514d6fc02b993",
+        "sourceZipBytes": 292454698,
+        "rawSourceBytes": 1124257475,
+        "renderSeconds": 221.622,
+        "indexSeconds": 877.43,
+        "packageSeconds": 13.432,
+        "indexSampledPeakRssBytes": 5495914496,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -364852316
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 1393512182,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -45081958
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 1447414913,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 8820773
+          }
+        }
+      },
+      {
+        "partition": 4,
+        "resultZipBytes": 942929705,
+        "resultArtifactId": 14740148434,
+        "resultZipSha256": "sha256:c20a7e11bc34d77f413d6070d4c05249ff433cab3fd701ae035f878357014eec",
+        "sourceZipBytes": 191721709,
+        "rawSourceBytes": 718868876,
+        "renderSeconds": 117.445,
+        "indexSeconds": 466.08,
+        "packageSeconds": 5.89,
+        "indexSampledPeakRssBytes": 4982734848,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 130812119
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 939431488,
+            "wouldCacheCompletedPart": false,
+            "marginBytes": -3498217
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 948867851,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 5938146
+          }
+        }
+      },
+      {
+        "partition": 5,
+        "resultZipBytes": 851249707,
+        "resultArtifactId": 14740603589,
+        "resultZipSha256": "sha256:fa69627c2ac7aade8dd098d424ffe4659ca210faacb9340d238e1db9a89eb284",
+        "sourceZipBytes": 174517196,
+        "rawSourceBytes": 649861316,
+        "renderSeconds": 100.833,
+        "indexSeconds": 414.948,
+        "packageSeconds": 7.038,
+        "indexSampledPeakRssBytes": 5096841216,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 222492117
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 862135282,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 10885575
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 863719386,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 12469679
+          }
+        }
+      },
+      {
+        "partition": 6,
+        "resultZipBytes": 876382223,
+        "resultArtifactId": 14740299725,
+        "resultZipSha256": "sha256:beeed68e2f0208f4e4e56258951ea879a2e6a554a92ce0bba51d91ba14f8e803",
+        "sourceZipBytes": 177895363,
+        "rawSourceBytes": 680730017,
+        "renderSeconds": 127.437,
+        "indexSeconds": 433.16,
+        "packageSeconds": 5.599,
+        "indexSampledPeakRssBytes": 5033861120,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 197359601
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 896711689,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 20329466
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 880438588,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 4056365
+          }
+        }
+      },
+      {
+        "partition": 7,
+        "resultZipBytes": 797698919,
+        "resultArtifactId": 14740538812,
+        "resultZipSha256": "sha256:1cdbdbb08e7ca29f7e4dc86b50984a977958661570ed0255575d092207cae2ce",
+        "sourceZipBytes": 184870713,
+        "rawSourceBytes": 632594811,
+        "renderSeconds": 83.724,
+        "indexSeconds": 391.975,
+        "packageSeconds": 5.696,
+        "indexSampledPeakRssBytes": 4620693504,
+        "cachePolicies": {
+          "fixedOneGiB": {
+            "capBytes": 1073741824,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 276042905
+          },
+          "rawWeightedEightGiBWith128MiBFloor": {
+            "capBytes": 842794860,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 45095941
+          },
+          "compressedWeightedNineDecimalGB": {
+            "capBytes": 914960945,
+            "wouldCacheCompletedPart": true,
+            "marginBytes": 117262026
+          }
+        }
+      }
+    ],
+    "totalResultZipBytes": 8706589294,
+    "totalSourceZipBytes": 1818478072,
+    "maxIndexSeconds": 877.43,
+    "sumIndexSeconds": 4467.865,
+    "maxIndexSampledPeakRssBytes": 5495914496,
+    "policies": {
+      "fixedOneGiB": {
+        "cachedParts": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "sumCapsBytes": 8589934592
+      },
+      "rawWeightedEightGiBWith128MiBFloor": {
+        "cachedParts": [
+          5,
+          6,
+          7
+        ],
+        "sumCapsBytes": 8589934589
+      },
+      "compressedWeightedNineDecimalGB": {
+        "cachedParts": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "sumCapsBytes": 8999999995
+      }
+    },
+    "notes": [
+      "Artifact sizes are GitHub ZIP bytes; the contained tar.zst archives are slightly smaller. This estimate is conservative for result-cache eligibility.",
+      "Compressed-source weights use corresponding source artifact ZIP sizes, slightly larger than tar.zst sizes used in prepare.",
+      "Sampled RSS sums child and descendant processes; shared pages can be counted more than once and peaks shorter than250 ms may be missed.",
+      "Predicted cache eligibility is not an observed warm cache hit."
+    ]
+  },
+  "followupLocalValidation": {
+    "nodeTests": 96,
+    "pythonTests": 41,
+    "partitionBasePaths": [
+      "/",
+      "/otzaria-web/"
+    ],
+    "status": "passed",
+    "includes": [
+      "compressed-source cache budget allocation",
+      "immutable source plan",
+      "archive usable when cache budget is zero",
+      "restored shard cache is pruned to reduced budget",
+      "parallel integration workspaces use unique temporary directories"
+    ]
+  },
+  "firstGitHubFullBuild": {
+    "run": {
+      "id": 44986830561,
+      "status": "completed",
+      "conclusion": "success",
+      "run_started_at": "2026-11-22T04:50:54Z",
+      "updated_at": "2026-11-22T05:33:54Z",
+      "head_sha": "c9d08b75f82562521c2f262e55398600d030c50f",
+      "html_url": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44986830561"
+    },
+    "workflowElapsedSeconds": 2580.0,
+    "artifact": {
+      "id": 14740874088,
+      "name": "build-inventory-44986830561",
+      "sha256": "63b9c33a0d7f3590bacac912b83174cfcd6f48255089cc1292ecd24a5d1ce35a",
+      "files": [
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/assemble.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/external-search.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/finalize-search.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/resources-assemble.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/size-check.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/performance/verify.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/build-plan.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/build-size.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/.cache/verification.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/dist/build-manifest.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/dist/search-manifest.json",
+        ".cache/full-ci-search/reports/build-inventory-44986830561/dist/external/search-manifest.json"
+      ]
+    },
+    "buildManifestCodeRevision": "794c1bc58f003af8ee02443838a3a77f9081da57",
+    "counts": {
+      "books": 9799,
+      "baseBooks": 8258,
+      "editions": 1541,
+      "pdfs": 38,
+      "images": 1358,
+      "missingSourceImages": 82,
+      "sourceLinks": 7001655,
+      "sections": 378696,
+      "htmlPages": 390614,
+      "sourceBytes": 6710214495,
+      "externalRecords": 223835,
+      "externalProviders": 2,
+      "externalHtmlPages": 1370,
+      "externalMappings": 29463
+    },
+    "coreSearch": {
+      "status": "ready",
+      "pages": 378696,
+      "shards": 106,
+      "engine": "pagefind",
+      "engineVersion": "1.6.0",
+      "leanBodyBytes": 8608453259,
+      "fingerprint": "4442734c2124b2550c8d3cc1190bc4e5745600f87e3f6deadc3bd2555a85428b"
+    },
+    "externalSearch": {
+      "status": "ready",
+      "records": 223835,
+      "shards": 45
+    },
+    "output": {
+      "target": "cloudflare-r2",
+      "limits": {
+        "htmlBytes": 1000000
+      },
+      "errors": [],
+      "ok": true,
+      "files": 684853,
+      "totalBytes": 25850150962,
+      "maxFileBytes": 62242573,
+      "htmlFiles": 390614,
+      "maxHtmlBytes": 668483,
+      "largestFiles": [
+        {
+          "path": "books/b-6049/text.txt",
+          "bytes": 62242573
+        },
+        {
+          "path": "books/b-5869/text.txt",
+          "bytes": 53294335
+        },
+        {
+          "path": "books/b-6050/text.txt",
+          "bytes": 43809385
+        },
+        {
+          "path": "pdfs/bavli-4c27fff8a5349bd7383a.pdf",
+          "bytes": 38164802
+        },
+        {
+          "path": "books/b-7577/text.txt",
+          "bytes": 38000726
+        },
+        {
+          "path": "books/b-390/text.txt",
+          "bytes": 34902955
+        },
+        {
+          "path": "books/b-7414/text.txt",
+          "bytes": 34556637
+        },
+        {
+          "path": "books/b-7558/text.txt",
+          "bytes": 34065274
+        },
+        {
+          "path": "books/b-3779/text.txt",
+          "bytes": 32651176
+        },
+        {
+          "path": "books/b-3900/text.txt",
+          "bytes": 30563423
+        }
+      ]
+    },
+    "verification": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "htmlOnly": false,
+      "documents": 390614,
+      "files": 684853,
+      "workers": 4,
+      "durationSeconds": 212.776667349,
+      "failureCount": 0,
+      "failures": []
+    },
+    "assemblyPhases": {
+      "size-check": {
+        "wallTimeMs": 16799.79,
+        "sampledPeakRssBytes": 123277312,
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15083872256,
+          "memoryAvailableToProcessBytes": 15083872256,
+          "diskAvailableBytes": 84774125568,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15183609856,
+          "memoryAvailableToProcessBytes": 15183609856,
+          "diskAvailableBytes": 84774125568,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "finalize-search": {
+        "wallTimeMs": 44994,
+        "sampledPeakRssBytes": 1027969024,
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15014948864,
+          "memoryAvailableToProcessBytes": 15014948864,
+          "diskAvailableBytes": 84864073728,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 14814191616,
+          "memoryAvailableToProcessBytes": 14814191616,
+          "diskAvailableBytes": 84864012288,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "verify": {
+        "wallTimeMs": 213020.79,
+        "sampledPeakRssBytes": 1408712704,
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15196991488,
+          "memoryAvailableToProcessBytes": 15196991488,
+          "diskAvailableBytes": 84774080512,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15190994944,
+          "memoryAvailableToProcessBytes": 15190994944,
+          "diskAvailableBytes": 84774064128,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "assemble": {
+        "wallTimeMs": 180214.86,
+        "sampledPeakRssBytes": 1223041024,
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15328862208,
+          "memoryAvailableToProcessBytes": 15328862208,
+          "diskAvailableBytes": 86176743424,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15008681984,
+          "memoryAvailableToProcessBytes": 15008681984,
+          "diskAvailableBytes": 84864118784,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "external-search": {
+        "wallTimeMs": 60707.08,
+        "sampledPeakRssBytes": 491941888,
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 14824357888,
+          "memoryAvailableToProcessBytes": 14824357888,
+          "diskAvailableBytes": 84863967232,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15050424320,
+          "memoryAvailableToProcessBytes": 15050424320,
+          "diskAvailableBytes": 84774162432,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      }
+    },
+    "assemblyResourceSnapshot": {
+      "schemaVersion": 1,
+      "label": "assemble",
+      "recordedAt": "2026-11-22T05:20:40.826Z",
+      "minimumDiskGiB": 40,
+      "minimumMemoryGiB": 0,
+      "memoryTotalBytes": 16464306176,
+      "memoryFreeBytes": 15304765440,
+      "memoryAvailableToProcessBytes": 15304765440,
+      "diskAvailableBytes": 113316057088,
+      "diskTotalBytes": 154894188544,
+      "cpuCount": 4
+    },
+    "partitions": [
+      {
+        "partition": 0,
+        "shards": 12,
+        "indexedPages": 50548,
+        "leanBodyBytes": 1123476926,
+        "resultZipBytes": 1149437818,
+        "renderSeconds": 111.408,
+        "indexSeconds": 573.405,
+        "indexSampledPeakRssBytes": 5000855552
+      },
+      {
+        "partition": 1,
+        "shards": 21,
+        "indexedPages": 49990,
+        "leanBodyBytes": 1478414589,
+        "resultZipBytes": 1490558887,
+        "renderSeconds": 178.863,
+        "indexSeconds": 729.382,
+        "indexSampledPeakRssBytes": 5023830016
+      },
+      {
+        "partition": 2,
+        "shards": 13,
+        "indexedPages": 57901,
+        "leanBodyBytes": 1183150260,
+        "resultZipBytes": 1159737895,
+        "renderSeconds": 149.967,
+        "indexSeconds": 581.485,
+        "indexSampledPeakRssBytes": 5234421760
+      },
+      {
+        "partition": 3,
+        "shards": 18,
+        "indexedPages": 51776,
+        "leanBodyBytes": 1401514061,
+        "resultZipBytes": 1438594140,
+        "renderSeconds": 221.622,
+        "indexSeconds": 877.43,
+        "indexSampledPeakRssBytes": 5495914496
+      },
+      {
+        "partition": 4,
+        "shards": 10,
+        "indexedPages": 42216,
+        "leanBodyBytes": 934682207,
+        "resultZipBytes": 942929705,
+        "renderSeconds": 117.445,
+        "indexSeconds": 466.08,
+        "indexSampledPeakRssBytes": 4982734848
+      },
+      {
+        "partition": 5,
+        "shards": 11,
+        "indexedPages": 45283,
+        "leanBodyBytes": 820117789,
+        "resultZipBytes": 851249707,
+        "renderSeconds": 100.833,
+        "indexSeconds": 414.948,
+        "indexSampledPeakRssBytes": 5096841216
+      },
+      {
+        "partition": 6,
+        "shards": 12,
+        "indexedPages": 45105,
+        "leanBodyBytes": 893550046,
+        "resultZipBytes": 876382223,
+        "renderSeconds": 127.437,
+        "indexSeconds": 433.16,
+        "indexSampledPeakRssBytes": 5033861120
+      },
+      {
+        "partition": 7,
+        "shards": 9,
+        "indexedPages": 35877,
+        "leanBodyBytes": 773547381,
+        "resultZipBytes": 797698919,
+        "renderSeconds": 83.724,
+        "indexSeconds": 391.975,
+        "indexSampledPeakRssBytes": 4620693504
+      }
+    ],
+    "totalResultZipBytes": 8706589294,
+    "queryValidation": "Not executed on the full corpus in this first run. Native global and scoped smoke gates are scheduled for the follow-up run.",
+    "notes": [
+      "Build only; no website deployment was performed.",
+      "Local full-index artifact retrieval was blocked by the connector512 MiB download limit; this is a tool limitation, not a product failure.",
+      "Archive byte counts are GitHub transport ZIP sizes; tar.zst payloads are slightly smaller.",
+      "RSS is sampled process-tree RSS and may double-count shared memory."
+    ],
+    "durationMethod": "GitHub run run_started_at to final updated_at, including dispatch/queue overhead; baseline is the original single build job duration.",
+    "indexConcurrencyPerPartition": 1,
+    "publication": "skipped in pull request",
+    "testedPullRequestMergeCommit": "794c1bc58f003af8ee02443838a3a77f9081da57"
   }
 }

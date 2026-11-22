@@ -6,7 +6,7 @@ import {planSearchShards, DEFAULT_MAX_SHARD_BYTES, SEARCH_PLAN_VERSION} from '..
 import {checkpointIdentity, loadCheckpoint, writeCheckpoint, createReceipt, digest, PAGEFIND_VERSION} from '../src/search-checkpoint.mjs';
 import {fingerprintSearchPages, searchCoverage} from '../src/search-input.mjs';
 import {chooseSearchConcurrency, searchResources, runBounded} from '../src/search-resources.mjs';
-import {restoreSearchCache, storeSearchCache} from '../src/search-cache.mjs';
+import {restoreSearchCache, storeSearchCache, pruneSearchCache} from '../src/search-cache.mjs';
 import {validateSearchParts} from '../src/search-parts.mjs';
 
 const config = getConfig();
@@ -173,6 +173,9 @@ if (process.env.SEARCH_FINALIZE === '1') {
     } finally { await fs.rm(job, {force: true}); }
   }
   await runBounded(selected, concurrency, indexOne);
+  // A restored cache may have a larger historical cap. This also runs when
+  // every shard was reused, no new shard fits, or the current budget is zero.
+  if (process.env.SEARCH_CACHE !== '0') await pruneSearchCache(cacheDir, cacheMaximum);
   if (selected.length < pending.length) {
     console.error('Search batch finished; remaining shards are pending. Run again with SEARCH_RESUME=1. This incomplete build must not be published.');
     process.exitCode = 2;
