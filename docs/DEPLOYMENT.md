@@ -1,0 +1,143 @@
+# פריסה ועדכון של אוצריא ברשת
+
+## סביבת הייצור: קבצים סטטיים ב-Cloudflare R2
+
+הספרייה המלאה מיועדת ל-R2 עם דומיין משלכם ו-CDN של Cloudflare. כל דף קריאה הוא קובץ HTML שנבנה מראש. אין שרת אפליקציה, בסיס נתונים בזמן הביקור, פונקציית חיפוש בתשלום או צורך ב-Worker כדי לקרוא ספר.
+
+R2 מתאים להיקף הספרייה משום שאין בו מגבלת נפח כולל או מספר אובייקטים לדלי. Cloudflare Pages ו-Workers Static Assets מוגבלים ל-20,000 קבצים במסלול החינמי ול-100,000 במסלולים בתשלום; גם מקטעי אינדקס החיפוש נספרים. GitHub Pages מוגבל לאתר של 1 GB. לכן תמיכה טכנית בבנייה ל-Pages אינה הבטחה שהספרייה המלאה נכנסת במכסותיו.
+
+מקורות רשמיים: [מגבלות R2](https://developers.cloudflare.com/r2/platform/limits/), [מגבלות Pages](https://developers.cloudflare.com/pages/platform/limits/), [מגבלות Workers](https://developers.cloudflare.com/workers/platform/limits/), [מגבלות GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
+
+## הגדרה ראשונית של Cloudflare
+
+1. צרו דלי R2 ייעודי וריק לאתר, בסוג האחסון Standard. אין להשתמש בדלי המכיל קבצים של פרויקט אחר.
+2. חברו אליו דומיין או תת-דומיין של הפרויקט דרך **R2 > Bucket > Settings > Custom Domains**. כתובת `r2.dev` מיועדת לבדיקה, ומוגבלת בקצב; היא אינה כתובת הייצור.
+3. צרו פרטי גישה ל-S3 API עם הרשאות **Object Read & Write** לדלי הזה בלבד.
+4. הגדירו ב-GitHub את המשתנים והסודות שבטבלה הבאה.
+5. הפעילו ידנית את **Synchronize and publish library** עם `profile=full` ו-`target=cloudflare-r2`. לאחר מכן אותו תהליך רץ מדי יום ובכל שינוי ב-`main`.
+
+| סוג | שם | ערך |
+| --- | --- | --- |
+| Repository variable | `SITE_URL` | מקור הדומיין, למשל `https://library.example.org`, ללא נתיב |
+| Repository variable | `BASE_PATH` | `/` עבור דומיין ייעודי |
+| Repository variable | `CLOUDFLARE_ACCOUNT_ID` | מזהה חשבון Cloudflare |
+| Repository variable | `R2_BUCKET` | שם הדלי הייעודי |
+| Repository variable | `R2_PREFIX` | בדרך כלל ריק; אם מפרסמים בתיקייה, חייב להתאים ל-`BASE_PATH` |
+| Repository secret | `R2_ACCESS_KEY_ID` | מזהה מפתח S3 של R2 |
+| Repository secret | `R2_SECRET_ACCESS_KEY` | המפתח הסודי של S3 |
+| Repository variable, אופציונלי | `BUILD_RUNNER` | תווית runner בעל דיסק/זיכרון גדולים יותר; ברירת המחדל `ubuntu-latest` |
+| Repository variable, אופציונלי | `KEEP_FULL_ARTIFACT` | `true` לשמירת עותק מלא של `dist` ב-Actions למשך שלושה ימים |
+
+אין להוסיף סודות לקוד או לקובצי התצורה. כשפרטי הפריסה אינם מוגדרים, התהליך עדיין מייבא, בונה, מאנדקס ובודק. הוא שומר דוחות ומציין במפורש שהפרסום לא בוצע. אין ליצור דלי או לרכוש שירות מתוך תהליך הבנייה.
+
+### כתובת דף הבית
+
+R2 מגיש מפתחות אובייקטים בדיוק כפי שנשמרו ואינו מוסיף `index.html` לתיקייה. כל הקישורים באתר כוללים קובץ מפורש: `/index.html`, `/catalog/index.html`, `/books/<id>/index.html` וכדומה.
+
+כדי שכתובת הדומיין לבדה תפתח את דף הבית, הוסיפו כלל URL Rewrite ב-Cloudflare:
+
+```text
+תנאי: http.host eq "library.example.org" and http.request.uri.path eq "/"
+נתיב חדש: /index.html
+```
+
+החליפו את שם הדומיין. אין צורך בכלל שמפנה כל נתיב חסר לדף הבית. נתיב ספר שאינו קיים צריך להחזיר 404, ולא HTML תקין לכאורה של עמוד אחר. הדף `404.html` זמין לשילוב בהתאמה אישית של שגיאות, אך R2 אינו מפעיל אותו אוטומטית.
+
+מקור: [URL Rewrite לנתיבי אובייקטים בדלי R2 עם דומיין מותאם](https://developers.cloudflare.com/rules/origin-rules/tutorials/point-to-r2-bucket-with-custom-domain/).
+
+### מטמון, כותרות וגישה לזחלנים
+
+ההעלאה מגדירה `Cache-Control: public,max-age=300` ומשתמשת ב-Content-Type המתאים לסוג הקובץ. הוסיפו Cache Rule לדומיין האתר כדי שגם HTML ייכנס למטמון, תוך כיבוד TTL המקור. ודאו שלא הוגדר TTL כפוי ארוך לקובצי קטלוג, מפות אתר או bootstrap של החיפוש.
+
+הסקריפט מעביר את כותרת המטמון באמצעות `rclone --header-upload`, שנתמך גם בגרסאות rclone המגיעות מחבילות מערכת ישנות. אין תלות בהתנהגות המשתנה של `--metadata-set` בלי `-M`. מקורות: [כותרות העלאה ב-rclone](https://rclone.org/docs/#header-upload), [מימוש כותרת Cache-Control במתאם S3](https://github.com/rclone/rclone/blob/v1.60.1/backend/s3/s3.go), [מטמון של R2 דרך דומיין מותאם](https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/).
+
+קובץ `_headers` מופק לתאימות Cloudflare Pages; R2 אינו מפרש אותו. כותרות אבטחה נוספות אפשר להגדיר ב-Response Header Transform Rules של הדומיין. אין להפנות קובצי JavaScript, WASM או אינדקס לעמוד HTML בעת שגיאה.
+
+`robots.txt` מתיר גישה ומפנה למפת האתר. ודאו שגם כללי ה-WAF ומדיניות Search / Agent / Training של Cloudflare מתירים את הגישה הרצויה. Robots אינו גובר על חסימת תעבורה בשכבת CDN. קובצי HTML, TXT ו-JSON נגישים ללא התחברות וללא הרצת JavaScript.
+
+מקור: [דלי R2 ציבורי ודומיינים](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+
+### הגדרות Cloudflare לגישה של מנועי חיפוש וסוכני AI
+
+בדומיין מותאם של R2 חלים גם כללי הבוטים וה-WAF של Cloudflare. לכן יש לבדוק את ההגדרות הפעילות של ה-zone המשרת את הספרייה, נוסף על `robots.txt` שבקוד. ההנחיות הבאות נבדקו מול התיעוד הרשמי ב-22 בנובמבר 2026.
+
+1. ב-**Security > Settings**, סננו **Bot traffic** ופתחו **AI Crawler and Agent access policies**, ההגדרה שאליה מפנה כיום תיעוד **Block AI bots**. הגדירו **Allow (do not block)** עבור **Search**, **Agent** ו-**Training**, ובדקו שגם ההגדרות הנפרדות של **Personal Agents** מאפשרות גישה. לפי התיעוד הנוכחי אלה גם ברירות המחדל לדומיינים חדשים. מדיניות Training עשויה לחול גם על זחלנים המשמשים לחיפוש ולאימון יחד. [מדיניות הזחלנים והסוכנים](https://developers.cloudflare.com/bots/additional-configurations/block-ai-bots/).
+2. להגשה של `robots.txt` שבפרויקט ללא תוספות, השאירו **Enable Bot Preference Sync** כבוי. כאשר הוא מופעל ומדיניות כלשהי מוגדרת לחסימה או ל-Disallow, Cloudflare עשויה להוסיף הוראות לפני הקובץ הקיים; Training עם Disallow וסנכרון פעיל מפעיל גם חסימה לזחלני אימון. כאשר כל המדיניות מאפשרת גישה, התיעוד מציין שהקובץ מוגש ללא תוספת. [Managed robots.txt ו-Bot Preference Sync](https://developers.cloudflare.com/bots/additional-configurations/managed-robots-txt/).
+3. בטבלת הזחלנים של **AI Crawl Control**, הגדירו **Action: Allow** לזחלנים שצריכים גישה פתוחה. בדקו שלא נשארו עבורם **Block** או **Charge**. Allow בממשק הזה אינו מבטל כלל WAF מוקדם יותר שחוסם את אותה בקשה. [ניהול זחלנים](https://developers.cloudflare.com/ai-crawl-control/features/manage-ai-crawlers/), [סדר הפעולה מול WAF](https://developers.cloudflare.com/ai-crawl-control/configuration/ai-crawl-control-with-waf/).
+4. כדי לאפשר קריאה בלי דפדפן ובלי JavaScript, השאירו **Bot Fight Mode** כבוי ב-zone של הספרייה והתאימו כללי WAF שמטילים Block או Managed Challenge על ה-hostname הציבורי שלה. Bot Fight Mode חל על הדומיין כולו ואינו ניתן לעקיפה באמצעות כלל Skip; יש לבדוק זאת במיוחד כשהספרייה היא תת-דומיין של zone קיים. אם מופעל **Super Bot Fight Mode**, הוא תומך בחריגת Skip ממוקדת ל-hostname הזה. [הגדרת Bot Fight Mode ומגבלותיו](https://developers.cloudflare.com/bots/get-started/bot-fight-mode/), [מקורות לאתגרי Cloudflare](https://developers.cloudflare.com/cloudflare-challenges/concepts/how-challenges-work/).
+5. באותו מסך Bot traffic, השאירו **AI Labyrinth** כבוי כדי שהתוכן הציבורי לא יקבל קישורי מלכודת שאינם חלק מהספרייה. [התנהגות AI Labyrinth](https://developers.cloudflare.com/bots/additional-configurations/ai-labyrinth/).
+
+אחרי חיבור הדומיין, בדקו בקשות GET רגילות אל `/robots.txt`, `/sitemap.xml`, `/catalog.json` ודף קריאה קיים. ודאו שמתקבלים התוכן וסוג הקובץ הצפויים, ללא דף אתגר; הכותרת `cf-mitigated: challenge` מזהה תגובת אתגר של Cloudflare. בדקו גם את `robots.txt` המוגש בפועל, ולא רק את העותק בריפו. לבדיקת גישת זחלנים אמיתיים, סננו לפי hostname ב-AI Crawl Control וב-Security Analytics ובדקו את תוצאות בקשותיהם. [זיהוי תגובת אתגר](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/challenge-pages/detect-response/), [ניתוח תעבורת זחלנים](https://developers.cloudflare.com/ai-crawl-control/features/analyze-ai-traffic/).
+
+## מה עושה תהליך העדכון
+
+`publish.yml` רץ ב-03:23 UTC מדי יום, על push ל-`main`, ובבקשה ידנית. הבנייה נעשית ב-GitHub Actions, ולכן אינה כפופה למגבלת 20 הדקות של מערכת הבנייה ב-Cloudflare Pages.
+
+1. בריצה מתוזמנת משווה את מניפסט האתר המפורסם לגרסת קוד האתר, למניפסט מסד הנתונים הרשמי ול-checksum של חבילת צילומי הבבלי ושל הקטלוג החיצוני. אם כולם זהים והאתר המפורסם מלא ובעל אינדקסי חיפוש תקינים, מדלג על הבנייה וההעלאה.
+2. כשנדרשת בנייה, מתקין Node 24, תלות החיפוש הנעולה ודרישות Python של יבוא הספרייה.
+3. משחזר מטמון של ההפצה ומוריד את ההפצה הרשמית הנדרשת. היבוא מאמת תקינות ושומר זיהוי מקור.
+4. בונה את כל הספרים בפרופיל `full`, מאנדקס ומריץ בדיקות תוכן, קישורים ומכסות.
+5. שומר `build-manifest.json`, `search-manifest.json` ודוח גודל כארטיפקטים של הריצה.
+6. מעלה ל-R2 רק קבצים שהשתנו לפי checksum. שינוי באותו אורך אינו מתפספס.
+7. מעלה דפי קריאה ונכסים לפני הקטלוג, מפות האתר ומניפסטי הכניסה. לאחר העלאה מוצלחת מסיר דפי תוכן שכבר אינם קיימים בפלט. `build-manifest.json` הציבורי מועלה בנפרד רק בסיום, כסימון להשלמת הפרסום לצורך בדיקת העדכון הבאה.
+
+ההעלאה מבוצעת עם [rclone ל-R2](https://developers.cloudflare.com/r2/examples/rclone/) דרך S3 API. השוואת checksum מונעת העלאה מחדש רק משום שזמן היצירה המקומי השתנה. אינדקסים ישנים תחת `pagefind/` וקובצי איורים בעלי שם המבוסס על תוכנם תחת `media/` נשמרים כדי שדפדפן המחזיק דף או bootstrap קודם במטמון עדיין יוכל להציג איורים ולהשלים חיפוש. יש להביא את הצטברותם בחשבון במעקב נפח; ניקוי שלהם דורש המתנה מעבר לזמן המטמון ובדיקה שאין עדיין bootstrap פעיל המפנה אליהם.
+
+הפריסה אינה עסקה אטומית לכל הדלי: במשך ההעלאה ייתכן שילוב זמני של דפים משתי גרסאות. כשל בהורדה, בבנייה או בבדיקה מונע כניסה לשלב הפרסום. כשל בהעלאת גוף התוכן מונע פרסום של מניפסטי הכניסה החדשים. אין כאן הבטחה ל-rollback אוטומטי של אובייקט שכבר הוחלף. לחזרה לגרסה קודמת יש לבנות מחדש את אותה גרסת מקור ואותה גרסת אתר ולפרסם את הפלט המאומת.
+
+סקריפט הפריסה מסמן בעלות ב-`.otzaria-managed.json`. הוא מסרב לסנכרן לתיקייה לא ריקה שאין בה סימון של הפרויקט, כדי שלא למחוק נתונים זרים. הסרת ספרים מתבצעת רק בתוך הדלי או הקידומת הייעודיים, אחרי הצלחת ההעלאות.
+
+### לוח זמנים ומשאבי הבנייה
+
+לוחות הזמנים של GitHub יכולים להתעכב בעומס, ולעיתים ריצות מתוזמנות אינן מתחילות. בריפו ציבורי, חוסר פעילות של 60 יום יכול להשבית את התזמון; ניתן להפעיל מחדש דרך Actions. זהו עדכון תקופתי, לא התחייבות לזמן אמת. [תיעוד GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
+
+ההפצה המלאה גדולה. יש מקום בדיסק עבור הארכיון, בסיס הנתונים המחולץ, טקסטים מיובאים, HTML ואינדקסים גם יחד. ה-workflow מפנה רכיבי Android, .NET ו-GHC שאינם נחוצים מתוך runner זמני של GitHub בלבד; הוא אינו מוחק אותם ב-runner פרטי. חלון הריצה המלא הוא עד שש שעות, משום שהעלאה ראשונית כוללת מאות אלפי אובייקטים; אין בכך התחייבות למשך העלאה מסוים. אם ההפצה גדלה מעבר למשאבי המכונה, הגדירו `BUILD_RUNNER` מתאים. ריצת בדיקה של `starter` אינה מדידה של משאבי ההפצה המלאה.
+
+בניית החיפוש מחלקת את תוכן הקלט לקבוצות של עד `134217728` בתים, שהם 128 MiB, ומאנדקסת אותן ברצף. `SEARCH_SHARD_BYTES` מקבל תקציב בין `1000000` ל־`536870912` בתים. `SEARCH_SHARDS` קובע מספר התחלתי והמתכנן מוסיף קבוצות אם התקציב מחייב זאת. ספר ומהדורותיו נשמרים יחד כאשר הם נכנסים לתקציב; משפחה גדולה מפוצלת בגבולות עמודים, וכל העמודים נכללים. התקציב מגביל קלט ולא את צריכת ה־RAM של Pagefind. אם הבנייה נעצרת בגלל זיכרון, הקטינו את התקציב או הגדילו את משאבי המכונה.
+
+כדי לצמצם את שיא צריכת הדיסק במכונה הזמנית, מסד הנתונים המחולץ נמחק אחרי שהיבוא אומת, ותמונות המצב של הטקסטים וה-PDF נמחקות אחרי שבניית HTML וקובצי הנתונים הסתיימה בהצלחה. האינדוקס והבדיקות הבאות קוראים את `dist` ואת רשימת עמודי החיפוש, ולא זקוקים עוד לעותקי המקור. הארכיונים הדחוסים נשארים למטמון Actions. פינוי זה מתבצע רק ב-runner שמסומן `github-hosted`; ב-runner פרטי נשמרים מטמוני המקור. פקודת הבנייה המקומית אינה מוחקת אותם.
+
+גם מטמון הארכיונים הדחוסים מוגבל ל-5 GiB אחרי יבוא מוצלח. יש עדיפות לחלקי המסד הנוכחי ולחבילת ה-PDF הנוכחית, לפי ה-digests שאומתו ביבוא. מקום שנותר יכול לשמש ארכיונים קודמים. אם אפילו ההפצה הנוכחית גדולה מהתקציב, חלק מהארכיונים לא יישמרו במטמון ויורדו שוב כשיידרשו. פינוי זה מסיר רק ארכיונים דחוסים בעלי שמות checksum מתוך תיקיית המטמון; הוא אינו מסיר ספרים מתמונת המצב או מהאתר. ב-runner פרטי אפשר להפעיל אותו במפורש באמצעות `python3 scripts/prune_archive_cache.py`.
+
+בדיקת הריצה המתוזמנת מורידה רק מניפסטים ומטאדאטה. היא מדלגת על הבנייה רק אחרי אימות שהאתר כולל בדיוק את אותה גרסת קוד ואת אותן הפצות של מסד הספרים, חבילת צילומי הבבלי והקטלוג החיצוני. שינוי מקור, מניפסט ישן ללא `codeRevision`, היעדר פריסה ראשונה, חיפוש שלא הושלם או בעיה בקריאת האתר מחזירים את התהליך לבנייה רגילה. push ל-`main` והפעלה ידנית תמיד בונים, גם ללא שינוי בספרים. המטמון מצמצם הורדות, וההעלאה מצמצמת כתיבות. מטמוני Actions הם עזר ויכולים להימחק; הם אינם העותק היחיד של נתוני המקור.
+
+## עלות
+
+לפי [מחירון R2](https://developers.cloudflare.com/r2/pricing/), Standard כולל 10 GB-month, מיליון פעולות Class A ו-10 מיליון פעולות Class B בחודש ללא חיוב. מעבר לכך: $0.015 ל-GB-month, $4.50 למיליון פעולות Class A ו-$0.36 למיליון פעולות Class B. תעבורה יוצאת מהאחסון אינה מחויבת. התמחור תלוי בפועל בנפח, בפעולות ובמטמון, ויכול להשתנות.
+
+מדדו את הפלט המלא ואת התעבורה לפני הערכת הוצאה חודשית. אין להסיק מחיר סופי מגודל קובצי הטקסט בלבד: HTML, קובצי הורדה, מקטעי חיפוש וגרסאות מטמון ישנות מוסיפים נפח. שמירת ארטיפקטים מלאים ב-Actions היא אפשרות נפרדת ועשויה לצרוך מכסת אחסון נוספת.
+
+## בנייה מקומית מלאה
+
+נדרשים Node 24, Python 3.12 ומעלה וכלי `zstd`.
+
+```bash
+npm ci
+python3 -m pip install -r scripts/requirements.txt
+LIBRARY_PROFILE=full npm run sync
+LIBRARY_PROFILE=full SOURCE_CATALOG=.cache/library/catalog.json SITE_URL=https://library.example.org BASE_PATH=/ DEPLOY_TARGET=cloudflare-r2 npm run build
+LIBRARY_PROFILE=full SOURCE_CATALOG=.cache/library/catalog.json SITE_URL=https://library.example.org BASE_PATH=/ npm run verify
+BASE_PATH=/ npm run serve
+```
+
+לבדיקה מהירה ללא הורדת הספרייה המלאה:
+
+```bash
+LIBRARY_PROFILE=starter SOURCE_CATALOG=data/starter/catalog.json BASE_PATH=/ npm run build
+LIBRARY_PROFILE=starter SOURCE_CATALOG=data/starter/catalog.json BASE_PATH=/ npm run verify
+BASE_PATH=/ npm run serve
+```
+
+`starter` הוא אוסף פיתוח מפורש. בניית `full` נכשלת אם קטלוג מלא לא קיים או אם פרופיל הקטלוג אינו מתאים. היא אינה מחליפה אותו בשקט באוסף פיתוח.
+
+## תאימות Pages לאוסף קטן
+
+אפשר לפרוס פלט שמתאים למכסות גם ל-GitHub Pages או ל-Cloudflare Pages.
+
+- GitHub: בחרו **Settings > Pages > Build and deployment > GitHub Actions**. הפעילו ידנית `publish.yml` עם `target=github-pages`, `profile=starter`, והתאימו את `SITE_URL` ו-`BASE_PATH` לכתובת הפרויקט. התהליך בודק שהשירות מופעל ומדלג על הפריסה כשהוא חסר.
+- Cloudflare Pages: פלט הבנייה הוא `dist`, ללא Functions. הגדירו `BASE_PATH=/`, `SITE_URL` של הדומיין, `DEPLOY_TARGET=cloudflare-pages`, ופרופיל תוכן מתאים. לבנייה ממקור חי השתמשו ב-`npm run sync && npm run build && npm run verify`, עם כלי היבוא הנדרשים בסביבת הבנייה; לחלופין העלו פלט שכבר נבנה ב-Actions.
+- במסלול Pages בתשלום, `CF_PAGES_FILE_LIMIT=100000` מאפשר את מכסת הבדיקה הגדולה. יש להגדיר גם `PAGES_WRANGLER_MAJOR_VERSION=4` בפרויקט בהתאם לתיעוד Cloudflare. שינוי משתנה הבדיקה אינו משדרג את חשבון האחסון.
+
+שינוי במאגר המקור אינו מפעיל מעצמו Git integration של Cloudflare Pages. התהליך היומי שסופק מפרסם ל-R2; אם בוחרים בפריסה אחרת, יש לחבר אותה במפורש לתהליך העדכון.
+
+באתר פרויקט של GitHub, קובץ `/otzaria-web/robots.txt` אינו `robots.txt` בשורש הדומיין. ברירת המחדל עדיין מתירה סריקה, ואת מפת האתר אפשר להגיש ב-Search Console; דומיין ייעודי מאפשר שליטה מלאה בנתיב השורש.

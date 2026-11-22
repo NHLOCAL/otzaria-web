@@ -1,0 +1,80 @@
+name: Validate static site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LIBRARY_PROFILE: starter
+      SOURCE_CATALOG: data/starter/catalog.json
+      SITE_URL: https://nhlocal.github.io
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - run: npm ci
+      - name: Install importer test dependency
+        run: python3 -m pip install --disable-pip-version-check -r scripts/requirements.txt
+      - run: npm test
+      - name: Build and verify GitHub project paths
+        env:
+          BASE_PATH: /otzaria-web/
+          DEPLOY_TARGET: github-pages
+        run: |
+          npm run build
+          npm run verify
+      - name: Build and verify Cloudflare root paths
+        env:
+          BASE_PATH: /
+          DEPLOY_TARGET: cloudflare-r2
+          SEARCH_SHARDS: '3'
+        run: |
+          npm run build
+          npm run verify
+      - name: Install browser for integration checks
+        run: npm exec -- playwright install --with-deps chromium
+      - name: Check browser reading, navigation and federated search
+        env:
+          BASE_PATH: /
+        run: node tests/browser.mjs
+      - name: Keep browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-evidence
+          path: |
+            .cache/browser-results
+            .cache/browser-screenshots
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: true
+      - name: Upload review artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: starter-static-site
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true

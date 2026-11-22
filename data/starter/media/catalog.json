@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "images": [],
+  "counts": {
+    "imageTags": 0,
+    "booksWithImages": 0,
+    "embeddedInstances": 0,
+    "uniqueSources": 0,
+    "files": 0,
+    "bytes": 0,
+    "missingUpstream": 0,
+    "correctedMimeTypes": 0
+  },
+  "missing": [],
+  "sourcePolicy": "Embedded raster image data from the canonical application database. Missing source attributes are retained as reported upstream gaps. No external asset is guessed or fetched."
+}

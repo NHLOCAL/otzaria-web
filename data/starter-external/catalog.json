@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "exporterVersion": 2,
+  "source": {
+    "id": "otzaria-external-catalog",
+    "repository": "Otzaria/otzar-HB_catalog",
+    "release": "db-v10",
+    "publishedAt": "2026-11-01T21:54:06Z",
+    "version": 10,
+    "url": "https://github.com/Otzaria/otzar-HB_catalog/releases/download/db-v10/otzar-HB_catalog.db.zst",
+    "archiveSha256": "89fe6d51eeb9205fd12cd99c05db05047d36db568b3650e7a11a3de662fa07fc",
+    "archiveBytes": 6042798,
+    "appCommit": "cee59520a8e6d35d5350b8f51cde322d4b4b99cf",
+    "policyUrl": "https://github.com/Otzaria/otzaria/blob/cee59520a8e6d35d5350b8f51cde322d4b4b99cf/lib/external_catalog/repository/external_catalog_repository.dart"
+  },
+  "scope": {
+    "mode": "sample",
+    "complete": false,
+    "content": "Bibliographic metadata and source links; no remote provider PDF payloads.",
+    "downloadedByNativeInstaller": true,
+    "providerListingsEnabledByDefault": false
+  },
+  "database": {
+    "file": "catalog.db",
+    "sha256": "5a9b12be8d18d5ea3fb1959e46c20f0b50ee667f1b7e6aa53aa35712c971232f",
+    "bytes": 28672
+  },
+  "databaseMetadata": {
+    "version": "10"
+  },
+  "paging": {
+    "strategy": "native-id-buckets",
+    "size": 200
+  },
+  "providers": [
+    {
+      "id": "otzar",
+      "name": "אוצר החכמה",
+      "count": 6,
+      "pages": [
+        {
+          "file": "records/external-otzar-1.json",
+          "page": 1,
+          "count": 6,
+          "sha256": "496391ec1331029a4a66801967426671f7de2f8c71384bf5e053078a070b0acd",
+          "bytes": 3458
+        }
+      ]
+    },
+    {
+      "id": "hebrewbooks",
+      "name": "HebrewBooks",
+      "count": 6,
+      "pages": [
+        {
+          "file": "records/external-hebrewbooks-39.json",
+          "page": 39,
+          "count": 1,
+          "sha256": "5d7d4278464df4fa46af5bcfe5d7ebf05c13c8beb596d28cdabfa6b0e6f0da38",
+          "bytes": 724
+        },
+        {
+          "file": "records/external-hebrewbooks-71.json",
+          "page": 71,
+          "count": 1,
+          "sha256": "2e82c836055ea18bc4ef67e68969b7b160f7a20c98223c97d426ca68a0d7eefd",
+          "bytes": 542
+        },
+        {
+          "file": "records/external-hebrewbooks-72.json",
+          "page": 72,
+          "count": 2,
+          "sha256": "efa5bc36b39b04f4281b91b50bcd97e324de80cdd6ad623a155dd289b76ba135",
+          "bytes": 1101
+        },
+        {
+          "file": "records/external-hebrewbooks-171.json",
+          "page": 171,
+          "count": 1,
+          "sha256": "a2eaaf0a046b9707bf12cc3364a0da1ee1dfecfdb7f5c607f21ae810cc48c52f",
+          "bytes": 667
+        },
+        {
+          "file": "records/external-hebrewbooks-176.json",
+          "page": 176,
+          "count": 1,
+          "sha256": "38dc54def8a9bab1f758ce70ab999d27e040eafefe0ce14c28dfaf95ca7a545b",
+          "bytes": 505
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "provider": "otzar",
+      "table": "otzaria_otzar_hahochma",
+      "present": false,
+      "count": 0,
+      "pages": []
+    },
+    {
+      "provider": "hebrewbooks",
+      "table": "otzaria_hebrew_books",
+      "present": true,
+      "count": 44,
+      "pages": [
+        {
+          "file": "mappings/hebrewbooks-1.json",
+          "page": 1,
+          "count": 44,
+          "sha256": "43789f69e32bc822136bf1e356abe6bd8a256647eae8ee0cab9cbca5999e67ed",
+          "bytes": 12470
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "records": 12,
+    "otzar": 6,
+    "hebrewbooks": 6,
+    "mappings": 44
+  },
+  "fixture": {
+    "selection": "Six actual Otzar records and six actual HebrewBooks records with their complete native mapping rows. Development sample only.",
+    "sourceDatabaseSha256": "c0fee7804c7c1ce7feffc20c854d5d8be5271fbaf080b3525d106792f6b36e70",
+    "sourceCounts": {
+      "records": 223835,
+      "otzar": 163416,
+      "hebrewbooks": 60419,
+      "mappings": 29463
+    }
+  }
+}

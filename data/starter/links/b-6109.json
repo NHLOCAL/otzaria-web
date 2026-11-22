@@ -1,0 +1,1 @@
+{"schemaVersion":1,"columns":["id","sourceLineId","targetBookId","targetLineId","connectionTypeId","targetLineIndex"],"rangeColumns":["linkId","side","endLineId","endLineIndex"],"anchorColumns":["linkId","side","charStart","charEnd","label"],"suppressionColumns":["linkId","side","reasonMask"],"links":[],"ranges":[],"anchors":[],"suppressed":[]}
