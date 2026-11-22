@@ -3,28 +3,50 @@ name: Synchronize and publish library
 on:
   push:
     branches: [main]
+  # Exercise the actual full corpus and eight free runners when the pipeline
+  # changes. UI-only pull requests keep using the small, fast CI fixture.
+  pull_request:
+    paths:
+      - '.github/workflows/publish.yml'
+      - 'scripts/build.mjs'
+      - 'scripts/prepare-build-parts.mjs'
+      - 'scripts/package-build-part.mjs'
+      - 'scripts/index-search.mjs'
+      - 'scripts/index-shard.mjs'
+      - 'scripts/profile-command.mjs'
+      - 'scripts/check-build-resources.mjs'
+      - 'src/build-parts.mjs'
+      - 'src/search-*.mjs'
+      - 'src/text.mjs'
+      - 'src/config.mjs'
+      - 'package-lock.json'
   schedule:
     - cron: '23 3 * * *'
   workflow_dispatch:
     inputs:
       profile:
-        description: 'full imports the complete configured library; starter is a development fixture'
+        description: 'full imports the complete library; starter is a development fixture'
         type: choice
         options: [full, starter]
         default: full
       target:
-        description: 'R2 serves the full corpus; Pages has smaller hosting quotas'
+        description: 'R2 serves the full corpus; GitHub Pages supports the starter fixture'
         type: choice
         options: [cloudflare-r2, github-pages]
         default: cloudflare-r2
+      mode:
+        description: 'publish checks destination configuration before building; build-only produces validation reports'
+        type: choice
+        options: [publish, build-only]
+        default: publish
 
 permissions:
   contents: read
 
-# An interrupted upload could leave a mixed version. Queue publications instead.
+# Publications must finish in order. New revisions cancel obsolete PR benchmarks.
 concurrency:
-  group: production-library
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('full-validation-pr-{0}', github.event.pull_request.number) || 'production-library' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   LIBRARY_PROFILE: ${{ inputs.profile || 'full' }}
@@ -32,40 +54,96 @@ env:
   SOURCE_CATALOG: .cache/library/catalog.json
   SITE_URL: ${{ vars.SITE_URL || 'https://nhlocal.github.io' }}
   BASE_PATH: ${{ vars.BASE_PATH || (inputs.target == 'github-pages' && '/otzaria-web/') || '/' }}
+  BUILD_PARTITIONS: ${{ inputs.profile == 'starter' && '2' || '8' }}
 
 jobs:
   preflight:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
     outputs:
       build_required: ${{ steps.check.outputs.build_required }}
+      publish: ${{ steps.destination.outputs.publish }}
+      pages_enabled: ${{ steps.destination.outputs.pages_enabled }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+      - name: Check the destination before building the complete library
+        id: destination
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          BUILD_MODE: ${{ github.event_name == 'pull_request' && 'build-only' || inputs.mode || 'publish' }}
+          EVENT_NAME: ${{ github.event_name }}
+          R2_ACCESS_KEY_ID: ${{ github.event_name != 'pull_request' && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ github.event_name != 'pull_request' && secrets.R2_SECRET_ACCESS_KEY || '' }}
+          R2_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
+        with:
+          script: |
+            core.setOutput('publish', 'false');
+            core.setOutput('pages_enabled', 'false');
+            core.setOutput('allowed', 'false');
+            const pullRequest = context.eventName === 'pull_request';
+            if (process.env.LIBRARY_PROFILE === 'full' && process.env.DEPLOY_TARGET === 'github-pages') {
+              core.setFailed('The complete library exceeds GitHub Pages hosting limits. Select cloudflare-r2; the build still uses free standard GitHub runners.');
+              return;
+            }
+            if (pullRequest || process.env.BUILD_MODE === 'build-only') {
+              core.setOutput('allowed', 'true');
+              await core.summary.addRaw(pullRequest ? 'Pull request validation: build and verify the full library on eight standard GitHub runners. Publication is disabled for every pull request.' : 'Build-only selected: the library will be built and verified. This run will not publish the website.').write();
+              return;
+            }
+            let missing = [];
+            if (process.env.DEPLOY_TARGET === 'cloudflare-r2') {
+              missing = ['R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_ACCOUNT_ID', 'R2_BUCKET', 'PUBLIC_SITE_URL'].filter(name => !process.env[name]);
+            } else {
+              try {
+                const { data } = await github.rest.repos.getPages(context.repo);
+                if (data.build_type !== 'workflow') missing.push('GitHub Pages workflow configuration');
+              } catch (error) {
+                if (![403, 404].includes(error.status)) throw error;
+                missing.push('GitHub Pages access/configuration');
+              }
+            }
+            if (missing.length) {
+              const message = 'Publication is not configured (' + missing.join(', ') + '). No expensive build was started. Configure docs/DEPLOYMENT.md or manually select build-only.';
+              await core.summary.addRaw(message).write();
+              if (process.env.EVENT_NAME === 'workflow_dispatch') core.setFailed(message);
+              else core.notice(message);
+              return;
+            }
+            core.setOutput('allowed', 'true');
+            core.setOutput('publish', 'true');
+            core.setOutput('pages_enabled', String(process.env.DEPLOY_TARGET === 'github-pages'));
       - name: Check whether the scheduled publication changed
         id: check
         env:
           EVENT_NAME: ${{ github.event_name }}
           PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
+          ALLOWED: ${{ steps.destination.outputs.allowed }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [ "$EVENT_NAME" = 'schedule' ] && [ -n "$PUBLIC_SITE_URL" ]; then
+          if [ "$ALLOWED" != 'true' ]; then
+            echo 'build_required=false' >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = 'schedule' ] && [ -n "$PUBLIC_SITE_URL" ]; then
             python3 scripts/check_published.py
           else
             echo 'build_required=true' >> "$GITHUB_OUTPUT"
           fi
 
-  build:
+  prepare:
     needs: preflight
     if: needs.preflight.outputs.build_required == 'true'
-    runs-on: ${{ vars.BUILD_RUNNER || 'ubuntu-latest' }}
-    timeout-minutes: 360
-    permissions:
-      contents: read
-      pages: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     outputs:
-      pages_enabled: ${{ steps.pages.outputs.enabled }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      partitions: ${{ steps.plan.outputs.partitions }}
+      built_at: ${{ steps.plan.outputs.built_at }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -79,102 +157,293 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: scripts/requirements.txt
-      - run: npm ci
-      - name: Prepare full-library build tools and disk space
+      - name: Prepare standard runner resources
+        env:
+          MIN_FREE_DISK_GIB: ${{ env.LIBRARY_PROFILE == 'full' && '32' || '2' }}
         run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
           sudo apt-get update -qq
           sudo apt-get install -y zstd
+          node scripts/check-build-resources.mjs prepare
+          npm ci
           python3 -m pip install --disable-pip-version-check -r scripts/requirements.txt
-          if [ "${{ runner.environment }}" = 'github-hosted' ]; then
-            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
-          fi
-          df -h .
-      - run: npm test
-      - name: Restore upstream cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: .cache/upstream/archives
-          key: upstream-v1-${{ runner.os }}-${{ env.LIBRARY_PROFILE }}-${{ github.run_id }}
-          restore-keys: |
-            upstream-v1-${{ runner.os }}-${{ env.LIBRARY_PROFILE }}-
-      - name: Synchronize the requested complete profile
+      - name: Synchronize one immutable source snapshot
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: npm run sync
-      - name: Bound compressed archives on the disposable runner
-        if: runner.environment == 'github-hosted'
-        run: python3 scripts/prune_archive_cache.py
-      - name: Release expanded database on the disposable runner
-        if: runner.environment == 'github-hosted'
-        run: rm -rf .cache/upstream/databases
-      - name: Build complete HTML and static data
-        run: |
-          started=$SECONDS
-          trap 'status=$?; echo "HTML rendering: $((SECONDS - started)) seconds (exit $status)"; df -h .; free -h; exit "$status"' EXIT
-          node scripts/build.mjs
-      - name: Release imported snapshots after successful rendering
-        if: runner.environment == 'github-hosted'
-        run: rm -rf .cache/library .cache/companions .cache/external
-      - name: Index, enforce budgets and verify
-        run: |
-          phase="Core search indexing"
-          started=$SECONDS
-          trap 'status=$?; echo "$phase: $((SECONDS - started)) seconds (exit $status)"; df -h .; free -h; exit "$status"' EXIT
-          node scripts/index-search.mjs
-          echo "$phase: $((SECONDS - started)) seconds"
-          phase="External catalog indexing"
-          started=$SECONDS
-          node scripts/index-external-search.mjs
-          echo "$phase: $((SECONDS - started)) seconds"
-          phase="Size and HTML verification"
-          started=$SECONDS
-          node scripts/check-size.mjs
-          npm run verify
-          echo "$phase: $((SECONDS - started)) seconds"
-      - name: Keep build inventory
+        run: node scripts/profile-command.mjs synchronize -- npm run sync
+      - name: Release the expanded upstream database
+        run: rm -rf .cache/upstream/databases .cache/upstream/archives
+      - name: Plan and package independent book partitions
+        id: plan
+        run: node scripts/profile-command.mjs prepare-parts -- node scripts/prepare-build-parts.mjs
+      - name: Upload source partition 0
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 0
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: build-inventory-${{ github.run_id }}
+          name: source-000.tar.zst
+          path: .cache/transfer/source-000.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 1
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-001.tar.zst
+          path: .cache/transfer/source-001.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 2
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-002.tar.zst
+          path: .cache/transfer/source-002.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 3
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-003.tar.zst
+          path: .cache/transfer/source-003.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 4
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-004.tar.zst
+          path: .cache/transfer/source-004.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 5
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-005.tar.zst
+          path: .cache/transfer/source-005.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 6
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 6
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-006.tar.zst
+          path: .cache/transfer/source-006.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload source partition 7
+        if: steps.plan.outcome == 'success' && fromJSON(steps.plan.outputs.partitions) > 7
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-007.tar.zst
+          path: .cache/transfer/source-007.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Upload global source metadata and assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-global.tar.zst
+          path: .cache/transfer/source-global.tar.zst
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+      - name: Keep source planning and performance reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: prepare-reports
           path: |
-            dist/build-manifest.json
-            dist/search-manifest.json
-            dist/external/search-manifest.json
-            .cache/build-size.json
-          if-no-files-found: error
-          retention-days: 14
+            .cache/performance
+            .cache/build-plan.json
+          if-no-files-found: warn
+          retention-days: 7
           include-hidden-files: true
-      - name: Keep optional complete static artifact
-        if: vars.KEEP_FULL_ARTIFACT == 'true' || env.LIBRARY_PROFILE == 'starter'
+
+  build-part:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      BUILD_PARTITION: ${{ matrix.index }}/${{ needs.prepare.outputs.partitions }}
+      BUILD_DATE: ${{ needs.prepare.outputs.built_at }}
+      SEARCH_CONCURRENCY: '1'
+      SEARCH_CACHE_MAX_BYTES: '536870912'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Restore this exact completed partition
+        id: partition-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/transfer/${{ matrix.result }}
+          key: partition-v2-${{ env.LIBRARY_PROFILE }}-${{ matrix.fingerprint }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Prepare an independent standard runner
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        env:
+          MIN_FREE_DISK_GIB: '8'
+          MIN_MEMORY_GIB: '6'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          sudo apt-get update -qq
+          sudo apt-get install -y zstd
+          node scripts/check-build-resources.mjs partition
+          npm ci
+      - name: Download only this partition's source
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ matrix.source }}
+          path: .cache/transfer
+      - name: Extract only this partition
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        env:
+          PART_SOURCE: ${{ matrix.source }}
+        run: |
+          tar --zstd -xf ".cache/transfer/$PART_SOURCE"
+          rm -f .cache/transfer/source-*.tar.zst
+      - name: Restore reusable content-addressed search shards
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        id: search-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/search-cache
+          key: search-v3-${{ runner.os }}-${{ env.LIBRARY_PROFILE }}-${{ matrix.key }}-${{ hashFiles('scripts/index-shard.mjs', 'src/search-*.mjs', 'package-lock.json') }}-${{ github.run_id }}
+          restore-keys: |
+            search-v3-${{ runner.os }}-${{ env.LIBRARY_PROFILE }}-${{ matrix.key }}-${{ hashFiles('scripts/index-shard.mjs', 'src/search-*.mjs', 'package-lock.json') }}-
+      - name: Render the complete assigned books
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        run: node scripts/profile-command.mjs render -- node scripts/build.mjs
+      - name: Build all search shards for this partition
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        run: node scripts/profile-command.mjs index -- node scripts/index-search.mjs
+      - name: Package the verified partition
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        id: package
+        run: node scripts/profile-command.mjs package -- node scripts/package-build-part.mjs
+      - name: Save bounded reusable search shards
+        if: steps.partition-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/search-cache
+          key: ${{ steps.search-cache.outputs.cache-primary-key }}
+      - name: Save the bounded completed partition archive
+        if: steps.partition-cache.outputs.cache-hit != 'true' && steps.package.outputs.cacheable == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/transfer/${{ matrix.result }}
+          key: ${{ steps.partition-cache.outputs.cache-primary-key }}
+      - name: Record the exact partition cache hit
+        if: steps.partition-cache.outputs.cache-hit == 'true'
+        env:
+          PART_KEY: ${{ matrix.key }}
+        run: echo "Reused the content-verified completed partition $PART_KEY. Assembly will verify its source fingerprint and exact page coverage." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the completed partition
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: static-site-${{ github.run_id }}
-          path: dist/
+          name: result-${{ matrix.key }}
+          path: .cache/transfer/${{ matrix.result }}
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
+          compression-level: 0
           include-hidden-files: true
-      - name: Detect configured R2 destination
-        if: env.DEPLOY_TARGET == 'cloudflare-r2'
-        id: r2
+      - name: Keep partition performance reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reports-${{ matrix.key }}
+          path: .cache/performance
+          if-no-files-found: ignore
+          retention-days: 7
+          include-hidden-files: true
+
+  assemble:
+    needs: [preflight, prepare, build-part]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      BUILD_DATE: ${{ needs.prepare.outputs.built_at }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Prepare and measure assembly disk space
         env:
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          R2_BUCKET: ${{ vars.R2_BUCKET }}
-          PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
+          MIN_FREE_DISK_GIB: ${{ env.LIBRARY_PROFILE == 'full' && '40' || '2' }}
         run: |
-          if [ -n "$R2_ACCESS_KEY_ID" ] && [ -n "$R2_SECRET_ACCESS_KEY" ] && [ -n "$R2_ACCOUNT_ID" ] && [ -n "$R2_BUCKET" ] && [ -n "$PUBLIC_SITE_URL" ]; then
-            echo 'enabled=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'enabled=false' >> "$GITHUB_OUTPUT"
-            echo 'Build verified. R2 publication skipped: configure the destination and credentials documented in docs/DEPLOYMENT.md.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Install the static object uploader
-        if: steps.r2.outputs.enabled == 'true'
-        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
           sudo apt-get update -qq
-          sudo apt-get install -y rclone
-      - name: Publish changed objects to the dedicated R2 bucket
-        if: steps.r2.outputs.enabled == 'true'
+          sudo apt-get install -y zstd rclone
+          node scripts/check-build-resources.mjs assemble
+          npm ci
+      - name: Download global source package
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: source-global.tar.zst
+          path: .cache/transfer
+      - name: Extract global metadata and assets
+        run: |
+          tar --zstd -xf .cache/transfer/source-global.tar.zst
+          rm -f .cache/transfer/source-*.tar.zst
+      - name: Download completed partitions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: result-p-*
+          merge-multiple: true
+          path: .cache/transfer
+      - name: Extract results and release their archives
+        run: |
+          for archive in .cache/transfer/result-*.tar.zst; do
+            tar --zstd -xf "$archive"
+            rm -f "$archive"
+          done
+      - name: Assemble catalogue, sitemaps and complete page inventory
+        env:
+          BUILD_ASSEMBLE: '1'
+        run: node scripts/profile-command.mjs assemble -- node scripts/build.mjs
+      - name: Validate every core search receipt and publish the search manifest
+        env:
+          SEARCH_FINALIZE: '1'
+        run: node scripts/profile-command.mjs finalize-search -- node scripts/index-search.mjs
+      - name: Index the external metadata catalogue
+        run: node scripts/profile-command.mjs external-search -- node scripts/index-external-search.mjs
+      - name: Enforce deployment size limits
+        run: node scripts/profile-command.mjs size-check -- node scripts/check-size.mjs
+      - name: Verify every HTML page and link
+        run: node scripts/profile-command.mjs verify -- npm run verify
+      - name: Publish changed objects to the configured R2 destination
+        if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true' && env.DEPLOY_TARGET == 'cloudflare-r2'
         env:
           R2_BUCKET: ${{ vars.R2_BUCKET }}
           R2_PREFIX: ${{ vars.R2_PREFIX }}
@@ -185,33 +454,36 @@ jobs:
           RCLONE_CONFIG_R2_ENDPOINT: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
           RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: bash scripts/deploy-r2.sh
-      - name: Detect GitHub Pages configuration
-        if: env.DEPLOY_TARGET == 'github-pages'
-        id: pages
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            try {
-              const { data } = await github.rest.repos.getPages(context.repo);
-              const enabled = data.build_type === 'workflow';
-              core.setOutput('enabled', String(enabled));
-              if (!enabled) await core.summary.addRaw('Site verified. Select GitHub Actions in Settings > Pages to enable publication.').write();
-            } catch (error) {
-              if (![403, 404].includes(error.status)) throw error;
-              core.setOutput('enabled', 'false');
-              await core.summary.addRaw('Site verified. Pages is not enabled or is not accessible to this token; publication skipped.').write();
-            }
-      - name: Package GitHub Pages artifact
-        if: steps.pages.outputs.enabled == 'true'
+        run: node scripts/profile-command.mjs publish -- bash scripts/deploy-r2.sh
+      - name: Package the verified starter for GitHub Pages
+        if: github.event_name != 'pull_request' && needs.preflight.outputs.pages_enabled == 'true'
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: dist/
+      - name: Record build-only completion
+        if: needs.preflight.outputs.publish != 'true'
+        run: echo 'Build-only completed. Every HTML page and both static search indexes passed verification. No site was published.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep build inventories and performance evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-inventory-${{ github.run_id }}
+          path: |
+            .cache/performance
+            .cache/build-plan.json
+            .cache/build-size.json
+            .cache/verification.json
+            dist/build-manifest.json
+            dist/search-manifest.json
+            dist/external/search-manifest.json
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: true
 
   deploy-pages:
-    if: needs.build.outputs.pages_enabled == 'true'
-    needs: build
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && needs.preflight.outputs.pages_enabled == 'true'
+    needs: [preflight, assemble]
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       pages: write

@@ -186,10 +186,20 @@ ${editionNavigation(book, baseUrl)}
 ${sourceNote(book, baseUrl, { detailed: true })}</div>`;
 }
 
+// Share the exact searchable subtree with the build-time compact index input.
+// This retains heading weights, filters, notes and paragraph anchors without
+// reparsing the navigation, toolbar, footer and JSON-LD for every reading page.
+export function readingArticle({ book, section }) {
+  const category = categoryLabel(book.categories?.[0] || 'ספרים');
+  return `<article class="reading-article" data-pagefind-body data-category="${e(category)}" data-book-title="${e(book.title)}" data-section-title="${e(section.title)}" data-pagefind-filter="category[data-category]" data-pagefind-meta="book[data-book-title], section[data-section-title]">
+  <header class="reading-heading"><h1 data-pagefind-meta="title">${e(book.title)} <span class="reading-chapter">${e(section.title)}</span></h1></header>
+  <div class="reading-text" id="reading-text">${section.html}</div>
+</article>`;
+}
+
 export function readingPage({ book, section, sections = book?.sections || [], previous = null, next = null, baseUrl = '/' } = {}) {
   const current = sections.findIndex(item => item.id === section.id);
   const nearby = sections.length > 40 ? sections.slice(Math.max(0, current - 8), current + 10) : sections;
-  const category = categoryLabel(book.categories?.[0] || 'ספרים');
   return `<div class="reader-layout" data-reader data-book-id="${e(book.id)}" data-book-title="${e(book.title)}" data-section-title="${e(section.title)}">
 <aside class="reader-sidebar"><details class="toc-disclosure" open><summary><span>תוכן העניינים</span>${icon('down')}</summary><nav aria-label="תוכן העניינים"><ol>${nearby.map(item => `<li><a href="${e(sectionPath(baseUrl, book.id, item.id))}"${item.id === section.id ? ' aria-current="page"' : ''}>${e(item.title)}</a></li>`).join('')}</ol><a class="full-toc-link" href="${e(bookPath(baseUrl, book.id))}">תוכן עניינים מלא</a></nav></details></aside>
 <div class="reading-column">
@@ -199,10 +209,7 @@ export function readingPage({ book, section, sections = book?.sections || [], pr
   <button class="tool-button" type="button" data-bookmark aria-pressed="false">${icon('bookmark')}<span>שמירה</span></button>
   <button class="tool-button" type="button" data-copy-link>${icon('link')}<span>העתקת קישור</span></button>
 </div>
-<article class="reading-article" data-pagefind-body data-category="${e(category)}" data-book-title="${e(book.title)}" data-section-title="${e(section.title)}" data-pagefind-filter="category[data-category]" data-pagefind-meta="book[data-book-title], section[data-section-title]">
-  <header class="reading-heading"><h1 data-pagefind-meta="title">${e(book.title)} <span class="reading-chapter">${e(section.title)}</span></h1></header>
-  <div class="reading-text" id="reading-text">${section.html}</div>
-</article>
+${readingArticle({ book, section })}
 <nav class="chapter-navigation" aria-label="מעבר בין חלקי הספר">${previous ? `<a href="${e(sectionPath(baseUrl, book.id, previous.id))}" rel="prev">${icon('right')}<span><small>הקודם</small>${e(previous.title)}</span></a>` : `<a href="${e(bookPath(baseUrl, book.id))}">${icon('right')}<span>לתוכן העניינים</span></a>`}${next ? `<a href="${e(sectionPath(baseUrl, book.id, next.id))}" rel="next"><span><small>הבא</small>${e(next.title)}</span>${icon('left')}</a>` : `<a href="${e(bookPath(baseUrl, book.id))}"><span>לתוכן העניינים</span>${icon('left')}</a>`}</nav>
 ${sourceNote(book, baseUrl)}
 </div></div>`;
@@ -210,7 +217,7 @@ ${sourceNote(book, baseUrl)}
 
 export function searchPage({ baseUrl = '/', categories = [] } = {}) {
   const searchCategories = [...new Set(categories.map(category => category.title).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
-  return `<section class="page-heading search-heading"><h1>חיפוש בספרייה</h1><p>שם ספר, מילה או ציטוט. אפשר לחפש גם בלי ניקוד.</p>${searchForm(baseUrl, { searchPage: true, id: 'search-query' })}</section>
+  return `<section class="page-heading search-heading"><h1>חיפוש בספרייה</h1><p>שם ספר, מילה או ציטוט. אפשר לחפש גם בלי ניקוד. לביטוי מדויק הקיפו את המילים במירכאות, למשל: "בראשית ברא".</p>${searchForm(baseUrl, { searchPage: true, id: 'search-query' })}</section>
 <section class="search-results-region" data-search-region aria-label="תוצאות חיפוש">
 <noscript><div class="notice"><p>החיפוש המלא פועל בדפדפן ודורש JavaScript. כל הספרים והטקסטים פתוחים לקריאה גם בלעדיו.</p><a href="${e(sitePath(baseUrl, 'catalog/index.html'))}">לגלישה בספרייה לפי נושא</a></div></noscript>
 <div class="search-controls" data-search-controls hidden><label for="search-category">תחום לימוד</label><select id="search-category" data-search-category><option value="">כל התחומים</option>${searchCategories.map(category => `<option value="${e(category)}">${e(category)}</option>`).join('')}</select></div>

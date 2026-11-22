@@ -64,17 +64,25 @@ npm run sync -- --profile full --offline
 BASE_PATH=/ DEPLOY_TARGET=cloudflare-pages npm run build
 BASE_PATH=/otzaria-web/ DEPLOY_TARGET=github-pages npm run build
 SEARCH_SHARDS=3 npm run build
-# Use one indexing process on low-memory machines, or two by default.
+# The standalone scheduler selects safe concurrency from CPU and available RAM.
 SEARCH_CONCURRENCY=1 npm run build
+# Compare the conservative default fragment grouping with one fragment per page.
+SEARCH_FRAGMENT_TARGET_BYTES=0 npm run build
+# Verify real archive boundaries, complete matrix coverage and cache invalidation.
+BASE_PATH=/ node tests/partition-build.mjs
 npm exec playwright install chromium
 node tests/browser.mjs
 ```
 
 ## פריסה ועדכון אוטומטי
 
+הבנייה המלאה מחולקת לשמונה עבודות `ubuntu-24.04` סטנדרטיות של GitHub. תמונת המקור מסונכרנת פעם אחת; כל עבודה מקבלת רק את קבוצת הספרים שלה, בונה את כל דפיהם ומאנדקסת את גוף הקריאה המצומצם. שלב האיחוד בודק hashes וכיסוי מדויק של כל הספרים והדפים. רק אחרי בדיקת כל דפי ה־HTML מתקבל תוצר מתאים לפרסום.
+
+יש מטמון לפי תוכן לאינדקסים ולחבילות תוצאה דחוסות, עם תקציב של 512MiB לכל שכבה בכל עבודה. הקוד אינו דורש מכונת בנייה פרטית, runner בתשלום או שרת חיפוש. כישלון או היעדר מטמון גורמים לבנייה מחדש, ללא השמטת תוכן. [מחקר הביצועים](docs/PERFORMANCE_RESEARCH.md) מפרט את ההשוואות, המדידות והפשרות.
+
 **היעד המומלץ למאגר המלא הוא Cloudflare R2 עם דומיין מותאם ו־CDN.** מגבלות מספר הקבצים של Pages חלות גם על דפי HTML, קובצי הורדה וקטעי אינדקס. בדיקת הגודל מונעת פריסה שחורגת ממכסות GitHub Pages או Cloudflare Pages; היא אינה משמיטה ספרים כדי לעמוד בהן.
 
-תהליך GitHub Actions בודק עדכונים מדי יום בשעה 03:23 UTC, וניתן להפעילו גם ידנית. כאשר האתר המפורסם כבר כולל את אותה גרסת קוד ואותן חבילות מקור, הבדיקה המתוזמנת מדלגת על הבנייה הכבדה. כשיש שינוי הוא מסנכרן את גרסת הספרייה הרשמית, חבילת התלמוד, הקטלוג החיצוני וההפניות הממופות, בונה, מאנדקס, מאמת, ומעלה קבצים שהשתנו ל־R2 כאשר יעד הפריסה וההרשאות הוגדרו. כישלון הורדה או אימות אינו מחליף את תמונת המקור התקינה הקודמת ואינו מפעיל פרסום.
+תהליך GitHub Actions בודק עדכונים מדי יום בשעה 03:23 UTC, וניתן להפעילו גם ידנית. כאשר האתר המפורסם כבר כולל את אותה גרסת קוד ואותן חבילות מקור, הבדיקה המתוזמנת מדלגת על הבנייה הכבדה. יעד הפרסום נבדק לפני הורדה ובנייה: בהרצה ידנית אפשר לבחור `build-only` כדי למדוד ולאמת בלי לפרסם. שינויים ב־pipeline ב־PR מפעילים גם אימות מלא במטריצה, תמיד ללא פרסום. כישלון הורדה, חלק חסר או שגיאת אימות אינם מפעילים פרסום.
 
 הוראות משתנים, הרשאות מצומצמות ל־R2, התאמת הדומיין, cache, גישה לבוטים ופריסה חלופית ב־Pages: [מדריך פריסה](docs/DEPLOYMENT.md).
 
@@ -92,6 +100,9 @@ node tests/browser.mjs
 | `src/ui.mjs`, `public/` | HTML סמנטי, עיצוב ושיפורים בדפדפן |
 | `scripts/build.mjs` | יצירת האתר, היצוא למכונות ומפות האתר |
 | `scripts/index-search.mjs` | בניית אינדקסי חיפוש סטטיים |
+| `scripts/prepare-build-parts.mjs`, `scripts/package-build-part.mjs` | חלוקה והעברת קבוצות ספרים בארכיונים דחוסים |
+| `src/search-*.mjs` | תכנון אינדקסים, קלט קומפקטי, מטמון, משאבים ושלמות |
+| `scripts/profile-command.mjs` | מדידת זמן, זיכרון תהליכים ומשאבים בכל שלב |
 | `src/external-build.mjs`, `scripts/index-external-search.mjs` | פרסום וחיפוש המטאדאטה של הקטלוגים החיצוניים |
 | `scripts/check-size.mjs`, `scripts/verify.mjs` | בדיקות פריסה, SEO וקישורים |
 | `scripts/deploy-r2.sh` | פרסום מדורג לאחסון ייעודי ואיסוף קבצים שהתיישנו |

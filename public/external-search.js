@@ -1,3 +1,5 @@
+import { createStaticSearchClient } from './search-client.mjs';
+
 /* External catalogue metadata only. The core full-text index is independent. */
 export function normalizeMetadataQuery(value) {
   const normalized = String(value || '').normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -39,7 +41,12 @@ async function initializeExternalSearch(region) {
   const controls = one('[data-external-search-controls]');
   const providers = new Map([...providerSelect.options].filter(option => option.value).map(option => [option.value, option.textContent]));
   const batchSize = 20;
-  let loading;
+  const searchClient = createStaticSearchClient({
+    manifestUrl: `${base}external/search-manifest.json`,
+    bundlePrefix: `${base}external/pagefind/`,
+    origin: location.origin,
+    scopeKey: 'provider', scopeValuesKey: 'providers',
+  });
   let request = 0;
   let timer;
   let results = [];
@@ -52,36 +59,6 @@ async function initializeExternalSearch(region) {
     providerSelect.value = providers.has(params.get('provider')) ? params.get('provider') : '';
   }
 
-  function loadIndex() {
-    if (!loading) {
-      loading = (async () => {
-        const response = await fetch(`${base}external/search-manifest.json`);
-        if (!response.ok) throw new Error('External search manifest unavailable');
-        const manifest = await response.json();
-        if (!Array.isArray(manifest.shards) || !manifest.shards.length) throw new Error('External search has no shards');
-        const bundles = manifest.shards.map(shard => {
-          const url = new URL(shard.bundlePath, location.href);
-          if (url.origin !== location.origin || !url.pathname.startsWith(`${base}external/pagefind/`) || !url.pathname.endsWith('/') || url.search || url.hash) throw new Error('Invalid external index path');
-          return url.pathname;
-        });
-        const api = await import(`${bundles[0]}pagefind.js`);
-        try {
-          await api.options({ baseUrl: '/' });
-          for (let start = 1; start < bundles.length; start += 4) {
-            const merged = await Promise.allSettled(bundles.slice(start, start + 4).map(bundle => api.mergeIndex(bundle, { baseUrl: '/', language: 'he' })));
-            const failed = merged.find(result => result.status === 'rejected');
-            if (failed) throw failed.reason;
-          }
-          return api;
-        } catch (error) {
-          await api.destroy().catch(() => {});
-          throw error;
-        }
-      })();
-      loading.catch(() => { loading = null; });
-    }
-    return loading;
-  }
 
   async function displayMore(token) {
     more.disabled = true;
@@ -121,13 +98,11 @@ async function initializeExternalSearch(region) {
       history.replaceState(null, '', `${url.pathname}${url.search}`);
     }
     list.replaceChildren(); more.hidden = true; results = []; shown = 0;
-    if (!query) { status.textContent = 'הקלידו שם ספר או מחבר כדי להתחיל.'; region.removeAttribute('aria-busy'); return; }
+    if (!query) { searchClient.cancel(); status.textContent = 'הקלידו שם ספר או מחבר כדי להתחיל.'; region.removeAttribute('aria-busy'); return; }
     status.textContent = 'מחפשים בקטלוגים...'; region.setAttribute('aria-busy', 'true');
     try {
-      const api = await loadIndex();
-      if (token !== request) return;
-      const response = await api.search(query, providerSelect.value ? { filters: { provider: providerSelect.value } } : {});
-      if (token !== request) return;
+      const response = await searchClient.search(query, providerSelect.value ? { filters: { provider: providerSelect.value } } : {});
+      if (token !== request || !response) return;
       results = response.results || [];
       if (!results.length) status.textContent = 'לא נמצאו רשומות. נסו שם קצר יותר, כתיב אחר או קטלוג נוסף.';
       else await displayMore(token);
@@ -137,11 +112,16 @@ async function initializeExternalSearch(region) {
   }
 
   form.addEventListener('submit', event => { event.preventDefault(); search(); });
-  input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => search(), 300); });
+  input.addEventListener('input', () => {
+    request++; searchClient.cancel(); more.hidden = true; clearTimeout(timer);
+    if (!input.value.trim()) search();
+    else timer = setTimeout(() => search(), 300);
+  });
   providerSelect.addEventListener('change', () => search());
   more.addEventListener('click', async () => {
-    try { await displayMore(request); }
-    catch { more.disabled = false; status.textContent = 'טעינת רשומות נוספות נכשלה. אפשר לנסות שוב.'; }
+    const token = request;
+    try { await displayMore(token); }
+    catch { if (token === request) { more.disabled = false; status.textContent = 'טעינת רשומות נוספות נכשלה. נסו לחפש שוב.'; } }
   });
   addEventListener('popstate', () => { readLocation(); search({ updateUrl: false }); });
   readLocation();

@@ -168,14 +168,14 @@ if (searchRegion) {
   const more = one('[data-search-more]');
   const categorySelect = one('[data-search-category]');
   const controls = one('[data-search-controls]');
-  let pagefindPromise;
+  let clientPromise;
+  let searchClient;
   let request = 0;
   let pendingTimer;
   let currentResults = [];
   let shown = 0;
   let desiredCategory = new URLSearchParams(location.search).get('category') || '';
   const batchSize = 15;
-  const mergeConcurrency = 4;
 
   function setCategoryOptions(categories) {
     const values = [...new Set(categories.filter(category => typeof category === 'string' && category))].sort((a, b) => a.localeCompare(b, 'he'));
@@ -192,38 +192,23 @@ if (searchRegion) {
   if (initialCategories.length) setCategoryOptions(initialCategories);
 
   async function loadSearch() {
-    if (!pagefindPromise) {
-      pagefindPromise = (async () => {
-        const response = await fetch(pathFor('search-manifest.json'));
-        if (!response.ok) throw new Error('Search manifest unavailable');
-        const manifest = await response.json();
-        if (!Array.isArray(manifest.shards) || !manifest.shards.length) throw new Error('No search shards');
-        const bundlePaths = manifest.shards.map(shard => {
-          const url = new URL(shard.bundlePath, location.href);
-          if (url.origin !== location.origin || !url.pathname.startsWith(base) || !url.pathname.endsWith('/')) throw new Error('Invalid search bundle path');
-          return url.pathname;
+    if (!clientPromise) {
+      clientPromise = import(pathFor('search-client.mjs')).then(({ createStaticSearchClient }) => {
+        searchClient = createStaticSearchClient({
+          manifestUrl: pathFor('search-manifest.json'),
+          bundlePrefix: pathFor('pagefind/'),
+          origin: location.origin,
+          indexOptions: { highlightParam: 'highlight' },
+          onManifest: manifest => {
+            const categories = manifest.shards.flatMap(shard => Array.isArray(shard.categories) ? shard.categories : []);
+            if (categories.length) setCategoryOptions(categories);
+          },
         });
-        const categories = manifest.shards.flatMap(shard => Array.isArray(shard.categories) ? shard.categories : []);
-        if (categories.length) setCategoryOptions(categories);
-        const api = await import(`${bundlePaths[0]}pagefind.js`);
-        try {
-          await api.options({ baseUrl: '/', excerptLength: 34, highlightParam: 'highlight' });
-          // Each merge owns a separate index pointer. Bounded parallel loading
-          // avoids serial network round trips without flooding large libraries.
-          for (let start = 1; start < bundlePaths.length; start += mergeConcurrency) {
-            const merges = await Promise.allSettled(bundlePaths.slice(start, start + mergeConcurrency).map(bundlePath => api.mergeIndex(bundlePath, { baseUrl: '/', language: 'he', highlightParam: 'highlight' })));
-            const failed = merges.find(result => result.status === 'rejected');
-            if (failed) throw failed.reason;
-          }
-          return api;
-        } catch (error) {
-          await api.destroy().catch(() => {});
-          throw error;
-        }
-      })();
-      pagefindPromise.catch(() => { pagefindPromise = null; });
+        return searchClient;
+      });
+      clientPromise.catch(() => { clientPromise = null; });
     }
-    return pagefindPromise;
+    return clientPromise;
   }
 
   function highlightedExcerpt(html) {
@@ -279,14 +264,14 @@ if (searchRegion) {
       history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     }
     more.hidden = true; resultsElement.replaceChildren(); currentResults = []; shown = 0;
-    if (!query) { status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
+    if (!query) { searchClient?.cancel(); status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
     status.textContent = 'מחפשים בספרייה...'; searchRegion.setAttribute('aria-busy', 'true');
     try {
       const api = await loadSearch();
       if (token !== request) return;
       const options = categorySelect.value ? { filters: { category: categorySelect.value } } : {};
       const response = await api.search(query, options);
-      if (token !== request) return;
+      if (token !== request || !response) return;
       currentResults = response.results || [];
       if (!currentResults.length) status.textContent = 'לא נמצאו תוצאות. נסו פחות מילים, כתיב אחר או תחום לימוד אחר.';
       else await displayMore(token);
@@ -299,11 +284,18 @@ if (searchRegion) {
   }
 
   form.addEventListener('submit', event => { event.preventDefault(); search(); });
-  input.addEventListener('input', () => { clearTimeout(pendingTimer); pendingTimer = setTimeout(() => search(), 300); });
+  input.addEventListener('input', () => {
+    // Invalidate immediately, including during the debounce interval. The
+    // owned worker is terminated when it still has pending search downloads.
+    request++; searchClient?.cancel(); more.hidden = true; clearTimeout(pendingTimer);
+    if (!input.value.trim()) search();
+    else pendingTimer = setTimeout(() => search(), 300);
+  });
   categorySelect.addEventListener('change', () => { desiredCategory = categorySelect.value; search(); });
   more.addEventListener('click', async () => {
-    try { await displayMore(request); }
-    catch { more.disabled = false; status.textContent = 'טעינת התוצאות נוספות נכשלה. אפשר לנסות שוב.'; }
+    const token = request;
+    try { await displayMore(token); }
+    catch { if (token === request) { more.disabled = false; status.textContent = 'טעינת תוצאות נוספות נכשלה. נסו לחפש שוב.'; } }
   });
   addEventListener('popstate', () => {
     const params = new URLSearchParams(location.search);

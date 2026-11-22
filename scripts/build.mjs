@@ -6,8 +6,15 @@ import { parseBook, escapeHtml, hash } from '../src/text.mjs';
 import { sitemapDocuments, sitemapIndex } from '../src/sitemap.mjs';
 import { loadExternalSnapshot, renderExternalCatalogue } from '../src/external-build.mjs';
 import * as ui from '../src/ui.mjs';
+import { bookInputs, bookPartition, codeFingerprint, fileHash, listFiles, parsePartition, partKey, partitionFingerprint, readBuildPlan, relativeFile, sha256 } from '../src/build-parts.mjs';
 
 const config=getConfig();
+const partition=parsePartition(process.env.BUILD_PARTITION);
+const assemble=process.env.BUILD_ASSEMBLE==='1';
+if(partition&&assemble)throw new Error('Cannot render a partition and assemble in the same invocation');
+const plan=partition||assemble?await readBuildPlan():null;
+if(plan&&(plan.context.siteUrl!==config.siteUrl||plan.context.profile!==config.profile||plan.context.outputDir!==relativeFile(config.outputDir)||plan.context.sectionBytes!==config.targetSectionBytes||plan.context.code!==await codeFingerprint()))throw new Error('Prepared build plan does not match the current code or site configuration');
+if(partition&&partition.total!==plan.partitions)throw new Error('Partition count differs from prepared plan');
 const exists=async p=>fs.access(p).then(()=>true,()=>false);
 let sourceCatalog=config.sourceCatalog;
 if(!sourceCatalog){
@@ -23,6 +30,12 @@ const sourceDir=path.dirname(sourceCatalog);
 const catalog=JSON.parse(await fs.readFile(sourceCatalog,'utf8'));
 if(catalog.schemaVersion!==1 || !Array.isArray(catalog.books) || !catalog.books.length) throw new Error('Unsupported or empty source catalogue');
 if(catalog.profile!==config.profile) throw new Error(`Catalogue profile ${catalog.profile} does not match requested ${config.profile}`);
+if(plan&&(plan.context.sourceCatalog!==relativeFile(sourceCatalog)||plan.sourceFingerprint!==sha256(JSON.stringify({context:plan.context,catalog}))))throw new Error('Source catalogue changed after preparing build parts');
+if(partition){
+  const selected=catalog.books.filter(book=>bookPartition(book,partition.total,plan.categoryFanout)===partition.index);
+  const {sources}=await bookInputs(selected,sourceDir);
+  if(partitionFingerprint({context:plan.context,index:partition.index,books:selected,sources})!==plan.matrix.include[partition.index].fingerprint)throw new Error('Partition source inputs changed after preparation');
+}
 if(config.outputDir===ROOT || !config.outputDir.startsWith(ROOT+path.sep) || config.outputDir===sourceDir || sourceDir.startsWith(config.outputDir+path.sep)) throw new Error('Output directory must be a dedicated project subdirectory, outside source data');
 if(!/^dist(?:[-_][a-z0-9_-]+)?$/i.test(path.relative(ROOT,config.outputDir)))throw new Error('OUTPUT_DIR must be dist or a dist-name sibling; refusing to erase another project directory');
 const sourceById=new Map(catalog.books.map(book=>[book.id,book]));
@@ -33,6 +46,7 @@ if(config.profile==='full'){
   if(!(await exists(companionPath))) throw new Error('Full application library requires the bundled Talmud PDFs. Run npm run sync, including companion synchronization.');
   companions=JSON.parse(await fs.readFile(companionPath,'utf8'));
   if(companions.schemaVersion!==1||!Array.isArray(companions.pdfs)||!companions.pdfs.length)throw new Error('Invalid or empty companion PDF catalogue');
+  if(plan&&await fileHash(companionPath)!==plan.context.companion)throw new Error('Companion catalogue changed after preparing build parts');
 }
 
 const ids=new Set();
@@ -45,15 +59,18 @@ for(const b of catalog.books){
   if(!source.startsWith(sourceDir+path.sep)) throw new Error(`Book file escapes library: ${b.file}`);
   if(!['https:','http:'].includes(new URL(b.sourceUrl).protocol)) throw new Error('Invalid source URL');
 }
-const builtAt=process.env.BUILD_DATE || new Date().toISOString();
+const builtAt=plan?.builtAt || process.env.BUILD_DATE || new Date().toISOString();
 const output=config.outputDir;
-await fs.rm(output,{recursive:true,force:true});
+if(!assemble)await fs.rm(output,{recursive:true,force:true});
 await fs.mkdir(output,{recursive:true});
-if(await exists(path.join(ROOT,'public'))) await fs.cp(path.join(ROOT,'public'),output,{recursive:true});
-await fs.writeFile(path.join(output,'.nojekyll'),'');
+if(!partition&&await exists(path.join(ROOT,'public'))) await fs.cp(path.join(ROOT,'public'),output,{recursive:true});
+if(!partition)await fs.writeFile(path.join(output,'.nojekyll'),'');
 await fs.mkdir(path.join(ROOT,'.cache'),{recursive:true});
+const recordsDir=path.join(ROOT,'.cache/search-records',path.basename(output));
+if(!assemble){await fs.rm(recordsDir,{recursive:true,force:true});await fs.mkdir(recordsDir,{recursive:true});}
 
 const sitemap=[];const pages=[];const books=[];const searchPages=[];
+const outputFiles=[];
 const pathFor=relative=>sitePath(config.basePath,relative);
 // A full render writes hundreds of thousands of files, but only about one
 // directory per book. Avoid a redundant recursive mkdir/stat on every page.
@@ -66,6 +83,7 @@ async function write(relative,content){
     preparedDirectories.add(directory);
   }
   await fs.writeFile(file,content);
+  if(partition)outputFiles.push({path:relative,bytes:Buffer.byteLength(content),sha256:sha256(content)});
 }
 async function readSidecar(book,key,hashKey){
   if(!book[key])return null;
@@ -80,6 +98,7 @@ async function page(relative,title,description,body,{jsonLd=[],breadcrumbs=[],ac
   if(Buffer.byteLength(html)>1_000_000) throw new Error(`HTML page exceeds crawl budget: ${relative}`);
   await write(relative,html);pages.push(relative);
   if(!noindex) sitemap.push({url:absoluteUrl(config,relative),lastmod});
+  return sha256(html);
 }
 function bookSchema(book){
   return {'@context':'https://schema.org','@type':'Book','@id':absoluteUrl(config,`books/${book.id}/index.html`),name:book.title,inLanguage:'he',url:absoluteUrl(config,`books/${book.id}/index.html`),isAccessibleForFree:true,...(book.author?{author:{'@type':'Person',name:book.author}}:{}),...(book.license.url?{license:book.license.url}:{}),isBasedOn:book.sourceUrl};
@@ -99,14 +118,16 @@ if(catalog.media){
   for(const asset of mediaManifest.images){
     if(!/^[a-f0-9]{64}$/.test(asset.sourceHash)||!/^media\/[a-f0-9]{64}\.(png|jpg)$/.test(asset.file)||!['image/png','image/jpeg'].includes(asset.mime))throw new Error('Unsafe source image entry');
     if(!Number.isSafeInteger(asset.width)||!Number.isSafeInteger(asset.height)||asset.width<1||asset.height<1)throw new Error('Invalid image dimensions');
-    const content=await fs.readFile(path.resolve(sourceDir,asset.file));
-    if(content.byteLength!==asset.bytes||createHash('sha256').update(content).digest('hex')!==asset.sha256)throw new Error(`Image checksum mismatch: ${asset.file}`);
-    await write(asset.file,content);
+    if(!partition){
+      const content=await fs.readFile(path.resolve(sourceDir,asset.file));
+      if(content.byteLength!==asset.bytes||createHash('sha256').update(content).digest('hex')!==asset.sha256)throw new Error(`Image checksum mismatch: ${asset.file}`);
+      await write(asset.file,content);
+    }
     images.set(asset.sourceHash,{...asset,url:pathFor(asset.file)});
   }
-  await write('media/catalog.json',JSON.stringify({...mediaManifest,images:mediaManifest.images.map(asset=>({...asset,file:undefined,url:pathFor(asset.file)}))}));
+  if(!partition)await write('media/catalog.json',JSON.stringify({...mediaManifest,images:mediaManifest.images.map(asset=>({...asset,file:undefined,url:pathFor(asset.file)}))}));
 }
-if(companions){
+if(companions&&!partition){
   for(const pdf of companions.pdfs){
     safeId(pdf.id);
     const file=path.resolve(path.dirname(companionPath),pdf.file);
@@ -116,7 +137,7 @@ if(companions){
     await write(`pdfs/${pdf.id}.pdf`,content);
   }
 }
-for(const sourceBook of catalog.books){
+for(const sourceBook of assemble?[]:catalog.books.filter(book=>!partition||bookPartition(book,partition.total,plan.categoryFanout)===partition.index)){
   const book={...sourceBook,categories:sourceBook.categories.length?sourceBook.categories:['ספרים נוספים']};
   const raw=await fs.readFile(path.resolve(sourceDir,book.file),'utf8');
   const actualHash=createHash('sha256').update(raw).digest('hex');
@@ -149,19 +170,66 @@ for(const sourceBook of catalog.books){
   // The source snapshot contains native markup; the public text export is a
   // normalized reading format. Publish a digest for each byte representation.
   Object.assign(enriched,{sourceTextSha256:actualHash,sourceTextBytes:Buffer.byteLength(raw),textSha256:createHash('sha256').update(plain).digest('hex'),textBytes:Buffer.byteLength(plain)});
-  await write(`books/${book.id}/book.json`,JSON.stringify({schemaVersion:1,...enriched,file:undefined,lineIdsFile:undefined,linksFile:undefined,description:undefined,contentSha256:actualHash},null,2));
+  await write(`books/${book.id}/book.json`,JSON.stringify({schemaVersion:1,...enriched,file:undefined,lineIdsFile:undefined,linksFile:undefined,description:undefined,contentSha256:actualHash}));
+  const records=[];
+  const recordFile=relativeFile(path.join(recordsDir,`${book.id}.json`));
   for(let i=0;i<sections.length;i++){
     const section=sections[i];
     const relative=`books/${book.id}/${section.id}.html`;
     const neighbours=brief.slice(Math.max(0,i-35),i+36);
-    await page(relative,`${book.title} | ${section.title}`,`${book.title}, ${section.title}. ${section.text.replace(/\s+/g,' ').slice(0,145)}`,ui.readingPage({book:enriched,section,sections:neighbours,previous:brief[i-1]||null,next:brief[i+1]||null,baseUrl:config.basePath}),{breadcrumbs:[...crumb,{name:section.title,url:pathFor(relative)}],lastmod:book.updatedAt,jsonLd:[{'@context':'https://schema.org','@type':'Chapter',name:section.title,inLanguage:'he',url:absoluteUrl(config,relative),isPartOf:{'@id':absoluteUrl(config,`books/${book.id}/index.html`),'@type':'Book',name:book.title},isAccessibleForFree:true}]});
-    searchPages.push({path:relative,bookId:book.id,familyId:book.editionOf||book.id,category:book.categories[0],bytes:Buffer.byteLength(section.html)});
+    const htmlSha256=await page(relative,`${book.title} | ${section.title}`,`${book.title}, ${section.title}. ${section.text.replace(/\s+/g,' ').slice(0,145)}`,ui.readingPage({book:enriched,section,sections:neighbours,previous:brief[i-1]||null,next:brief[i+1]||null,baseUrl:config.basePath}),{breadcrumbs:[...crumb,{name:section.title,url:pathFor(relative)}],lastmod:book.updatedAt,jsonLd:[{'@context':'https://schema.org','@type':'Chapter',name:section.title,inLanguage:'he',url:absoluteUrl(config,relative),isPartOf:{'@id':absoluteUrl(config,`books/${book.id}/index.html`),'@type':'Book',name:book.title},isAccessibleForFree:true}]});
+    const content=`<!doctype html><html lang="he" dir="rtl"><head><title>${escapeHtml(book.title)} | ${escapeHtml(section.title)}</title></head><body>${ui.readingArticle({book:enriched,section})}</body></html>`;
+    records.push({path:relative,content});
+    searchPages.push({path:relative,bookId:book.id,familyId:book.editionOf||book.id,category:book.categories[0],bytes:Buffer.byteLength(content),recordFile,contentSha256:sha256(content),htmlSha256});
   }
+  await fs.writeFile(path.join(ROOT,recordFile),JSON.stringify(records));
   sectionCount+=sections.length;
   books.push({...enriched,sections:undefined,file:undefined,lineIdsFile:undefined,linksFile:undefined});
   if(books.length%100===0) console.log(`Rendered ${books.length}/${catalog.books.length} books, ${sectionCount} reading pages`);
 }
-books.sort((a,b)=>a.title.localeCompare(b.title,'he'));
+if(partition){
+  const key=partKey(partition.index);
+  const inputFingerprint=plan.matrix.include[partition.index].fingerprint;
+  const receipt={schemaVersion:1,partition,inputFingerprint,siteUrl:config.siteUrl,books,pages,sitemap,searchPages,totalTextBytes,sectionCount,files:outputFiles};
+  await fs.mkdir(path.join(ROOT,'.cache/render-parts'),{recursive:true});
+  await fs.writeFile(path.join(ROOT,`.cache/render-parts/${key}.json`),JSON.stringify(receipt));
+  await write('build-manifest.json',JSON.stringify({schemaVersion:1,partial:true,partition,inputFingerprint,sourceFingerprint:plan.sourceFingerprint,builtAt,profile:catalog.profile,basePath:config.basePath,siteUrl:config.siteUrl,counts:{books:books.length,sections:sectionCount,htmlPages:pages.length},search:{status:'pending',pages:searchPages.length}}));
+  await fs.writeFile(path.resolve(ROOT,process.env.SEARCH_INPUT||'.cache/search-pages.json'),JSON.stringify({outputDir:output,basePath:config.basePath,pages:searchPages}));
+  console.log(`Rendered ${key}: ${books.length} books, ${sectionCount} reading pages. Partial artifacts cannot be published.`);
+  process.exit(0);
+}
+if(assemble){
+  const seenBooks=new Set(),seenFiles=new Set(),seenPages=new Set();
+  for(const item of plan.matrix.include){
+    const receipt=JSON.parse(await fs.readFile(path.join(ROOT,`.cache/render-parts/${item.key}.json`),'utf8'));
+    if(receipt.schemaVersion!==1||receipt.partition?.index!==item.index||receipt.partition.total!==plan.partitions||receipt.inputFingerprint!==item.fingerprint||receipt.siteUrl!==config.siteUrl)throw new Error(`Mismatched or stale render partition ${item.key}`);
+    const expected=catalog.books.filter(book=>bookPartition(book,plan.partitions,plan.categoryFanout)===item.index).map(book=>book.id).sort();
+    const expectedSet=new Set(expected);
+    if(JSON.stringify(receipt.books.map(book=>book.id).sort())!==JSON.stringify(expected))throw new Error(`Missing or duplicated book in ${item.key}`);
+    for(const book of receipt.books){if(seenBooks.has(book.id))throw new Error(`Duplicate book ${book.id}`);seenBooks.add(book.id);}
+    for(const entry of receipt.files){
+      if(!/^books\/[a-z0-9_-]+\/[a-z0-9_.-]+$/.test(entry.path)||!expectedSet.has(entry.path.split('/')[1])||seenFiles.has(entry.path))throw new Error(`Invalid or duplicate artifact ${entry.path}`);
+      const file=path.join(output,entry.path);const stat=await fs.lstat(file);
+      if(!stat.isFile()||stat.size!==entry.bytes||await fileHash(file)!==entry.sha256)throw new Error(`Damaged artifact ${entry.path}`);
+      seenFiles.add(entry.path);
+    }
+    if(receipt.sectionCount!==receipt.searchPages.length||receipt.pages.length!==receipt.files.filter(file=>file.path.endsWith('.html')).length)throw new Error(`Invalid partition page counts ${item.key}`);
+    for(const page of receipt.pages){if(!seenFiles.has(page)||seenPages.has(page))throw new Error(`Missing or duplicated page ${page}`);seenPages.add(page);}
+    for(const page of receipt.searchPages){if(!seenPages.has(page.path)||!page.contentSha256)throw new Error(`Invalid search coverage ${page.path}`);}
+    for(const [target,items] of [[books,receipt.books],[pages,receipt.pages],[sitemap,receipt.sitemap],[searchPages,receipt.searchPages]])for(const entry of items)target.push(entry);
+    totalTextBytes+=receipt.totalTextBytes;sectionCount+=receipt.sectionCount;
+    console.log(`Verified render artifact ${item.key}: ${receipt.books.length} books, ${receipt.pages.length} HTML files`);
+  }
+  if(seenBooks.size!==catalog.books.length)throw new Error('Assembled corpus is incomplete');
+  for(const file of await listFiles(path.join(output,'books'))){const relative=path.relative(output,path.join(ROOT,file)).split(path.sep).join('/');if(!seenFiles.has(relative))throw new Error(`Unexpected stale book artifact ${relative}`);}
+  // Match the monolithic source order before generating deterministic global
+  // catalogues/sitemaps; HTML addresses never depend on a partition number.
+  const order=new Map(catalog.books.map((book,index)=>[book.id,index]));
+  const compare=(a,b)=>(order.get(a.split('/')[1])??Infinity)-(order.get(b.split('/')[1])??Infinity);
+  pages.sort(compare);searchPages.sort((a,b)=>compare(a.path,b.path));sitemap.sort((a,b)=>compare(new URL(a.url).pathname.slice(config.basePath.length),new URL(b.url).pathname.slice(config.basePath.length)));
+}
+const sourceOrder=new Map(catalog.books.map((book,index)=>[book.id,index]));
+books.sort((a,b)=>a.title.localeCompare(b.title,'he')||sourceOrder.get(a.id)-sourceOrder.get(b.id));
 const categories=[...new Set(books.map(b=>b.categories[0]))].map(title=>({id:`c-${hash(title,10)}`,title,count:books.filter(b=>b.categories[0]===title).length})).sort((a,b)=>a.title.localeCompare(b.title,'he'));
 categories.forEach(c=>c.href=pathFor(`categories/${c.id}.html`));
 const externalSummary=await renderExternalCatalogue({snapshot:externalSnapshot,config,books,write,page});
@@ -211,7 +279,7 @@ await write('robots.txt',`User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(conf
 await write('llms.txt',`# אוצריא\n\n> The official Otzaria Torah library. Hebrew primary sources, complete static reading pages, no authentication or JavaScript required to read.\n\n## Discovery\n- [Catalogue](${absoluteUrl(config,'catalog.json')}): machine-readable book catalogue with stable URLs and text exports.\n- [Paginated catalogue](${absoluteUrl(config,'catalog/page-1.json')}): follow the next links for bounded responses.\n- [Source revisions](${absoluteUrl(config,'sources.json')}): upstream repositories, releases, provenance and coverage.\n- [Sitemaps](${absoluteUrl(config,'sitemap.xml')}): all canonical HTML reading pages.\n- [Developer guide](${absoluteUrl(config,'developers.html')}): formats and citation guidance.\n\n## Reading and citation\nEach book has /books/{id}/index.html, /books/{id}/book.json and /books/{id}/text.txt. Each reading section has its own .html URL and paragraph fragment IDs. Preserve Hebrew exactly when quoting; cite the visible book and section with its canonical URL. Attribute Otzaria and the source named in the book metadata. HTML is authoritative; browser search is a convenience, not an external API.\n\n## Current build\nProfile: ${catalog.profile}. Books: ${books.length}. Reading sections: ${sectionCount}. Coverage: ${catalog.scope?.description || catalog.profile}. Check sources.json for exact revisions.\n`);
 await fs.appendFile(path.join(output,'llms.txt'),`\n## External catalogues distributed with Otzaria\n- [External metadata catalogue](${absoluteUrl(config,'external/catalog.json')}): ${externalSummary.records} bibliographic records from Otzar HaHochma and HebrewBooks. Follow the provider page URLs and their next links for every record; mapping exports retain all source associations.\n- [Browse external books](${absoluteUrl(config,'external/index.html')}): static HTML pages and stable record anchors.\nThese records describe books on external services. Their full text and PDFs are not part of the external catalogue database. providerUrl is the native source link; url is the local metadata anchor; localBooks lists only exact source mappings to books present in this Otzaria release.\n`);
 await write('_headers',`/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: SAMEORIGIN\n  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'\n\n/pagefind/*\n  Cache-Control: public, max-age=3600\n\n/external/pagefind/*\n  Cache-Control: public, max-age=3600\n`);
-const manifest={schemaVersion:1,builtAt,codeRevision:process.env.GITHUB_SHA||null,sourceGeneratedAt:catalog.generatedAt,profile:catalog.profile,scope:catalog.scope,externalScope:externalSnapshot.catalog.scope,siteUrl:config.siteUrl,basePath:config.basePath,sources:upstream,counts:{books:books.length,baseBooks:books.filter(b=>!b.editionOf).length,editions:books.filter(b=>b.editionOf).length,pdfs:companions?.pdfs.length||0,images:mediaManifest?.images.length||0,missingSourceImages:mediaManifest?.missing?.reduce((n,entry)=>n+entry.count,0)||0,sourceLinks:catalog.counts.links||0,sections:sectionCount,htmlPages:pages.length,sourceBytes:totalTextBytes,externalRecords:externalSummary.records,externalProviders:externalSummary.providers,externalHtmlPages:externalSummary.htmlPages,externalMappings:externalSummary.mappings},search:{status:'pending',pages:searchPages.length},externalSearch:{status:'pending',records:externalSummary.records}};
+const manifest={schemaVersion:1,...(assemble?{partitionCount:plan.partitions,partitionFingerprints:plan.matrix.include.map(item=>item.fingerprint),sourceFingerprint:plan.sourceFingerprint}:{}),builtAt,codeRevision:process.env.GITHUB_SHA||null,sourceGeneratedAt:catalog.generatedAt,profile:catalog.profile,scope:catalog.scope,externalScope:externalSnapshot.catalog.scope,siteUrl:config.siteUrl,basePath:config.basePath,sources:upstream,counts:{books:books.length,baseBooks:books.filter(b=>!b.editionOf).length,editions:books.filter(b=>b.editionOf).length,pdfs:companions?.pdfs.length||0,images:mediaManifest?.images.length||0,missingSourceImages:mediaManifest?.missing?.reduce((n,entry)=>n+entry.count,0)||0,sourceLinks:catalog.counts.links||0,sections:sectionCount,htmlPages:pages.length,sourceBytes:totalTextBytes,externalRecords:externalSummary.records,externalProviders:externalSummary.providers,externalHtmlPages:externalSummary.htmlPages,externalMappings:externalSummary.mappings},search:{status:'pending',pages:searchPages.length},externalSearch:{status:'pending',records:externalSummary.records}};
 await write('build-manifest.json',JSON.stringify(manifest,null,2));
 await fs.writeFile(path.resolve(ROOT,process.env.SEARCH_INPUT||'.cache/search-pages.json'),JSON.stringify({outputDir:output,basePath:config.basePath,pages:searchPages}));
 console.log(JSON.stringify({message:'Static HTML built',...manifest.counts,profile:catalog.profile,output},null,2));

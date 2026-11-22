@@ -142,7 +142,7 @@ try {
   const authorRecord = (await readBuiltJson(otzar.pages[0].url)).records.find(record => record.authors?.length);
   assert(authorRecord, 'The actual external fixture needs an author query');
 
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}) });
   const desktop = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL', reducedMotion: 'reduce' });
   const page = await desktop.newPage(); activePage = page; monitor(page, 'desktop');
   page.setDefaultTimeout(20_000);
@@ -299,6 +299,69 @@ try {
     await page.locator('[data-search-input]').fill('');
     await expectUI(page.locator('[data-search-status]')).toContainText('הקלידו');
     await expectUI(page.locator('.search-result')).toHaveCount(0);
+  });
+
+  await step('A fresh category search loads only relevant shard metadata', async () => {
+    const manifest = await readBuiltJson(localUrl('search-manifest.json'));
+    const category = genesis.categories[0];
+    const relevant = manifest.shards.filter(shard => !shard.categories?.length || shard.categories.includes(category));
+    const allowed = new Set(relevant.map(shard => new URL(`${shard.bundlePath}pagefind-entry.json`, origin).pathname));
+    const requested = new Set();
+    const inFlight = new Set();
+    let peak = 0;
+    let wasmRequests = 0;
+    const context = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL' });
+    context.on('request', request => {
+      const url = new URL(request.url());
+      if (url.pathname.endsWith('/pagefind-entry.json')) requested.add(url.pathname);
+      if (url.pathname.includes('/pagefind/') && !url.pathname.endsWith('.js')) {
+        inFlight.add(request); peak = Math.max(peak, inFlight.size);
+        if (/\/wasm\..+\.pagefind$/.test(url.pathname)) wasmRequests++;
+      }
+    });
+    context.on('requestfinished', request => inFlight.delete(request));
+    context.on('requestfailed', request => inFlight.delete(request));
+    const scoped = await context.newPage(); activePage = scoped; monitor(scoped, 'category-search');
+    try {
+      await scoped.goto(localUrl('search.html'), { waitUntil: 'networkidle' });
+      assert.equal(requested.size, 0, 'An empty search loaded an index');
+      await scoped.locator('[data-search-category]').selectOption(category);
+      await scoped.locator('[data-search-input]').fill('"בראשית ברא"');
+      await scoped.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await settledSearch(scoped);
+      assert(requested.size > 0, 'The scoped query never loaded a real search index');
+      assert.deepEqual([...requested].sort(), [...allowed].sort(), 'Category search loaded unrelated indexes or skipped relevant ones');
+      assert.equal(wasmRequests, 1, 'A selected scope must share one WASM download');
+      await expectUI(scoped.locator(`.search-result h2 a[href*="/books/${genesis.id}/"]`).first()).toBeVisible();
+      await scoped.locator('[data-search-category]').selectOption('');
+      await settledSearch(scoped);
+      assert.equal(requested.size, manifest.shards.length, 'Expanding the scope failed to include the remaining shards');
+      assert.equal(wasmRequests, 2, 'The global replacement worker must share one WASM download too');
+      assert(peak <= 8, `Search exceeded its eight-download bound: ${peak}`);
+      return { category, scopedShards: relevant.length, allShards: manifest.shards.length, wasmRequests, peakConcurrentDownloads: peak };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  await step('A failed worker chunk is visible and a new query retries successfully', async () => {
+    const context = await browser.newContext({ locale: 'he-IL' });
+    const failed = await context.newPage(); activePage = failed;
+    // Expected injected failures are kept out of the site's general clean
+    // network report. The UI must expose them instead of presenting partial hits.
+    const errors = [];
+    failed.on('pageerror', error => errors.push(error.message));
+    await context.route('**/*.pf_index', route => route.fulfill({ status: 503, body: 'Injected index failure' }));
+    try {
+      await failed.goto(localUrl('search.html'), { waitUntil: 'networkidle' });
+      await failed.locator('[data-search-input]').fill('בראשית ברא');
+      await failed.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await expectUI(failed.locator('[data-search-status]')).toContainText('לא ניתן לטעון');
+      await expectUI(failed.locator('.search-result')).toHaveCount(0);
+      await context.unroute('**/*.pf_index');
+      await failed.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await settledSearch(failed);
+      assert.deepEqual(errors, [], 'A rejected worker RPC escaped as an unhandled page error');
+      return { failureVisible: true, retrySucceeded: true };
+    } finally { await context.close(); activePage = page; }
   });
 
   await step('Complete source and chapter navigation without JavaScript', async () => {

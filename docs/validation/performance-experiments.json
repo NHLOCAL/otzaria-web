@@ -1,0 +1,1400 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-22T04:50:16.307800+00:00",
+  "scope": "Local controlled experiments; full GitHub matrix verification is recorded separately. No mobile or CDN performance claim.",
+  "baselineGitHub": {
+    "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44972240960",
+    "jobUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44972240960/job/137054363857",
+    "commit": "370048cc64098a9aa09ab2b972207f133791d634",
+    "status": "success",
+    "publication": "skipped because destination not configured",
+    "durationSeconds": 7026,
+    "phasesSeconds": {
+      "synchronize": 274,
+      "html": 1197,
+      "coreIndex": 4708.8,
+      "externalIndex": 79,
+      "size": 38,
+      "verify": 644.9
+    },
+    "observedFreeDiskAfterCleanup": "105G"
+  },
+  "leanHtmlIndex": {
+    "recordedAt": "2026-11-22T04:30:24.684Z",
+    "environment": "Node24 Linux, local9.7GiB, sequentialoneindex, starter1545pages; notfullcorpusorphonebenchmark",
+    "reports": [
+      {
+        "variant": "legacy-full-html-individual",
+        "pages": 1545,
+        "maxFragments": 0,
+        "seconds": 6.18031373,
+        "files": 1643,
+        "bytes": 6242840,
+        "fragmentFiles": 1545,
+        "fragmentBytes": 3298303
+      },
+      {
+        "variant": "lean-html-individual",
+        "pages": 1545,
+        "maxFragments": 0,
+        "seconds": 4.839542489999999,
+        "files": 1643,
+        "bytes": 6242840,
+        "fragmentFiles": 1545,
+        "fragmentBytes": 3298303
+      },
+      {
+        "variant": "lean-html-bundled",
+        "pages": 1545,
+        "maxFragments": 211,
+        "seconds": 5.371415939000002,
+        "files": 292,
+        "bytes": 5526735,
+        "fragmentFiles": 194,
+        "fragmentBytes": 2579342
+      }
+    ]
+  },
+  "leanHtmlOutputIntegrity": {
+    "files": 1643,
+    "allByteIdentical": true,
+    "comparison": "Full HTML versus compact search HTML, single index, individual result fragments"
+  },
+  "fragmentPolicy": {
+    "recordedAt": "2026-11-22T04:34:44.147Z",
+    "pages": 1545,
+    "shards": 5,
+    "query": "בראשית ברא",
+    "note": "Identical lean HTML and category plan, one local run per policy. Response body bytes, not network/CDN/mobile timings. Cap is average, not worst-case fragment size.",
+    "records": [
+      {
+        "name": "dist-unbundled",
+        "files": 1699,
+        "bytes": 8707969,
+        "fragments": 1545,
+        "fragmentBytes": 3298303,
+        "firstInteraction": {
+          "milliseconds": 206.88,
+          "requests": 37,
+          "bytes": 511814,
+          "peakConcurrentFetches": 15,
+          "shardMetadataRequests": 5,
+          "wasmRequests": 5,
+          "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+        },
+        "snippets": {
+          "name": "first-15-result-snippets",
+          "milliseconds": 9.49,
+          "requests": 15,
+          "bytes": 31092,
+          "rssBytes": 73670656,
+          "snippets": 15
+        }
+      },
+      {
+        "name": "dist-bundle-two",
+        "files": 927,
+        "bytes": 8375750,
+        "fragments": 773,
+        "fragmentBytes": 2960441,
+        "firstInteraction": {
+          "milliseconds": 217.37,
+          "requests": 35,
+          "bytes": 539528,
+          "peakConcurrentFetches": 13,
+          "shardMetadataRequests": 5,
+          "wasmRequests": 5,
+          "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+        },
+        "snippets": {
+          "name": "first-15-result-snippets",
+          "milliseconds": 16.67,
+          "requests": 13,
+          "bytes": 53163,
+          "rssBytes": 71766016,
+          "snippets": 15
+        }
+      },
+      {
+        "name": "dist-opt",
+        "files": 353,
+        "bytes": 8003164,
+        "fragments": 199,
+        "fragmentBytes": 2590704,
+        "firstInteraction": {
+          "milliseconds": 237.84,
+          "requests": 32,
+          "bytes": 670484,
+          "peakConcurrentFetches": 10,
+          "shardMetadataRequests": 5,
+          "wasmRequests": 5,
+          "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+        },
+        "snippets": {
+          "name": "first-15-result-snippets",
+          "milliseconds": 27.17,
+          "requests": 10,
+          "bytes": 186968,
+          "rssBytes": 78348288,
+          "snippets": 15
+        }
+      }
+    ]
+  },
+  "tokenizerLargest": {
+    "recordedAt": "2026-11-22T04:40:00.055Z",
+    "method": "20 largest real full-corpus source files by catalog.bytes; exact JSON token SHA-256 comparison; alternating order; single local run, concurrent HTML build, explicit GC between parsers; images resolved against same verified source media map. Read/hash/GC excluded from parse duration. Not a full build benchmark.",
+    "baselineCommit": "be6602d776874c8e13df0e0dd772554f0b9d1c98",
+    "total": {
+      "books": 20,
+      "sourceBytes": 627046916,
+      "tokens": 1038237,
+      "originalMs": 22646.219711999995,
+      "optimizedMs": 9494.279020999995
+    },
+    "results": [
+      {
+        "id": "b-6049",
+        "title": "אספקלריה אותיות א - מ",
+        "sourceBytes": 62405190,
+        "order": "original",
+        "original": {
+          "milliseconds": 2241.049371,
+          "tokens": 135957,
+          "sha256": "cc669907762912b2d111926c2f6463e173a904c930916cd0b63dfe968cf56678"
+        },
+        "optimized": {
+          "milliseconds": 405.3491949999998,
+          "tokens": 135957,
+          "sha256": "cc669907762912b2d111926c2f6463e173a904c930916cd0b63dfe968cf56678"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-5869",
+        "title": "דור המלקטים על אורח חיים",
+        "sourceBytes": 53653193,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 2159.7285680000005,
+          "tokens": 190453,
+          "sha256": "9b1c65bb40e40254f49cb0b92ccfcf35b8b723852ca47ab92bc459b84b7c59e8"
+        },
+        "optimized": {
+          "milliseconds": 585.0809669999999,
+          "tokens": 190453,
+          "sha256": "9b1c65bb40e40254f49cb0b92ccfcf35b8b723852ca47ab92bc459b84b7c59e8"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-6050",
+        "title": "אספקלריה אותיות נ - ת",
+        "sourceBytes": 43897723,
+        "order": "original",
+        "original": {
+          "milliseconds": 1484.5991479999993,
+          "tokens": 90850,
+          "sha256": "11fd3f13ddb1b7c41b30d7b9dfe039b2667d7d587e6baf980125354a2db9fbe0"
+        },
+        "optimized": {
+          "milliseconds": 261.1668439999994,
+          "tokens": 90850,
+          "sha256": "11fd3f13ddb1b7c41b30d7b9dfe039b2667d7d587e6baf980125354a2db9fbe0"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7577",
+        "title": "קובץ שיטות קמאי על מנחות",
+        "sourceBytes": 38098980,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 1160.3278730000002,
+          "tokens": 35104,
+          "sha256": "c51f25c68431f15084dff3d86f6403de6fad7945c7e78b2ae5506a3c1921d23d"
+        },
+        "optimized": {
+          "milliseconds": 252.50266200000078,
+          "tokens": 35104,
+          "sha256": "c51f25c68431f15084dff3d86f6403de6fad7945c7e78b2ae5506a3c1921d23d"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7414",
+        "title": "מיקרופדיה תלמודית",
+        "sourceBytes": 35788928,
+        "order": "original",
+        "original": {
+          "milliseconds": 1574.8605610000013,
+          "tokens": 90850,
+          "sha256": "5663120367a22fe8612e1b40a2d25e2b9ee26c1114a1802bd84a9f75465d4e5c"
+        },
+        "optimized": {
+          "milliseconds": 996.5295650000007,
+          "tokens": 90850,
+          "sha256": "5663120367a22fe8612e1b40a2d25e2b9ee26c1114a1802bd84a9f75465d4e5c"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-390",
+        "title": "ליקוטי הלכות",
+        "sourceBytes": 34936173,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 933.7176699999982,
+          "tokens": 16993,
+          "sha256": "c0f64c888bbe97230f50d0357e75a50b93ce276323e3c6706ff198d19d5d184a"
+        },
+        "optimized": {
+          "milliseconds": 140.67023899999913,
+          "tokens": 16993,
+          "sha256": "c0f64c888bbe97230f50d0357e75a50b93ce276323e3c6706ff198d19d5d184a"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7558",
+        "title": "קובץ שיטות קמאי על בבא בתרא",
+        "sourceBytes": 34163621,
+        "order": "original",
+        "original": {
+          "milliseconds": 1111.3214789999984,
+          "tokens": 33157,
+          "sha256": "3b5ba60b8512e76a98a934dc298f118ef5ba46f29fa0096b15f3e95e0ea954ea"
+        },
+        "optimized": {
+          "milliseconds": 210.82439700000032,
+          "tokens": 33157,
+          "sha256": "3b5ba60b8512e76a98a934dc298f118ef5ba46f29fa0096b15f3e95e0ea954ea"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-3779",
+        "title": "ערוך השולחן",
+        "sourceBytes": 32693862,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 1123.680461,
+          "tokens": 27681,
+          "sha256": "5bb77dbd0951b0f5a03bd10dc351943a68d3eeeb7ced16726f94bf6d12e6fb19"
+        },
+        "optimized": {
+          "milliseconds": 263.2366320000001,
+          "tokens": 27681,
+          "sha256": "5bb77dbd0951b0f5a03bd10dc351943a68d3eeeb7ced16726f94bf6d12e6fb19"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-3900",
+        "title": "בית יוסף",
+        "sourceBytes": 31151857,
+        "order": "original",
+        "original": {
+          "milliseconds": 1094.203719000001,
+          "tokens": 38704,
+          "sha256": "d062c78c61e652c0296ddf03617ea8f71d942a938cffdae201341f1e006d40bf"
+        },
+        "optimized": {
+          "milliseconds": 770.3199779999995,
+          "tokens": 38704,
+          "sha256": "d062c78c61e652c0296ddf03617ea8f71d942a938cffdae201341f1e006d40bf"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-8042",
+        "title": "דור המלקטים על יורה דעה",
+        "sourceBytes": 30487313,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 1534.607930000002,
+          "tokens": 118904,
+          "sha256": "1aa8b2a024cffe9a796bbabe75666ec16917f04932fdb9346db422d5e8f5103d"
+        },
+        "optimized": {
+          "milliseconds": 1506.2483119999997,
+          "tokens": 118904,
+          "sha256": "1aa8b2a024cffe9a796bbabe75666ec16917f04932fdb9346db422d5e8f5103d"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-3780",
+        "title": "שלח תשלח",
+        "sourceBytes": 28146168,
+        "order": "original",
+        "original": {
+          "milliseconds": 1377.4424330000002,
+          "tokens": 2771,
+          "sha256": "37ba53789434229ce63e3db002df8c0be7e4c2c7c878a91ca28524985da91ab9"
+        },
+        "optimized": {
+          "milliseconds": 1212.8595970000024,
+          "tokens": 2771,
+          "sha256": "37ba53789434229ce63e3db002df8c0be7e4c2c7c878a91ca28524985da91ab9"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7574",
+        "title": "קובץ שיטות קמאי על חולין",
+        "sourceBytes": 27161872,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 781.4880210000047,
+          "tokens": 31363,
+          "sha256": "69ef301006a21c529324fda90b3d4d500b96f939e71c437bf9eeb730543caab6"
+        },
+        "optimized": {
+          "milliseconds": 162.72105700000247,
+          "tokens": 31363,
+          "sha256": "69ef301006a21c529324fda90b3d4d500b96f939e71c437bf9eeb730543caab6"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-6392",
+        "title": "שות פרי עץ חיים",
+        "sourceBytes": 26335730,
+        "order": "original",
+        "original": {
+          "milliseconds": 925.3411769999948,
+          "tokens": 21920,
+          "sha256": "25bda0046702e0f22829bc0016045bb816af824bd57a9efac4ab8c8262bb3084"
+        },
+        "optimized": {
+          "milliseconds": 769.5830769999957,
+          "tokens": 21920,
+          "sha256": "25bda0046702e0f22829bc0016045bb816af824bd57a9efac4ab8c8262bb3084"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7568",
+        "title": "קובץ שיטות קמאי על כתובות",
+        "sourceBytes": 22565735,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 749.4918829999951,
+          "tokens": 24894,
+          "sha256": "af8f6533a705e129f8ed6b87ef9cc3c5970670bc2b9ddc46d9f86c5fd179483f"
+        },
+        "optimized": {
+          "milliseconds": 157.03514500000165,
+          "tokens": 24894,
+          "sha256": "af8f6533a705e129f8ed6b87ef9cc3c5970670bc2b9ddc46d9f86c5fd179483f"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-5994",
+        "title": "דברי יואל על המועדים",
+        "sourceBytes": 22204635,
+        "order": "original",
+        "original": {
+          "milliseconds": 767.5460230000026,
+          "tokens": 19912,
+          "sha256": "ae743ff131e5b57abccab1e98a128b6bde59b3ad08e86ccb17bd3e5b2f28c318"
+        },
+        "optimized": {
+          "milliseconds": 297.50367800000095,
+          "tokens": 19912,
+          "sha256": "ae743ff131e5b57abccab1e98a128b6bde59b3ad08e86ccb17bd3e5b2f28c318"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-5995",
+        "title": "דברי יואל על התורה",
+        "sourceBytes": 21924447,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 695.8830460000027,
+          "tokens": 17411,
+          "sha256": "5f6e6e0ac12cedc71fd3e668f2057567430c483f19f7d97991fd2aeeeba03c2f"
+        },
+        "optimized": {
+          "milliseconds": 270.0564809999996,
+          "tokens": 17411,
+          "sha256": "5f6e6e0ac12cedc71fd3e668f2057567430c483f19f7d97991fd2aeeeba03c2f"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7554",
+        "title": "קובץ שיטות קמאי על פסחים",
+        "sourceBytes": 21908608,
+        "order": "original",
+        "original": {
+          "milliseconds": 806.8373169999977,
+          "tokens": 25330,
+          "sha256": "c4001602e327650a55b1a654fae7aba9a02145082d6b022bb9714efb1b2ecc20"
+        },
+        "optimized": {
+          "milliseconds": 135.66257499999483,
+          "tokens": 25330,
+          "sha256": "c4001602e327650a55b1a654fae7aba9a02145082d6b022bb9714efb1b2ecc20"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-3901",
+        "title": "ב\"ח",
+        "sourceBytes": 21514081,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 715.8132179999957,
+          "tokens": 26783,
+          "sha256": "4b305416c1c43acf75dea03298a76d0c42e6240e9d53f08bdc29f0d87d3f33b0"
+        },
+        "optimized": {
+          "milliseconds": 157.79278399999748,
+          "tokens": 26783,
+          "sha256": "4b305416c1c43acf75dea03298a76d0c42e6240e9d53f08bdc29f0d87d3f33b0"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-7556",
+        "title": "קובץ שיטות קמאי על שבת",
+        "sourceBytes": 19343997,
+        "order": "original",
+        "original": {
+          "milliseconds": 602.0686209999985,
+          "tokens": 29185,
+          "sha256": "99de9ebc07dbe25d8892a5597680b106d8e1d8cca14ea1e352e9fb9607e0fe56"
+        },
+        "optimized": {
+          "milliseconds": 118.84400100000494,
+          "tokens": 29185,
+          "sha256": "99de9ebc07dbe25d8892a5597680b106d8e1d8cca14ea1e352e9fb9607e0fe56"
+        },
+        "identical": true
+      },
+      {
+        "id": "b-3819",
+        "title": "כף החיים על שולחן ערוך אורח חיים",
+        "sourceBytes": 18664803,
+        "order": "optimized",
+        "original": {
+          "milliseconds": 806.2111930000028,
+          "tokens": 60015,
+          "sha256": "0a346b8adcea386ed95a576015095c4fbb554992e9bf4285f4590376e61e095f"
+        },
+        "optimized": {
+          "milliseconds": 820.2918349999964,
+          "tokens": 60015,
+          "sha256": "0a346b8adcea386ed95a576015095c4fbb554992e9bf4285f4590376e61e095f"
+        },
+        "identical": true
+      }
+    ]
+  },
+  "partitionIntegration": {
+    "root": {
+      "status": "passed",
+      "basePath": "/",
+      "books": 60,
+      "readingPages": 1545,
+      "htmlPages": 1627,
+      "identicalHtmlAndTextFiles": 1687,
+      "checks": [
+        "real partition archives",
+        "exact coverage",
+        "missing partition rejected",
+        "same-size corruption rejected",
+        "all HTML/TXT identical",
+        "search finalized",
+        "all HTML verified",
+        "cross-build cache reuse",
+        "metadata invalidation"
+      ],
+      "commands": [
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 2.1003150230000003,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.24993832800000018,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
+          "seconds": 0.02950831999999991,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 1.6221886509999999,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.07545978000000014,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 4.339499105000001,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+          "seconds": 0.31782920599999853,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
+          "seconds": 0.009190322000000379,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.4871608930000002,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.0653066089999993,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 2.0942310269999997,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+          "seconds": 0.15022207999999956,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
+          "seconds": 0.005965063999999984,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
+          "seconds": 0.39358592199999837,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.5542081739999994,
+          "exitCode": 1
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
+          "seconds": 0.0709817699999985,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.11035143199999947,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.5689442770000005,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 0.18703741400000035,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
+          "seconds": 0.14754124200000115,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
+          "seconds": 0.32243497100000057,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.8049082659999985,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.20936064299999999,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.5799592149999989,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 0.17409811700000136,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.5626804439999978,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.1167870649999968,
+          "exitCode": 1
+        }
+      ]
+    },
+    "project": {
+      "status": "passed",
+      "basePath": "/otzaria-web/",
+      "books": 60,
+      "readingPages": 1545,
+      "htmlPages": 1627,
+      "identicalHtmlAndTextFiles": 1687,
+      "checks": [
+        "real partition archives",
+        "exact coverage",
+        "missing partition rejected",
+        "same-size corruption rejected",
+        "all HTML/TXT identical",
+        "search finalized",
+        "all HTML verified",
+        "cross-build cache reuse",
+        "metadata invalidation"
+      ],
+      "commands": [
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 2.317515277,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.24582930699999997,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
+          "seconds": 0.024662687999999888,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 1.578065481,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.07457322000000022,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 5.178298311,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+          "seconds": 0.29533825799999974,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
+          "seconds": 0.010520594999999957,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.46901163199999973,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.05987931000000026,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 2.2306263080000006,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+          "seconds": 0.1405435639999996,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
+          "seconds": 0.005892775000000256,
+          "exitCode": 0
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
+          "seconds": 0.390324971,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.593403413,
+          "exitCode": 1
+        },
+        {
+          "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
+          "seconds": 0.047191541999998664,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.10923137500000121,
+          "exitCode": 1
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.6368744500000012,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 0.1849311409999991,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
+          "seconds": 0.16197857400000065,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
+          "seconds": 0.3672959920000012,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+          "seconds": 0.8478005440000015,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.23899611399999776,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.7760992709999991,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+          "seconds": 0.23853528200000074,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+          "seconds": 0.2432427459999999,
+          "exitCode": 0
+        },
+        {
+          "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+          "seconds": 0.10805988900000012,
+          "exitCode": 1
+        }
+      ]
+    }
+  },
+  "searchWorker": {
+    "date": "2026-11-22T04:46:55.456Z",
+    "note": "Same1545pages/fiveshardindex withfinaltwo-pagefragmentcap. File-backed Node native WASM; worker mode adds realworker_threads startup. No browser/network/mobile latency claims. Scripts separate fromresponsebodycounts.",
+    "scenarios": [
+      {
+        "mode": "lazy",
+        "category": "",
+        "latencyMs": 0,
+        "medianMilliseconds": 113.7,
+        "milliseconds": 136.63,
+        "requests": 30,
+        "bytes": 316780,
+        "peakConcurrentFetches": 13,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 136.63,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 113.7,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 112.61,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "lazy",
+        "category": "",
+        "latencyMs": 20,
+        "medianMilliseconds": 246.36,
+        "milliseconds": 270.2,
+        "requests": 30,
+        "bytes": 316780,
+        "peakConcurrentFetches": 13,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 270.2,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 246.36,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 207.2,
+              "requests": 30,
+              "bytes": 316780,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "lazy",
+        "category": "תנ״ך",
+        "latencyMs": 0,
+        "medianMilliseconds": 119.51,
+        "milliseconds": 115.27,
+        "requests": 35,
+        "bytes": 319838,
+        "peakConcurrentFetches": 13,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 115.27,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 130.85,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 119.51,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "lazy",
+        "category": "תנ״ך",
+        "latencyMs": 20,
+        "medianMilliseconds": 199.47,
+        "milliseconds": 304.12,
+        "requests": 35,
+        "bytes": 319838,
+        "peakConcurrentFetches": 13,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 304.12,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 199.47,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 192.91,
+              "requests": 35,
+              "bytes": 319838,
+              "peakConcurrentFetches": 13,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 42928,
+              "clientModule": 0,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "worker",
+        "category": "",
+        "latencyMs": 0,
+        "medianMilliseconds": 232.47,
+        "milliseconds": 238.88,
+        "requests": 31,
+        "bytes": 317984,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 238.88,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 232.47,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 184.05,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "worker",
+        "category": "",
+        "latencyMs": 20,
+        "medianMilliseconds": 368.32,
+        "milliseconds": 368.32,
+        "requests": 31,
+        "bytes": 317984,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 368.32,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 343.76,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 385.68,
+              "requests": 31,
+              "bytes": 317984,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 5,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 7
+          }
+        ]
+      },
+      {
+        "mode": "worker",
+        "category": "תנ״ך",
+        "latencyMs": 0,
+        "medianMilliseconds": 167.3,
+        "milliseconds": 180.24,
+        "requests": 20,
+        "bytes": 184119,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 1,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 180.24,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 167.3,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 161.91,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          }
+        ]
+      },
+      {
+        "mode": "worker",
+        "category": "תנ״ך",
+        "latencyMs": 20,
+        "medianMilliseconds": 289.64,
+        "milliseconds": 284.38,
+        "requests": 20,
+        "bytes": 184119,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 1,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance.",
+        "samples": [
+          {
+            "firstInteraction": {
+              "milliseconds": 284.38,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 289.64,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          },
+          {
+            "firstInteraction": {
+              "milliseconds": 350.92,
+              "requests": 20,
+              "bytes": 184119,
+              "peakConcurrentFetches": 8,
+              "shardMetadataRequests": 1,
+              "wasmRequests": 1,
+              "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+            },
+            "scriptBytes": {
+              "primaryModule": 47228,
+              "browserWorker": 6677,
+              "clientModule": 12872,
+              "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+            },
+            "status": "passed",
+            "checks": 8
+          }
+        ]
+      }
+    ]
+  },
+  "localBrowser": {
+    "status": "blocked-before-browser-start",
+    "download": "HTTP 403 from the Playwright Chromium download CDN",
+    "installedExecutable": "/usr/bin/chromium",
+    "reason": "The execution environment denied Chromium socket() creation. Browser UI assertions have not run locally. CI runs the real Playwright browser gate separately."
+  }
+}
