@@ -27,37 +27,63 @@ const requested=Number(process.env.SEARCH_SHARDS || Math.min(64,Math.max(1,Math.
 if(!Number.isSafeInteger(requested)||requested<1||requested>128) throw new Error('SEARCH_SHARDS must be an integer from 1 to 128');
 const plan=planSearchShards(input.pages,{requested,maxBytes});
 console.log(`Search plan: ${input.pages.length} pages in ${plan.length} shards; each body input is at most ${(maxBytes/1024/1024).toFixed(1)} MiB`);
-const shards=[];let indexedNew=0;
-for(const shard of plan){
-  const name=shards.length===0?'pagefind':`pagefind/shard-${shard.key}`;
-  const bundle=path.join(config.outputDir,name);
-  const checkpoint=checkpointIdentity({outputDir:config.outputDir,basePath:config.basePath,builtAt:build.builtAt,indexerSource,pages:shard.pages,key:shard.key,cacheDir:path.join(ROOT,'.cache/search-checkpoints')});
-  const complete=resume&&await readCheckpoint(checkpoint,bundle);
-  if(complete){
-    console.log(`Reused verified search shard ${shard.key}: ${shard.pages.length} pages`);
-  }else{
-  if(indexedNew>=batchLimit){
-    console.error('Search batch finished; remaining shards are pending. Run again with SEARCH_RESUME=1. This incomplete build must not be published.');
-    process.exit(2);
-  }
-  // The primary bundle contains nested independent shards. Keep those when
-  // resuming, while removing incomplete files belonging to this bundle alone.
-  for(const entry of await fs.readdir(bundle,{withFileTypes:true}).catch(error=>error.code==='ENOENT'?[]:Promise.reject(error))){
-    if(name==='pagefind'&&entry.isDirectory()&&entry.name.startsWith('shard-'))continue;
-    await fs.rm(path.join(bundle,entry.name),{recursive:true,force:true});
-  }
-  const job=path.join(ROOT,`.cache/search-job-${path.basename(config.outputDir)}-${shard.key}.json`);
-  await fs.writeFile(job,JSON.stringify({outputDir:config.outputDir,basePath:config.basePath,bundle:name,pages:shard.pages}));
-  await new Promise((resolve,reject)=>{
-    const child=spawn(process.execPath,[path.join(ROOT,'scripts/index-shard.mjs'),job],{stdio:'inherit',env:process.env});
-    child.on('error',reject);child.on('exit',(code,signal)=>code===0?resolve():reject(new Error(`Search shard ${shard.key} failed (${signal||code}); ${shard.pages.length} pages, ${(shard.bytes/1024/1024).toFixed(1)} MiB input. Search remains unpublished. If memory is constrained, lower SEARCH_SHARD_BYTES.`)));
-  });
-  await writeCheckpoint(checkpoint,bundle);
-  await fs.rm(job,{force:true});
-  indexedNew++;
-  }
-  shards.push({bundlePath:`${config.basePath}${name}/`,pages:shard.pages.length,bodyBytes:shard.bytes,categories:[...new Set(shard.pages.map(p=>p.category))]});
+// The root Pagefind bundle owns the directory containing all nested bundles.
+// Finish it before indexing independent child bundles concurrently.
+const concurrency=Number(process.env.SEARCH_CONCURRENCY ?? 2);
+if(!Number.isSafeInteger(concurrency)||concurrency<1||concurrency>8)throw new Error('SEARCH_CONCURRENCY must be an integer from 1 to 8');
+const descriptors=plan.map((shard,index)=>({
+  ...shard,
+  name:index===0?'pagefind':`pagefind/shard-${shard.key}`,
+}));
+for(const item of descriptors){
+  item.bundle=path.join(config.outputDir,item.name);
+  item.checkpoint=checkpointIdentity({outputDir:config.outputDir,basePath:config.basePath,builtAt:build.builtAt,indexerSource,pages:item.pages,key:item.key,cacheDir:path.join(ROOT,'.cache/search-checkpoints')});
+  item.complete=resume&&await readCheckpoint(item.checkpoint,item.bundle);
+  if(item.complete)console.log(`Reused verified search shard ${item.key}: ${item.pages.length} pages`);
 }
+const allPending=descriptors.filter(item=>!item.complete);
+const selected=allPending.slice(0,batchLimit);
+const deferred=selected.length<allPending.length;
+async function indexOne(item){
+  // Never remove child bundle directories while updating the primary index.
+  for(const entry of await fs.readdir(item.bundle,{withFileTypes:true}).catch(error=>error.code==='ENOENT'?[]:Promise.reject(error))){
+    if(item.name==='pagefind'&&entry.isDirectory()&&entry.name.startsWith('shard-'))continue;
+    await fs.rm(path.join(item.bundle,entry.name),{recursive:true,force:true});
+  }
+  const job=path.join(ROOT,`.cache/search-job-${path.basename(config.outputDir)}-${item.key}.json`);
+  try{
+    await fs.writeFile(job,JSON.stringify({outputDir:config.outputDir,basePath:config.basePath,bundle:item.name,pages:item.pages}));
+    await new Promise((resolve,reject)=>{
+      const child=spawn(process.execPath,[path.join(ROOT,'scripts/index-shard.mjs'),job],{stdio:'inherit',env:process.env});
+      child.once('error',reject);
+      child.once('exit',(code,signal)=>code===0?resolve():reject(new Error(`Search shard ${item.key} failed (${signal||code}); ${item.pages.length} pages, ${(item.bytes/1024/1024).toFixed(1)} MiB input. Search remains unpublished. If memory is constrained, lower SEARCH_CONCURRENCY or SEARCH_SHARD_BYTES.`)));
+    });
+    await writeCheckpoint(item.checkpoint,item.bundle);
+  }finally{
+    await fs.rm(job,{force:true});
+  }
+}
+// Bound parallelism to protect memory on small builders. Once one shard fails,
+// wait for already-running workers to finish, then leave the manifest pending.
+async function runBounded(items,limit,worker){
+  let cursor=0, failure=null;
+  await Promise.all(Array.from({length:Math.min(limit,items.length)},async()=>{
+    while(!failure){
+      const index=cursor++;
+      if(index>=items.length)return;
+      try{await worker(items[index]);}catch(error){failure??=error;}
+    }
+  }));
+  if(failure)throw failure;
+}
+if(selected[0]?.name==='pagefind')await indexOne(selected[0]);
+const remaining=selected.filter(item=>item.name!=='pagefind');
+await runBounded(remaining,concurrency,indexOne);
+if(deferred){
+  console.error('Search batch finished; remaining shards are pending. Run again with SEARCH_RESUME=1. This incomplete build must not be published.');
+  process.exit(2);
+}
+const shards=descriptors.map(shard=>({bundlePath:`${config.basePath}${shard.name}/`,pages:shard.pages.length,bodyBytes:shard.bytes,categories:[...new Set(shard.pages.map(p=>p.category))]}));
 if(!shards.length) throw new Error('Refusing to publish an empty search index');
 await fs.writeFile(path.join(config.outputDir,'search-manifest.json'),JSON.stringify({schemaVersion:1,engine:'pagefind',version:'1.6.0',language:'he',pages:input.pages.length,shards},null,2));
 const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
