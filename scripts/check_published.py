@@ -13,10 +13,11 @@ import urllib.request
 
 from sync_library import load_json, release_state
 from sync_companions import archive_identity, selected_release
+from sync_external import archive_identity as external_archive_identity, selected_release as selected_external_release
 
 
-def publication_matches(manifest, *, revision, site_url, base_path, database_manifest, database_archive, pdf_archive):
-    """Skip only a complete, searchable publication of this code and both sources."""
+def publication_matches(manifest, *, revision, site_url, base_path, database_manifest, database_archive, pdf_archive, external_archive):
+    """Skip only a complete, searchable publication of this code and every source."""
     if not re.fullmatch(r'[a-f0-9]{40}', revision or ''):
         return False
     if not isinstance(manifest, dict) or manifest.get('schemaVersion') != 1:
@@ -29,17 +30,25 @@ def publication_matches(manifest, *, revision, site_url, base_path, database_man
         return False
     if manifest.get('search', {}).get('status') != 'ready':
         return False
+    if manifest.get('externalScope', {}).get('complete') is not True:
+        return False
+    if manifest.get('externalSearch', {}).get('status') != 'ready' or manifest.get('counts', {}).get('externalRecords', 0) <= 0:
+        return False
+    if manifest['externalSearch'].get('records') != manifest['counts']['externalRecords']:
+        return False
     sources = manifest.get('sources')
     if not isinstance(sources, list):
         return False
     database = [source for source in sources if source.get('repository') == 'Otzaria/SeforimLibrary']
     pdfs = [source for source in sources if source.get('repository') == 'Otzaria/otzaria-library' and source.get('id') in ('talmud-pdfs', 'otzaria-bavli-pdfs')]
-    if len(database) != 1 or len(pdfs) != 1:
+    external = [source for source in sources if source.get('repository') == 'Otzaria/otzar-HB_catalog' and source.get('id') == 'otzaria-external-catalog']
+    if len(database) != 1 or len(pdfs) != 1 or len(external) != 1:
         return False
     return (
         database[0].get('manifestSha256') == database_manifest
         and database[0].get('archiveSha256') == database_archive
         and pdfs[0].get('archiveSha256') == pdf_archive
+        and external[0].get('archiveSha256') == external_archive
     )
 
 
@@ -68,13 +77,16 @@ def run(root, origin, base_path, revision):
         state = release_state(load_json(root / 'config/sources.json'))
         release, asset = selected_release()
         companion = archive_identity(release, asset)
+        external_release, external_asset = selected_external_release()
+        external = external_archive_identity(external_release, external_asset)
         matches = publication_matches(
             manifest, revision=revision, site_url=origin.rstrip('/') + base_path, base_path=base_path,
             database_manifest=state['manifestSha256'],
             database_archive=state['manifest']['sha256'],
             pdf_archive=companion['sha256'],
+            external_archive=external['sha256'],
         )
-        return not matches, ('Published code, official database and bundled PDFs are unchanged.' if matches else 'The published library differs from the current complete sources.')
+        return not matches, ('Published code, official database, bundled PDFs and external metadata are unchanged.' if matches else 'The published library differs from the current complete sources.')
     except Exception as error:
         return True, 'The previous publication could not be verified; a normal build is required (' + type(error).__name__ + ').'
 

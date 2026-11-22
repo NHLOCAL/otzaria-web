@@ -91,3 +91,5 @@ node tests/browser.mjs
 | `.github/workflows/` | בדיקות, סנכרון ופרסום |
 
 להסבר ההחלטות והגבולות התפעוליים: [ארכיטקטורה](docs/ARCHITECTURE.md).
+
+לתצוגה מצולמת ולתוצאות בדיקות הדפדפן: [סקירת הממשק](docs/PREVIEW.md).

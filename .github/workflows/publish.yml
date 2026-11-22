@@ -111,10 +111,11 @@ jobs:
         run: node scripts/build.mjs
       - name: Release imported snapshots after successful rendering
         if: runner.environment == 'github-hosted'
-        run: rm -rf .cache/library .cache/companions
+        run: rm -rf .cache/library .cache/companions .cache/external
       - name: Index, enforce budgets and verify
         run: |
           node scripts/index-search.mjs
+          node scripts/index-external-search.mjs
           node scripts/check-size.mjs
           npm run verify
       - name: Keep build inventory
@@ -124,6 +125,7 @@ jobs:
           path: |
             dist/build-manifest.json
             dist/search-manifest.json
+            dist/external/search-manifest.json
             .cache/build-size.json
           if-no-files-found: error
           retention-days: 14

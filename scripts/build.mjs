@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { ROOT, getConfig, absoluteUrl, sitePath, safeId } from '../src/config.mjs';
 import { parseBook, escapeHtml, hash } from '../src/text.mjs';
 import { sitemapDocuments, sitemapIndex } from '../src/sitemap.mjs';
+import { loadExternalSnapshot, renderExternalCatalogue } from '../src/external-build.mjs';
 import * as ui from '../src/ui.mjs';
 
 const config=getConfig();
@@ -25,6 +26,7 @@ if(catalog.profile!==config.profile) throw new Error(`Catalogue profile ${catalo
 if(config.outputDir===ROOT || !config.outputDir.startsWith(ROOT+path.sep) || config.outputDir===sourceDir || sourceDir.startsWith(config.outputDir+path.sep)) throw new Error('Output directory must be a dedicated project subdirectory, outside source data');
 if(!/^dist(?:[-_][a-z0-9_-]+)?$/i.test(path.relative(ROOT,config.outputDir)))throw new Error('OUTPUT_DIR must be dist or a dist-name sibling; refusing to erase another project directory');
 const sourceById=new Map(catalog.books.map(book=>[book.id,book]));
+const externalSnapshot=await loadExternalSnapshot(config);
 const companionPath=path.resolve(ROOT,process.env.COMPANION_CATALOG||'.cache/companions/catalog.json');
 let companions=null;
 if(config.profile==='full'){
@@ -65,7 +67,7 @@ async function readSidecar(book,key,hashKey){
   return content;
 }
 async function page(relative,title,description,body,{jsonLd=[],breadcrumbs=[],active='library',noindex=false,lastmod}={}){
-  const html=ui.layout({title,description,path:relative,baseUrl:config.basePath,siteUrl:config.origin,body,breadcrumbs,jsonLd,active,noindex,hasPdfs:!!companions});
+  const html=ui.layout({title,description,path:relative,baseUrl:config.basePath,siteUrl:config.origin,body,breadcrumbs,jsonLd,active,noindex,hasPdfs:!!companions,hasExternal:true});
   if(Buffer.byteLength(html)>1_000_000) throw new Error(`HTML page exceeds crawl budget: ${relative}`);
   await write(relative,html);pages.push(relative);
   if(!noindex) sitemap.push({url:absoluteUrl(config,relative),lastmod});
@@ -135,6 +137,9 @@ for(const sourceBook of catalog.books){
     const links=await readSidecar(book,'linksFile','linksSha256');
     await write(`books/${book.id}/links.json`,links);
   }
+  // The source snapshot contains native markup; the public text export is a
+  // normalized reading format. Publish a digest for each byte representation.
+  Object.assign(enriched,{sourceTextSha256:actualHash,sourceTextBytes:Buffer.byteLength(raw),textSha256:createHash('sha256').update(plain).digest('hex'),textBytes:Buffer.byteLength(plain)});
   await write(`books/${book.id}/book.json`,JSON.stringify({schemaVersion:1,...enriched,file:undefined,lineIdsFile:undefined,linksFile:undefined,description:undefined,contentSha256:actualHash},null,2));
   for(let i=0;i<sections.length;i++){
     const section=sections[i];
@@ -150,9 +155,11 @@ for(const sourceBook of catalog.books){
 books.sort((a,b)=>a.title.localeCompare(b.title,'he'));
 const categories=[...new Set(books.map(b=>b.categories[0]))].map(title=>({id:`c-${hash(title,10)}`,title,count:books.filter(b=>b.categories[0]===title).length})).sort((a,b)=>a.title.localeCompare(b.title,'he'));
 categories.forEach(c=>c.href=pathFor(`categories/${c.id}.html`));
-const stats={books:books.length,sections:sectionCount,categories:categories.length,pdfs:companions?.pdfs.length||0,updatedAt:catalog.generatedAt||builtAt,profile:catalog.profile,scope:catalog.scope};
-const upstream=catalog.sources||[];
+const externalSummary=await renderExternalCatalogue({snapshot:externalSnapshot,config,books,write,page});
+const stats={books:books.length,sections:sectionCount,categories:categories.length,pdfs:companions?.pdfs.length||0,externalRecords:externalSummary.records,externalProviders:externalSummary.providers,updatedAt:catalog.generatedAt||builtAt,profile:catalog.profile,scope:catalog.scope};
+const upstream=[...(catalog.sources||[])];
 if(companions)upstream.push({...companions.source,id:'talmud-pdfs'});
+upstream.push(externalSnapshot.catalog.source);
 const pageSize=120;
 const catalogPageCount=Math.ceil(books.length/pageSize);
 for(let n=1;n<=catalogPageCount;n++){
@@ -184,8 +191,8 @@ if(companions){
   await write('pdfs/catalog.json',JSON.stringify({schemaVersion:1,source:companions.source,pdfs:companions.pdfs.map(p=>({...p,file:undefined,url:pathFor(`pdfs/${p.id}.pdf`)}))}));
 }
 await page('404.html','העמוד לא נמצא','העמוד המבוקש אינו קיים בספריית אוצריא.',ui.notFoundPage({baseUrl:config.basePath}),{noindex:true});
-await write('catalog.json',JSON.stringify({schemaVersion:1,profile:catalog.profile,generatedAt:catalog.generatedAt,sources:upstream,scope:catalog.scope,counts:stats,categories,firstPage:pathFor('catalog/page-1.json'),books:books.map(({id,title,author,categories,url,textUrl,jsonUrl,sectionCount})=>({id,title,author,categories,url,textUrl,jsonUrl,sectionCount}))}));
-await write('sources.json',JSON.stringify({schemaVersion:1,sources:upstream,scope:catalog.scope,counts:catalog.counts},null,2));
+await write('catalog.json',JSON.stringify({schemaVersion:1,profile:catalog.profile,generatedAt:catalog.generatedAt,sources:upstream,scope:catalog.scope,counts:stats,categories,firstPage:pathFor('catalog/page-1.json'),externalCatalogUrl:pathFor('external/catalog.json'),books:books.map(({id,title,author,categories,url,textUrl,jsonUrl,sectionCount})=>({id,title,author,categories,url,textUrl,jsonUrl,sectionCount}))}));
+await write('sources.json',JSON.stringify({schemaVersion:1,sources:upstream,scope:catalog.scope,counts:catalog.counts,externalCatalog:{url:pathFor('external/catalog.json'),scope:externalSnapshot.catalog.scope,counts:externalSummary},externalReferences:catalog.externalReferences},null,2));
 await write('connection-types.json',JSON.stringify({schemaVersion:1,types:catalog.connectionTypes||{}}));
 const mapDocuments=sitemapDocuments(sitemap,config.origin);
 const mapUrls=[];
@@ -193,8 +200,9 @@ for(let i=0;i<mapDocuments.length;i++){const name=`sitemap-${i+1}.xml`;await wri
 await write('sitemap.xml',sitemapIndex(mapUrls));
 await write('robots.txt',`User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(config,'sitemap.xml')}\n`);
 await write('llms.txt',`# אוצריא\n\n> The official Otzaria Torah library. Hebrew primary sources, complete static reading pages, no authentication or JavaScript required to read.\n\n## Discovery\n- [Catalogue](${absoluteUrl(config,'catalog.json')}): machine-readable book catalogue with stable URLs and text exports.\n- [Paginated catalogue](${absoluteUrl(config,'catalog/page-1.json')}): follow the next links for bounded responses.\n- [Source revisions](${absoluteUrl(config,'sources.json')}): upstream repositories, releases, provenance and coverage.\n- [Sitemaps](${absoluteUrl(config,'sitemap.xml')}): all canonical HTML reading pages.\n- [Developer guide](${absoluteUrl(config,'developers.html')}): formats and citation guidance.\n\n## Reading and citation\nEach book has /books/{id}/index.html, /books/{id}/book.json and /books/{id}/text.txt. Each reading section has its own .html URL and paragraph fragment IDs. Preserve Hebrew exactly when quoting; cite the visible book and section with its canonical URL. Attribute Otzaria and the source named in the book metadata. HTML is authoritative; browser search is a convenience, not an external API.\n\n## Current build\nProfile: ${catalog.profile}. Books: ${books.length}. Reading sections: ${sectionCount}. Coverage: ${catalog.scope?.description || catalog.profile}. Check sources.json for exact revisions.\n`);
-await write('_headers',`/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: SAMEORIGIN\n  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'\n\n/pagefind/*\n  Cache-Control: public, max-age=3600\n`);
-const manifest={schemaVersion:1,builtAt,codeRevision:process.env.GITHUB_SHA||null,sourceGeneratedAt:catalog.generatedAt,profile:catalog.profile,scope:catalog.scope,siteUrl:config.siteUrl,basePath:config.basePath,sources:upstream,counts:{books:books.length,baseBooks:books.filter(b=>!b.editionOf).length,editions:books.filter(b=>b.editionOf).length,pdfs:companions?.pdfs.length||0,images:mediaManifest?.images.length||0,missingSourceImages:mediaManifest?.missing?.reduce((n,entry)=>n+entry.count,0)||0,sourceLinks:catalog.counts.links||0,sections:sectionCount,htmlPages:pages.length,sourceBytes:totalTextBytes},search:{status:'pending',pages:searchPages.length}};
+await fs.appendFile(path.join(output,'llms.txt'),`\n## External catalogues distributed with Otzaria\n- [External metadata catalogue](${absoluteUrl(config,'external/catalog.json')}): ${externalSummary.records} bibliographic records from Otzar HaHochma and HebrewBooks. Follow the provider page URLs and their next links for every record; mapping exports retain all source associations.\n- [Browse external books](${absoluteUrl(config,'external/index.html')}): static HTML pages and stable record anchors.\nThese records describe books on external services. Their full text and PDFs are not part of the external catalogue database. providerUrl is the native source link; url is the local metadata anchor; localBooks lists only exact source mappings to books present in this Otzaria release.\n`);
+await write('_headers',`/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: SAMEORIGIN\n  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'\n\n/pagefind/*\n  Cache-Control: public, max-age=3600\n\n/external/pagefind/*\n  Cache-Control: public, max-age=3600\n`);
+const manifest={schemaVersion:1,builtAt,codeRevision:process.env.GITHUB_SHA||null,sourceGeneratedAt:catalog.generatedAt,profile:catalog.profile,scope:catalog.scope,externalScope:externalSnapshot.catalog.scope,siteUrl:config.siteUrl,basePath:config.basePath,sources:upstream,counts:{books:books.length,baseBooks:books.filter(b=>!b.editionOf).length,editions:books.filter(b=>b.editionOf).length,pdfs:companions?.pdfs.length||0,images:mediaManifest?.images.length||0,missingSourceImages:mediaManifest?.missing?.reduce((n,entry)=>n+entry.count,0)||0,sourceLinks:catalog.counts.links||0,sections:sectionCount,htmlPages:pages.length,sourceBytes:totalTextBytes,externalRecords:externalSummary.records,externalProviders:externalSummary.providers,externalHtmlPages:externalSummary.htmlPages,externalMappings:externalSummary.mappings},search:{status:'pending',pages:searchPages.length},externalSearch:{status:'pending',records:externalSummary.records}};
 await write('build-manifest.json',JSON.stringify(manifest,null,2));
-await fs.writeFile(path.join(ROOT,'.cache/search-pages.json'),JSON.stringify({outputDir:output,basePath:config.basePath,pages:searchPages}));
+await fs.writeFile(path.resolve(ROOT,process.env.SEARCH_INPUT||'.cache/search-pages.json'),JSON.stringify({outputDir:output,basePath:config.basePath,pages:searchPages}));
 console.log(JSON.stringify({message:'Static HTML built',...manifest.counts,profile:catalog.profile,output},null,2));

@@ -23,23 +23,24 @@ if (!['starter', 'full'].includes(profile)) throw new Error('Profile must be sta
 if (args.includes('--check') && args.includes('--offline')) throw new Error('--check and --offline cannot be combined.');
 const root = resolve(import.meta.dirname, '..');
 const options = { root, profile, output: value('--output') ? resolve(value('--output')) : resolve(root, '.cache/library') };
+const runImporter = (script, extraArgs = []) => new Promise((resolveResult, reject) => {
+  const child = spawn('python3', [resolve(root, 'scripts', script), '--root', root, ...extraArgs], {stdio:['ignore','pipe','inherit']});
+  let output = '';
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', chunk => output += chunk);
+  child.on('error', reject);
+  child.on('close', code => {
+    if (code !== 0) reject(new Error(`${script} failed; publishing must stop.`));
+    else {try{resolveResult(JSON.parse(output.trim()));}catch(error){reject(error);}}
+  });
+});
 const result = args.includes('--check') ? await checkUpstream(options) : await syncLibrary({ ...options, offline: args.includes('--offline') });
 if (profile === 'full') {
-  const companionArgs = [resolve(root, 'scripts/sync_companions.py'), '--root', root];
-  if (args.includes('--check')) companionArgs.push('--check');
-  if (args.includes('--offline')) companionArgs.push('--offline');
-  result.companions = await new Promise((resolveResult, reject) => {
-    const child = spawn('python3', companionArgs, {stdio:['ignore','pipe','inherit']});
-    let output = '';
-    child.stdout.setEncoding('utf8');
-    child.stdout.on('data', chunk => output += chunk);
-    child.on('error', reject);
-    child.on('close', code => {
-      if (code !== 0) reject(new Error('Companion synchronization failed; publishing must stop.'));
-      else {try{resolveResult(JSON.parse(output.trim()));}catch(error){reject(error);}}
-    });
-  });
-  result.changed = result.changed || result.companions.changed;
+  const flags = args.includes('--check') ? ['--check'] : args.includes('--offline') ? ['--offline'] : [];
+  result.companions = await runImporter('sync_companions.py', flags);
+  result.external = await runImporter('sync_external.py', flags);
+  result.references = await runImporter('sync_references.py', ['--library', options.output, ...(args.includes('--check') ? ['--check'] : [])]);
+  result.changed = result.changed || result.companions.changed || result.external.changed || result.references.changed;
 }
 console.log(JSON.stringify(result, null, 2));
 if (process.env.GITHUB_OUTPUT && 'changed' in result) await appendFile(process.env.GITHUB_OUTPUT, `changed=${result.changed}\n`);

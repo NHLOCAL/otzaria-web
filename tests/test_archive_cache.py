@@ -5,10 +5,17 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from prune_archive_cache import prune, retained_archives
+from prune_archive_cache import current_archives, prune, retained_archives
 
 
 class ArchiveCacheTests(unittest.TestCase):
+    def test_current_external_catalog_archive_has_retention_priority(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog = root / '.cache/external/catalog.json'; catalog.parent.mkdir(parents=True)
+            catalog.write_text(json.dumps({'source': {'archiveSha256': 'c' * 64}}))
+            self.assertEqual(current_archives(root), {'c' * 64 + '.part'})
+
     def test_current_database_and_older_current_pdf_win_over_recent_obsolete_archives(self):
         entries = [
             {'name': 'current-db', 'bytes': 6, 'mtime': 20},

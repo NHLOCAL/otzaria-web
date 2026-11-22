@@ -97,6 +97,13 @@ function checkResultHref(href) {
   return url.pathname;
 }
 
+async function readBuiltJson(href) {
+  const url = new URL(href, origin);
+  assert.equal(url.origin, origin, 'Metadata file leaves the current static host');
+  assert(url.pathname.startsWith(config.basePath), 'Metadata file has the wrong base path');
+  return JSON.parse(await fs.readFile(path.join(config.outputDir, url.pathname.slice(config.basePath.length)), 'utf8'));
+}
+
 try {
   await step('Preview server serves actual built HTML', async () => {
     const deadline = Date.now() + 20_000;
@@ -121,6 +128,19 @@ try {
   const firstSection = genesisMetadata.sections[0];
   const firstReading = new URL(firstSection.url, origin).href;
   const bookUrl = new URL(genesis.url, origin).href;
+  const externalCatalog = await readBuiltJson(localUrl('external/catalog.json'));
+  const hebrewBooks = externalCatalog.providers.find(provider => provider.id === 'hebrewbooks');
+  const otzar = externalCatalog.providers.find(provider => provider.id === 'otzar');
+  assert(hebrewBooks && otzar, 'The smoke corpus must contain both external providers');
+  let externalGenesis;
+  for (const entry of hebrewBooks.pages) {
+    const records = (await readBuiltJson(entry.url)).records;
+    externalGenesis = records.find(record => record.localBooks?.some(book => book.id === genesis.id));
+    if (externalGenesis) break;
+  }
+  assert(externalGenesis, 'The actual external fixture needs a verified mapping to Genesis');
+  const authorRecord = (await readBuiltJson(otzar.pages[0].url)).records.find(record => record.authors?.length);
+  assert(authorRecord, 'The actual external fixture needs an author query');
 
   browser = await chromium.launch({ headless: true });
   const desktop = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL', reducedMotion: 'reduce' });
@@ -325,6 +345,92 @@ try {
       await mobile.getByRole('button', { name: 'הגדלת אותיות', exact: true }).click();
       await noOverflow(mobile);
       return { homeSize, readerSize };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  await step('External records and verified local-reader links work without JavaScript', async () => {
+    const context = await browser.newContext({ viewport: report.viewports.desktop, javaScriptEnabled: false, locale: 'he-IL' });
+    const staticPage = await context.newPage(); activePage = staticPage; monitor(staticPage, 'external-no-js');
+    try {
+      await staticPage.goto(localUrl('external/index.html'), { waitUntil: 'networkidle' });
+      await expectUI(staticPage.getByRole('heading', { name: 'קטלוגים חיצוניים', exact: true })).toBeVisible();
+      await expectUI(staticPage.locator('.external-provider-row')).toHaveCount(externalCatalog.providers.length);
+      await staticPage.locator(`.external-provider-row[href="${hebrewBooks.href}"]`).click();
+      await expectUI(staticPage.locator('.external-page-index a')).toHaveCount(hebrewBooks.pages.length);
+      const target = new URL(externalGenesis.url, origin);
+      await staticPage.locator(`.external-page-index a[href="${target.pathname}"]`).click();
+      const record = staticPage.locator(`#${externalGenesis.id}`);
+      await record.scrollIntoViewIfNeeded();
+      await expectUI(record.locator('h2')).toHaveText(externalGenesis.title);
+      await expectUI(record.locator(`a[href="${externalGenesis.providerUrl}"]`).first()).toBeVisible();
+      await screenshot('external-record-desktop', staticPage);
+      const readerLink = record.locator(`.external-local-reader[href="${genesis.url}"]`);
+      await expectUI(readerLink).toBeVisible();
+      await readerLink.click();
+      await staticPage.locator('.book-actions .button-primary').click();
+      assert(normalize(await staticPage.locator('.reading-text').innerText()).includes('בראשית ברא אלהים'), 'External mapping did not reach the actual Genesis text');
+      return { providerPages: hebrewBooks.pages.length, recordId: externalGenesis.id, localBook: genesis.id };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  const externalRequests = [];
+  const recordExternalRequest = request => externalRequests.push(request.url());
+  page.on('request', recordExternalRequest);
+  await step('External title search loads on demand and filters its own provider index', async () => {
+    await page.goto(localUrl('external/search.html'), { waitUntil: 'networkidle' });
+    await readyPage(page);
+    assert(!externalRequests.some(url => new URL(url).pathname.startsWith(`${config.basePath}external/pagefind/`)), 'External index loaded before a query');
+    await expectUI(page.locator('[data-external-search-controls]')).toBeVisible();
+    await page.locator('[data-external-search-input]').fill(externalGenesis.title);
+    await page.locator('[data-external-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+    const target = page.locator(`.external-result h2 a[href$="#${externalGenesis.id}"]`);
+    await expectUI(target).toBeVisible();
+    await expectUI(page.locator('[data-external-search]')).not.toHaveAttribute('aria-busy', 'true');
+    assert.equal(new URL(await target.getAttribute('href'), origin).href, new URL(externalGenesis.url, origin).href);
+    assert(externalRequests.some(url => new URL(url).pathname.startsWith(`${config.basePath}external/pagefind/`)), 'External search never requested its static index');
+    assert(!externalRequests.some(url => new URL(url).pathname.startsWith(`${config.basePath}pagefind/`)), 'External metadata search loaded the core full-text index');
+    await screenshot('external-search-desktop');
+    await page.locator('[data-external-search-provider]').selectOption('otzar');
+    await expectUI(page.locator('[data-external-search-status]')).toContainText('לא נמצאו');
+    await expectUI(page.locator('.external-result')).toHaveCount(0);
+    await page.locator('[data-external-search-provider]').selectOption('hebrewbooks');
+    await expectUI(target).toBeVisible();
+    return { query: externalGenesis.title, target: externalGenesis.url, isolatedIndex: true };
+  });
+
+  await step('External author search preserves source identity and does not invent local mappings', async () => {
+    await page.locator('[data-external-search-provider]').selectOption('otzar');
+    await page.locator('[data-external-search-input]').fill(authorRecord.authors[0]);
+    await page.locator('[data-external-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+    const target = page.locator(`.external-result h2 a[href$="#${authorRecord.id}"]`);
+    await expectUI(target).toBeVisible();
+    const item = target.locator('..').locator('..');
+    await expectUI(item.locator('.external-author')).toContainText(authorRecord.authors[0]);
+    await expectUI(item.locator(`a[href="${authorRecord.providerUrl}"]`)).toBeVisible();
+    await target.click(); await readyPage(page);
+    const record = page.locator(`#${authorRecord.id}`);
+    await expectUI(record.locator('h2')).toHaveText(authorRecord.title);
+    await expectUI(record.locator('.external-local-reader')).toHaveCount(authorRecord.localBooks.length);
+    assert.equal(externalRequests.filter(url => new URL(url).origin !== origin).length, 0, 'Search fetched content from an external provider');
+    return { author: authorRecord.authors[0], providerUrl: authorRecord.providerUrl, localMappings: authorRecord.localBooks.length };
+  });
+  page.off('request', recordExternalRequest);
+
+  await step('External catalogue and metadata remain readable on mobile', async () => {
+    const context = await browser.newContext({ viewport: report.viewports.mobile, locale: 'he-IL', isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+    const mobile = await context.newPage(); activePage = mobile; monitor(mobile, 'external-mobile');
+    try {
+      await mobile.goto(localUrl('external/index.html'), { waitUntil: 'networkidle' });
+      await readyPage(mobile);
+      await expectUI(mobile.locator('.site-header a[href$="external/index.html"]')).toBeVisible();
+      const landingSize = await noOverflow(mobile);
+      await screenshot('external-home-mobile', mobile);
+      await mobile.goto(new URL(externalGenesis.url, origin).href, { waitUntil: 'networkidle' });
+      await readyPage(mobile);
+      await expectUI(mobile.locator(`#${externalGenesis.id} h2`)).toBeVisible();
+      const recordSize = await noOverflow(mobile);
+      await screenshot('external-record-mobile', mobile);
+      return { landingSize, recordSize };
     } finally { await context.close(); activePage = page; }
   });
 

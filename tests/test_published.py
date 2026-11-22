@@ -10,13 +10,14 @@ from check_published import publication_matches, run
 
 class PublicationCheckTests(unittest.TestCase):
     def setUp(self):
-        self.expected = dict(revision='a' * 40, site_url='https://example.org/', base_path='/', database_manifest='b' * 64, database_archive='c' * 64, pdf_archive='d' * 64)
+        self.expected = dict(revision='a' * 40, site_url='https://example.org/', base_path='/', database_manifest='b' * 64, database_archive='c' * 64, pdf_archive='d' * 64, external_archive='e' * 64)
         self.manifest = {
             'schemaVersion': 1, 'profile': 'full', 'codeRevision': self.expected['revision'],
-            'siteUrl': 'https://example.org/', 'basePath': '/', 'scope': {'complete': True}, 'search': {'status': 'ready'},
+            'siteUrl': 'https://example.org/', 'basePath': '/', 'scope': {'complete': True}, 'search': {'status': 'ready'}, 'externalScope': {'complete': True}, 'externalSearch': {'status': 'ready', 'records': 123}, 'counts': {'externalRecords': 123},
             'sources': [
                 {'repository': 'Otzaria/SeforimLibrary', 'manifestSha256': 'b' * 64, 'archiveSha256': 'c' * 64},
                 {'id': 'talmud-pdfs', 'repository': 'Otzaria/otzaria-library', 'archiveSha256': 'd' * 64},
+                {'id': 'otzaria-external-catalog', 'repository': 'Otzaria/otzar-HB_catalog', 'archiveSha256': 'e' * 64},
             ],
         }
 
@@ -30,6 +31,9 @@ class PublicationCheckTests(unittest.TestCase):
             (('sources', 0, 'manifestSha256'), 'new-manifest'),
             (('sources', 0, 'archiveSha256'), 'new-database'),
             (('sources', 1, 'archiveSha256'), 'new-pdfs'),
+            (('sources', 2, 'archiveSha256'), 'new-external-metadata'),
+            (('externalSearch', 'status'), 'pending'), (('counts', 'externalRecords'), 0),
+            (('externalScope', 'complete'), False), (('externalSearch', 'records'), 122),
         ]:
             changed = copy.deepcopy(self.manifest)
             parent = changed
@@ -47,6 +51,9 @@ class PublicationCheckTests(unittest.TestCase):
         ambiguous['sources'].append(copy.deepcopy(ambiguous['sources'][0]))
         self.assertFalse(publication_matches(ambiguous, **self.expected))
         self.assertFalse(publication_matches(self.manifest, **{**self.expected, 'revision': ''}))
+        missing_external = copy.deepcopy(self.manifest)
+        missing_external['sources'].pop()
+        self.assertFalse(publication_matches(missing_external, **self.expected))
 
     def test_unavailable_publication_falls_back_to_a_build(self):
         with patch('check_published.published_manifest', side_effect=TimeoutError):

@@ -12,6 +12,7 @@ const attr=(node,name)=>node.attrs?.find(a=>a.name===name)?.value;
 const memoFile=async p=>{if(!cache.has(p))cache.set(p,await fs.access(p).then(()=>true,()=>false));return cache.get(p);};
 const manifest=JSON.parse(await fs.readFile(path.join(root,'build-manifest.json'),'utf8'));
 if(!htmlOnly&&manifest.search.status!=='ready') failures.push('Search index is not complete');
+if(!htmlOnly&&manifest.counts.externalRecords&&manifest.externalSearch?.status!=='ready')failures.push('External catalogue search index is not complete');
 for await(const file of walk(root)){
   if(!file.endsWith('.html'))continue;
   const relative=path.relative(root,file);const content=await fs.readFile(file,'utf8');const all=nodes(parse(content));count++;

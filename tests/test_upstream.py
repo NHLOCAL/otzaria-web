@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -21,6 +22,76 @@ media_spec.loader.exec_module(media)
 
 
 class UpstreamTests(unittest.TestCase):
+    def test_native_source_metadata_refresh_preserves_text_provenance_and_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'books').mkdir()
+            (root / 'lines').mkdir()
+            (root / 'books/b-1.txt').write_text('תוכן מקורי\n', encoding='utf-8')
+            (root / 'lines/b-1.json').write_text('[31]', encoding='utf-8')
+            payloads = {str(file.relative_to(root)): file.read_bytes() for file in root.rglob('*') if file.is_file()}
+            original = {
+                'exporterVersion': sync.EXPORTER_VERSION,
+                'generatedAt': '2026-11-19T23:21:11Z',
+                'scope': {'content': 'Old scope', 'complete': True},
+                'books': [
+                    {'id': 'b-1', 'title': 'א', 'sourceKey': 'KSK', 'sourceName': 'כונס ספרים קטנים', 'sourceUrl': 'https://github.com/Otzaria/SeforimLibrary/releases/test', 'contentSha256': 'text-digest', 'file': 'books/b-1.txt', 'lineIdsSha256': 'line-digest'},
+                    {'id': 'b-2', 'title': 'ב', 'sourceKey': 'National-LibraryToOtzaria', 'sourceName': 'הספרייה הלאומית', 'sourceUrl': 'https://github.com/Otzaria/SeforimLibrary/releases/test'},
+                    {'id': 'b-3', 'title': 'ג', 'sourceKey': 'Sefaria', 'sourceName': 'ספריא', 'customMetadata': 'keep'},
+                ],
+            }
+            (root / 'catalog.json').write_bytes(sync.json_bytes(original))
+            catalog, corrections, changed = sync.refresh_metadata_labels(root)
+            self.assertTrue(changed)
+            self.assertEqual([row['bookId'] for row in corrections], ['b-1', 'b-2'])
+            self.assertEqual(corrections[0]['old']['sourceName'], 'כונס ספרים קטנים')
+            self.assertEqual(sync.source_label('KSK'), 'קובץ שיטות קמאי')
+            self.assertEqual(sync.source_label('National-LibraryToOtzaria'), 'יד הרמב"ם')
+            self.assertEqual(catalog['books'][0]['sourceHomepageUrl'], '')
+            self.assertEqual(catalog['books'][1]['sourceHomepageUrl'], 'https://fjms.genizah.org/')
+            self.assertEqual(catalog['books'][2], original['books'][2])
+            for before, after in zip(original['books'], catalog['books']):
+                for key, value in before.items():
+                    if key != 'sourceName':
+                        self.assertEqual(after[key], value)
+            self.assertEqual(catalog['generatedAt'], original['generatedAt'])
+            self.assertEqual(catalog['exporterVersion'], original['exporterVersion'])
+            self.assertEqual(catalog['metadataRulesVersion'], sync.METADATA_RULES_VERSION)
+            self.assertIn('downloaded by the native installer', catalog['scope']['content'])
+            self.assertNotIn('optional external', catalog['scope']['content'])
+            for name, content in payloads.items():
+                self.assertEqual((root / name).read_bytes(), content)
+            unchanged_bytes = (root / 'catalog.json').read_bytes()
+            unchanged_mtime = (root / 'catalog.json').stat().st_mtime_ns
+            self.assertEqual(sync.refresh_metadata_labels(root)[1:], ([], False))
+            self.assertEqual((root / 'catalog.json').read_bytes(), unchanged_bytes)
+            self.assertEqual((root / 'catalog.json').stat().st_mtime_ns, unchanged_mtime)
+
+    def test_cached_sync_detects_and_refreshes_metadata_without_reimporting_database(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'config').mkdir()
+            output = root / 'library'
+            output.mkdir()
+            config = {'repository': 'Otzaria/SeforimLibrary'}
+            (root / 'config/sources.json').write_bytes(sync.json_bytes(config))
+            original = {'schemaVersion': 1, 'exporterVersion': sync.EXPORTER_VERSION, 'profile': 'full', 'configSha256': hashlib.sha256(sync.json_bytes(config)).hexdigest(), 'sources': [{'manifestSha256': 'manifest'}], 'scope': {'content': 'Old scope'}, 'books': [{'id': 'b-1', 'title': 'א', 'sourceKey': 'KSK', 'sourceName': 'כונס ספרים קטנים'}]}
+            (output / 'catalog.json').write_bytes(sync.json_bytes(original))
+            state = {'manifestSha256': 'manifest', 'release': {'tag_name': 'release'}, 'stats': {'db_version': 39, 'books': 1}, 'libraryHead': 'commit', 'provenance': {'otzaria_target_commit': 'commit'}}
+            args = SimpleNamespace(root=str(root), output=str(output), profile='full', offline=False, check=True)
+            with patch.object(sync, 'release_state', return_value=state), patch.object(sync, 'validate_snapshot', return_value=original) as validate, patch.object(sync, 'database_file') as database, patch.object(sync, 'export_database') as export, patch.object(sync, 'write_active_archive_receipt'):
+                self.assertTrue(sync.run(args)['changed'])
+                self.assertEqual(sync.load_json(output / 'catalog.json'), original)
+                validate.assert_not_called()
+                args.check = False
+                self.assertTrue(sync.run(args)['changed'])
+                refreshed = sync.load_json(output / 'catalog.json')
+                self.assertEqual(refreshed['books'][0]['sourceName'], 'קובץ שיטות קמאי')
+                self.assertEqual(refreshed['metadataRulesVersion'], sync.METADATA_RULES_VERSION)
+                self.assertFalse(sync.run(args)['changed'])
+                database.assert_not_called()
+                export.assert_not_called()
+
     def test_release_asset_selection_matches_application_schema_and_format_order(self):
         def assets(*names):
             return {name: {'name': name, 'browser_download_url': 'https://github.com/example/' + name} for name in names}

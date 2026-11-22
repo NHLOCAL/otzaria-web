@@ -45,6 +45,12 @@ def current_archives(root):
         if not isinstance(digest, str) or not re.fullmatch('[a-f0-9]{64}', digest):
             raise ValueError('Invalid companion archive digest')
         active.add(digest + '.tar.zst')
+    external = root / '.cache/external/catalog.json'
+    if external.exists():
+        digest = json.loads(external.read_text(encoding='utf-8')).get('source', {}).get('archiveSha256')
+        if not isinstance(digest, str) or not re.fullmatch('[a-f0-9]{64}', digest):
+            raise ValueError('Invalid external catalog archive digest')
+        active.add(digest + '.part')
     return active
 
 

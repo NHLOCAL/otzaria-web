@@ -26,6 +26,7 @@ const manifest = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const prefix = (manifest.basePath || '/').replace(/^\/+|\/+$/g, '');
 if (prefix !== process.env.OTZARIA_PREFIX) throw new Error('R2_PREFIX must match the BASE_PATH used to build the site.');
 if (manifest.search?.status !== 'ready') throw new Error('Refusing to deploy a site whose search index is not ready.');
+if (manifest.externalSearch?.status !== 'ready') throw new Error('Refusing to deploy a site whose external catalog search is not ready.');
 NODE
 OTZARIA_TEMP="$(mktemp -d)"
 trap 'rm -rf "$OTZARIA_TEMP"' EXIT
@@ -75,15 +76,29 @@ cat > "$OTZARIA_TEMP/entrypoints.txt" <<'RULES'
 /pagefind/**/pagefind.js
 /pagefind/**/pagefind-ui.js
 /pagefind/**/pagefind-ui.css
+/external/catalog.json
+/external/search-manifest.json
+/external/*.html
+/external/*/index.html
+/external/pagefind/pagefind-entry.json
+/external/pagefind/pagefind.js
+/external/pagefind/pagefind-ui.js
+/external/pagefind/pagefind-ui.css
+/external/pagefind/**/pagefind-entry.json
+/external/pagefind/**/pagefind.js
+/external/pagefind/**/pagefind-ui.js
+/external/pagefind/**/pagefind-ui.css
 RULES
 
-OTZARIA_FLAGS=(--checksum --fast-list --transfers 16 --checkers 32 --retries 3 --stats 30s --metadata-set 'cache-control=public,max-age=300')
+# Explicit upload headers work with distro rclone versions whose metadata-set
+# support still requires -M; copying local filesystem metadata is unnecessary.
+OTZARIA_FLAGS=(--checksum --fast-list --transfers 16 --checkers 32 --retries 3 --stats 30s --header-upload 'Cache-Control: public,max-age=300')
 rclone copy "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --exclude-from "$OTZARIA_TEMP/entrypoints.txt" --exclude '/build-manifest.json' --exclude '/_headers' --exclude '/.nojekyll'
 rclone copy "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --include-from "$OTZARIA_TEMP/entrypoints.txt"
 
 # Delete removed content only after successful publication. Keep historical
 # Pagefind fragments and content-addressed images so cached pages still work.
-rclone sync "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --delete-after --exclude '/pagefind/**' --exclude '/media/*.png' --exclude '/media/*.jpg' --exclude '/build-manifest.json' --exclude '/.otzaria-managed.json' --exclude '/_headers' --exclude '/.nojekyll'
+rclone sync "$OTZARIA_OUT" "$OTZARIA_DEST" "${OTZARIA_FLAGS[@]}" --delete-after --exclude '/pagefind/**' --exclude '/external/pagefind/**' --exclude '/media/*.png' --exclude '/media/*.jpg' --exclude '/build-manifest.json' --exclude '/.otzaria-managed.json' --exclude '/_headers' --exclude '/.nojekyll'
 
 # This is also the scheduled preflight's completion marker. Never replace it
 # before every content/discovery upload and removal above has succeeded.

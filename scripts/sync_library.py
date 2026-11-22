@@ -27,6 +27,12 @@ import uuid
 from datetime import datetime, timezone
 
 EXPORTER_VERSION = 4
+METADATA_RULES_VERSION = 1
+SOURCE_METADATA_OVERRIDES = {
+    'KSK': {'sourceName': 'קובץ שיטות קמאי', 'sourceHomepageUrl': ''},
+    'National-LibraryToOtzaria': {'sourceName': 'יד הרמב"ם', 'sourceHomepageUrl': 'https://fjms.genizah.org/'},
+}
+SOURCE_SCOPE_CONTENT = 'All canonical application books, primary text, inline notes, available alternate edition texts, edition metadata, source notices and outgoing links with range/anchor/suppression metadata. Companion Talmud PDFs are imported separately. The external provider catalog is downloaded by the native installer and published separately as link metadata; provider listings are disabled by default. The lexical search database is a separate application download. Embedded raster images are preserved as content-addressed static media; original missing image sources are explicitly reported.'
 MAX_LINE_BYTES = 16 * 1024 * 1024
 MAX_DATABASE_BYTES = 40 * 1024 * 1024 * 1024
 
@@ -328,7 +334,9 @@ def source_notice(source, versions, config):
 
 
 def source_label(key):
-    return {'Sefaria': 'ספריא', 'DictaToOtzaria': 'דיקטה', 'wikisourceToOtzaria': 'ויקיטקסט', 'pninimToOtzaria': 'פנינים', 'ToratEmetToOtzaria': 'תורת אמת', 'Ben-YehudaToOtzaria': 'פרויקט בן יהודה', 'wikiJewishBooksToOtzaria': 'אוצר הספרים היהודי השיתופי', 'tashmaToOtzaria': 'תא שמע', 'MoreBooks': 'ספרים נוספים באוצריא', 'OnYourWayToOtzaria': 'ובלכתך בדרך', 'OraytaToOtzaria': 'אורייתא', 'National-LibraryToOtzaria': 'הספרייה הלאומית', 'KSK': 'כונס ספרים קטנים', 'yam-HaHachmaToOtzaria': 'ים החכמה', 'BeitAharonVeYisraelToOtzaria': 'מכון בית אהרן וישראל', 'Unknown': 'מאגר אוצריא'}.get(key, key)
+    if key in SOURCE_METADATA_OVERRIDES:
+        return SOURCE_METADATA_OVERRIDES[key]['sourceName']
+    return {'Sefaria': 'ספריא', 'DictaToOtzaria': 'דיקטה', 'wikisourceToOtzaria': 'ויקיטקסט', 'pninimToOtzaria': 'פנינים', 'ToratEmetToOtzaria': 'תורת אמת', 'Ben-YehudaToOtzaria': 'פרויקט בן יהודה', 'wikiJewishBooksToOtzaria': 'אוצר הספרים היהודי השיתופי', 'tashmaToOtzaria': 'תא שמע', 'MoreBooks': 'ספרים נוספים באוצריא', 'OnYourWayToOtzaria': 'ובלכתך בדרך', 'OraytaToOtzaria': 'אורייתא', 'yam-HaHachmaToOtzaria': 'ים החכמה', 'BeitAharonVeYisraelToOtzaria': 'מכון בית אהרן וישראל', 'Unknown': 'מאגר אוצריא'}.get(key, key)
 
 
 def expand_banner(template, title):
@@ -485,6 +493,7 @@ def export_database(database, staging, config, profile, state, previous=None):
             source_name = sources.get(row['sourceId'], 'Unknown')
             metadata = {'id': book_id, 'upstreamId': row['id'], 'title': row['title'], 'author': ', '.join(authors[row['id']]), 'authors': authors[row['id']], 'categories': category_path(categories, row['categoryId']), 'description': row['heShortDesc'] or row['heDesc'] or '', 'sourceId': 'otzaria-database', 'sourceName': source_name, 'sourcePath': 'book/' + str(row['id']), 'sourceUrl': state['release']['html_url'], 'rawUrl': state['release']['html_url'], 'contentSha256': value, 'upstreamContentHash': str(row['contentHash']), 'license': source_notice(source_name, versions[row['id']], config), 'versions': versions[row['id']], 'banners': banners[row['id']], 'file': 'books/' + book_id + '.txt', 'bytes': length, 'sourceLineCount': line_count, 'updatedAt': old[book_id]['updatedAt'] if book_id in old and old[book_id]['contentSha256'] == value else release_date}
             metadata.update({'sourceName': source_label(source_name), 'sourceKey': source_name, 'lineIdsFile': line_ids_file, 'lineIdsSha256': digest_file(staging / line_ids_file), 'linksFile': links_file, 'linksSha256': digest_file(staging / links_file), 'linkCount': link_count})
+            metadata.update(SOURCE_METADATA_OVERRIDES.get(source_name, {}))
             metadata.update({'protectionLevel': protections.get(row['id'], 0), 'rawBanners': banners[row['id']], 'banners': [expand_banner(template, row['title']) for template in banners[row['id']]]})
             output.append(metadata)
             for version in versions[row['id']]:
@@ -502,14 +511,14 @@ def export_database(database, staging, config, profile, state, previous=None):
             raise ValueError('Full export line count differs from official release statistics')
         if profile == 'full' and state.get('stats') and total_links != state['stats']['links']:
             raise ValueError('Full export link count differs from official release statistics')
-        catalog = {'schemaVersion': 1, 'exporterVersion': EXPORTER_VERSION, 'profile': profile, 'generatedAt': now(), 'configSha256': hashlib.sha256(json_bytes(config)).hexdigest(), 'sources': [{'id': 'otzaria-database', 'name': 'ספריית אוצריא הרשמית', 'repository': config['repository'], 'release': state['release']['tag_name'], 'commit': state['release']['target_commitish'], 'publishedAt': release_date, 'checkedAt': state['checkedAt'], 'databaseVersion': int(schema['db_version']), 'databaseSchemaVersion': int(schema['db_schema_version']), 'archiveSha256': state['manifest']['sha256'], 'manifestSha256': state['manifestSha256'], 'libraryCommit': state['provenance'].get('otzaria_target_commit'), 'libraryHead': state.get('libraryHead'), 'licenseUrl': 'https://github.com/Otzaria/otzaria-library/blob/main/README.md'}], 'books': output, 'counts': {'discovered': total_books, 'published': len(output), 'excluded': total_books-len(output), 'lines': total_lines, 'notes': total_notes, 'sourceBytes': total_bytes}, 'scope': {'complete': profile == 'full', 'description': 'כל הספרים והטקסט הראשי במסד הנתונים הרשמי של תוכנת אוצריא.' if profile == 'full' else 'אוסף פיתוח של ספרים מלאים מהמסד הרשמי. בפריסה המלאה נכללים כל ספרי המסד.', 'content': 'Base text and inline notes from the official application database; edition metadata and source notices are preserved. Alternate version text, inter-book links and the separately installed external PDF catalog are not exported by this adapter.'}, 'upstreamStatus': {'releaseTag': state['release']['tag_name'], 'publishedAt': release_date, 'unreleasedSourceChanges': state.get('libraryHead') != state['provenance'].get('otzaria_target_commit')}}
+        catalog = {'schemaVersion': 1, 'exporterVersion': EXPORTER_VERSION, 'profile': profile, 'generatedAt': now(), 'configSha256': hashlib.sha256(json_bytes(config)).hexdigest(), 'sources': [{'id': 'otzaria-database', 'name': 'ספריית אוצריא הרשמית', 'repository': config['repository'], 'release': state['release']['tag_name'], 'commit': state['release']['target_commitish'], 'publishedAt': release_date, 'checkedAt': state['checkedAt'], 'databaseVersion': int(schema['db_version']), 'databaseSchemaVersion': int(schema['db_schema_version']), 'archiveSha256': state['manifest']['sha256'], 'manifestSha256': state['manifestSha256'], 'libraryCommit': state['provenance'].get('otzaria_target_commit'), 'libraryHead': state.get('libraryHead'), 'licenseUrl': 'https://github.com/Otzaria/otzaria-library/blob/main/README.md'}], 'books': output, 'counts': {'discovered': total_books, 'published': len(output), 'excluded': total_books-len(output), 'lines': total_lines, 'notes': total_notes, 'sourceBytes': total_bytes}, 'scope': {'complete': profile == 'full', 'description': 'כל הספרים והטקסט הראשי במסד הנתונים הרשמי של תוכנת אוצריא.' if profile == 'full' else 'אוסף פיתוח של ספרים מלאים מהמסד הרשמי. בפריסה המלאה נכללים כל ספרי המסד.', 'content': SOURCE_SCOPE_CONTENT}, 'upstreamStatus': {'releaseTag': state['release']['tag_name'], 'publishedAt': release_date, 'unreleasedSourceChanges': state.get('libraryHead') != state['provenance'].get('otzaria_target_commit')}}
         catalog['counts'].update({'baseBooks': len(rows), 'editionBooks': edition_count, 'links': total_links, 'excluded': total_books-len(rows)})
         catalog['connectionTypes'] = {str(row[0]): row[1] for row in connection.execute('SELECT id,name FROM connection_type ORDER BY id')} if 'connection_type' in tables else {}
-        catalog['scope']['content'] = 'All canonical application books, primary text, inline notes, available alternate edition texts, edition metadata, source notices and outgoing links with range/anchor/suppression metadata. Companion Talmud PDFs are imported separately. The optional external PDF-provider catalog and lexical search databases are separate application downloads.'
+        catalog['metadataRulesVersion'] = METADATA_RULES_VERSION
+        catalog['scope']['content'] = SOURCE_SCOPE_CONTENT
         if profile == 'full':
             catalog['scope']['description'] = 'כל הספרים, המהדורות הזמינות וקישורי המקורות במסד הנתונים הרשמי של תוכנת אוצריא.'
         catalog['media'] = export_media(staging, output)
-        catalog['scope']['content'] += ' Embedded raster images are preserved as content-addressed static media; original missing image sources are explicitly reported.'
         (staging / 'catalog.json').write_bytes(json_bytes(catalog))
         (staging / 'provenance.json').write_bytes(json_bytes({'release': {k: state['release'][k] for k in ['tag_name', 'html_url', 'published_at', 'target_commitish']}, 'archiveManifest': state['manifest'], 'buildProvenance': state['provenance'], 'officialStats': state.get('stats', {})}))
         return catalog
@@ -580,6 +589,31 @@ def write_active_archive_receipt(root, state):
         temporary.unlink(missing_ok=True)
 
 
+def refresh_metadata_labels(directory):
+    """Refresh native source labels and scope without touching content files."""
+    directory = Path(directory)
+    catalog = load_json(directory / 'catalog.json')
+    before = json_bytes(catalog)
+    corrections = []
+    for book in catalog['books']:
+        fields = SOURCE_METADATA_OVERRIDES.get(book.get('sourceKey'))
+        if not fields or all(book.get(key) == value for key, value in fields.items()):
+            continue
+        corrections.append({'bookId': book['id'], 'title': book['title'], 'sourceKey': book['sourceKey'], 'old': {key: book.get(key) for key in fields}, 'new': fields})
+        book.update(fields)
+    catalog['metadataRulesVersion'] = METADATA_RULES_VERSION
+    catalog['scope']['content'] = SOURCE_SCOPE_CONTENT
+    after = json_bytes(catalog)
+    if after != before:
+        temporary = directory / ('catalog.metadata-next-' + uuid.uuid4().hex + '.json')
+        try:
+            temporary.write_bytes(after)
+            temporary.replace(directory / 'catalog.json')
+        finally:
+            temporary.unlink(missing_ok=True)
+    return catalog, corrections, after != before
+
+
 def run(args):
     root = Path(args.root).resolve()
     output = Path(args.output).resolve() if args.output else root / '.cache/library'
@@ -596,15 +630,21 @@ def run(args):
             output.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(source, staging)
             swap_snapshot(staging, output)
-        return {'profile': args.profile, 'offline': True, 'published': len(catalog['books']), 'output': str(output), 'changed': False}
+        metadata_changed = False
+        if catalog.get('metadataRulesVersion') != METADATA_RULES_VERSION:
+            catalog, _, metadata_changed = refresh_metadata_labels(output)
+        return {'profile': args.profile, 'offline': True, 'published': len(catalog['books']), 'output': str(output), 'changed': metadata_changed}
     state = release_state(config)
     prior = (previous or {}).get('sources', [{}])[0]
     changed = not previous or previous.get('profile') != args.profile or previous.get('exporterVersion') != EXPORTER_VERSION or previous.get('configSha256') != hashlib.sha256(json_bytes(config)).hexdigest() or prior.get('manifestSha256') != state['manifestSha256']
-    status = {'changed': changed, 'profile': args.profile, 'release': state['release']['tag_name'], 'databaseVersion': state['stats']['db_version'], 'upstreamBooks': state['stats']['books'], 'unreleasedSourceChanges': state['libraryHead'] != state['provenance'].get('otzaria_target_commit')}
+    metadata_changed = bool(previous) and previous.get('metadataRulesVersion') != METADATA_RULES_VERSION
+    status = {'changed': changed or metadata_changed, 'profile': args.profile, 'release': state['release']['tag_name'], 'databaseVersion': state['stats']['db_version'], 'upstreamBooks': state['stats']['books'], 'unreleasedSourceChanges': state['libraryHead'] != state['provenance'].get('otzaria_target_commit')}
     if args.check:
         return status
     if not changed:
         validate_snapshot(output)
+        if metadata_changed:
+            previous, _, _ = refresh_metadata_labels(output)
         write_active_archive_receipt(root, state)
         return {**status, 'published': len(previous['books']), 'output': str(output)}
     database = database_file(root, state)
