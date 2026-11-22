@@ -15,7 +15,20 @@ export function normalizeSearchQuery(value) {
 
 export async function searchWholeWords(api, query, options = {}, isCurrent = () => true, bundlePath = '') {
   if (!isCurrent()) return null;
-  if (/^".+"$/.test(query)) return api.search(query, options);
+  if (/^".+"$/.test(query)) {
+    const exact = await api.search(query, options);
+    if (!isCurrent()) return null;
+    if (!exact.results.length) return { results: [] };
+    // Native phrase results all score 1. Obtain relevance scores separately,
+    // after phrase search has loaded the required chunks. Keep the original
+    // phrase handles: broad-query locations include non-adjacent occurrences.
+    const ranked = await api.search(query.slice(1, -1), options);
+    if (!isCurrent()) return null;
+    const scores = new Map(ranked.results.map(result => [result.id, result.score]));
+    const missing = exact.results.filter(result => !Number.isFinite(scores.get(result.id)));
+    if (missing.length) throw new Error(`Search engine omitted an exact-phrase rank in ${bundlePath}: ${missing.slice(0, 5).map(result => result.id).join(', ')}`);
+    return { results: exact.results.map(result => ({ ...result, score: scores.get(result.id) })) };
+  }
   const words = [...new Set(query.split(/\s+/).filter(word => /[\p{L}\p{N}]/u.test(word)))];
   let matching;
   for (const word of words) {

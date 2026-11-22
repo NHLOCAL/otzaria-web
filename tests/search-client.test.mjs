@@ -82,7 +82,8 @@ test('category and provider scopes select before index loading, preserving unkno
   const actual = await client.search('"בראשית ברא"', { filters: { category: 'תנך' } });
   assert.equal(actual.results.length, 2);
   assert.deepEqual(calls.instances.map(item => item.basePath), [`${prefix}second/`, `${prefix}legacy/`]);
-  assert(calls.searches.every(item => item.opts.filters.category === 'תנך' && item.query === '"בראשית ברא"'));
+  assert(calls.searches.every(item => item.opts.filters.category === 'תנך'));
+  assert.deepEqual([...new Set(calls.searches.map(item => item.query))], ['"בראשית ברא"', 'בראשית ברא']);
   assert.equal(calls.instances[0].metaCacheTag, 'hash-second');
   assert.equal(calls.instances[0].highlightParam, 'highlight');
   assert.equal(calls.imports.length, 1);
@@ -148,7 +149,7 @@ test('a superseding query stops queued shards and skips obsolete queued queries'
   const shards = ['a', 'b', 'c'].map(id => makeShard(id));
   const { client, calls } = fixture(shards, { concurrency: 1, search: async ({ query, path }) => {
     if (query === '"old"') { started.resolve(); await gate.promise; }
-    return response([result(`${query}:${path}`)]);
+    return response([result(`${query.replace(/^"|"$/g, '')}:${path}`)]);
   } });
   const old = client.search('"old"');
   await started.promise;

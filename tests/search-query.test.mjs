@@ -38,12 +38,46 @@ test('an incomplete native candidate set fails with shard and missing IDs', asyn
   await assert.rejects(searchWholeWords(api, 'בראשית ברא', {}, undefined, '/pagefind/shard/'), /shard\/.*he_missing/);
 });
 
-test('quoted phrases pass directly and cancellation skips remaining token queries', async () => {
+test('phrase ranking changes only scores, preserving exact membership and positional handles', async () => {
+  const queries = [];
+  const options = { filters: { category: 'תנך' } };
+  const exact = [
+    { id: 'first', score: 1, words: [4, 5], data: async () => ({ locations: [4, 5], excerpt: 'exact first' }) },
+    { id: 'second', score: 1, words: [8, 9], data: async () => ({ locations: [8, 9], excerpt: 'exact second' }) },
+  ];
+  const api = { search: async (query, passedOptions) => {
+    queries.push(query);
+    assert.equal(passedOptions, options);
+    return { results: query.startsWith('"') ? exact : [
+      { id: 'unrelated-prefix', score: 100, data: async () => { throw new Error('Wrong handle'); } },
+      { id: 'second', score: 12 }, { id: 'first', score: 3 },
+    ] };
+  } };
+  const actual = await searchWholeWords(api, '"בראשית ברא"', options);
+  assert.deepEqual(queries, ['"בראשית ברא"', 'בראשית ברא']);
+  assert.deepEqual(actual.results.map(result => [result.id, result.score]), [['first', 3], ['second', 12]]);
+  for (const [index, result] of actual.results.entries()) {
+    assert.equal(result.data, exact[index].data);
+    assert.equal(result.words, exact[index].words);
+    assert.deepEqual(await result.data(), await exact[index].data());
+  }
+  assert(exact.every(result => result.score === 1), 'Ranking must not mutate the native phrase response');
+});
+
+test('phrase ranking rejects missing candidates and skips ranking when no phrase matches', async () => {
+  const incomplete = { search: async query => ({ results: query.startsWith('"') ? [{ id: 'he_missing', score: 1 }] : [] }) };
+  await assert.rejects(searchWholeWords(incomplete, '"בראשית ברא"', {}, undefined, '/pagefind/shard/'), /exact-phrase rank.*shard\/.*he_missing/);
+  let calls = 0;
+  assert.deepEqual(await searchWholeWords({ search: async () => { calls++; return { results: [] }; } }, '"absent phrase"'), { results: [] });
+  assert.equal(calls, 1);
+});
+
+test('cancellation skips remaining word queries and phrase ranking', async () => {
   const queries = [];
   let current = true;
   const native = { results: [{ id: 'one' }] };
   const api = { search: async query => { queries.push(query); current = false; return native; } };
-  assert.equal(await searchWholeWords(api, '"בראשית ברא"'), native);
+  assert.equal(await searchWholeWords(api, '"בראשית ברא"', {}, () => current), null);
   current = true;
   assert.equal(await searchWholeWords(api, 'בראשית ברא', {}, () => current), null);
   assert.deepEqual(queries, ['"בראשית ברא"', '"בראשית"']);

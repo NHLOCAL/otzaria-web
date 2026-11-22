@@ -129,3 +129,49 @@ test('two actual native seven-hex fragment collisions cannot manufacture an AND 
     await fs.rm(directory, { recursive: true, force: true });
   }
 });
+
+test('native phrase relevance uses varied scores while retaining exact excerpts and locations', async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'otzaria-phrase-ranking-'));
+  const originalFetch = globalThis.fetch;
+  let client;
+  let native;
+  try {
+    const records = [
+      { url: '/books/short/s-1.html', body: 'בראשית ברא אלהים' },
+      { url: '/books/long/s-1.html', body: `בראשית דברים ברא ${Array(200).fill('לימוד').join(' ')} בראשית ברא` },
+      { url: '/books/gap/s-1.html', body: 'בראשית דברים ברא' },
+    ];
+    await writeFixture(directory, records, [[0, 1, 2]]);
+    globalThis.fetch = async value => new Response(await fs.readFile(path.join(directory, new URL(String(value), 'https://fixture.invalid').pathname.slice(1))));
+    const module = await import(pathToFileURL(path.join(directory, 'pagefind/p-0/pagefind.js')).href);
+    native = module.createInstance({ basePath: '/pagefind/p-0/', baseUrl: '/', noWorker: true, highlightParam: 'highlight', excerptLength: 34 });
+    await native.search('');
+    const exact = await native.search('"בראשית ברא"');
+    assert.equal(exact.results.length, 2);
+    assert(exact.results.every(result => result.score === 1), 'Fixture must exercise the native constant phrase score');
+    const original = new Map();
+    for (const result of exact.results) {
+      const data = await result.data();
+      original.set(new URL(data.url, 'https://fixture.invalid').pathname, structuredClone(data));
+    }
+    const downloads = [];
+    client = clientFor(directory, downloads);
+    const ranked = await client.search('"בראשית ברא"');
+    assert.equal(ranked.results.length, 2);
+    assert(new Set(ranked.results.map(result => result.score)).size > 1, 'Phrase relevance must not be an all-score-one ID sort');
+    assert(ranked.results[0].score > ranked.results[1].score);
+    for (const result of ranked.results) {
+      const data = await result.data();
+      const expected = original.get(new URL(data.url, 'https://fixture.invalid').pathname);
+      assert(expected, 'Ranking cannot introduce a nonphrase candidate');
+      assert.deepEqual(data.locations, expected.locations);
+      assert.deepEqual(data.weighted_locations, expected.weighted_locations);
+      assert.equal(data.excerpt, expected.excerpt);
+      assert.equal(data.url, expected.url);
+    }
+    assert.equal(downloads.filter(item => item.file.includes('/wasm.')).length, 1);
+  } finally {
+    await client?.destroy(); await native?.destroy(); await pagefind.close(); globalThis.fetch = originalFetch;
+    await fs.rm(directory, { recursive: true, force: true });
+  }
+});
