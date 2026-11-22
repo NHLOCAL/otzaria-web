@@ -23,6 +23,7 @@ export OTZARIA_PREFIX
 node --input-type=module - "$OTZARIA_OUT/build-manifest.json" <<'NODE'
 import { readFileSync } from 'node:fs';
 const manifest = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+if (manifest.partial) throw new Error('Refusing to deploy a partial build partition. Assemble and verify the complete corpus first.');
 const prefix = (manifest.basePath || '/').replace(/^\/+|\/+$/g, '');
 if (prefix !== process.env.OTZARIA_PREFIX) throw new Error('R2_PREFIX must match the BASE_PATH used to build the site.');
 if (manifest.search?.status !== 'ready') throw new Error('Refusing to deploy a site whose search index is not ready.');

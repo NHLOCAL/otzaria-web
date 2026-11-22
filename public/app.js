@@ -4,10 +4,6 @@ const pathFor = path => `${base}${path.replace(/^\/+/, '')}`;
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
 const normalize = value => String(value).normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'"“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-const normalizeSearch = value => {
-  const normalized = String(value).normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim();
-  return (normalized.match(/"/g) || []).length % 2 ? normalized.replace(/"/g, '') : normalized;
-};
 const readStored = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(`otzaria:${key}`)) ?? fallback; } catch { return fallback; }
 };
@@ -32,6 +28,18 @@ document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light
 let readerSize = Number(readStored('reader-size', 25));
 if (!Number.isFinite(readerSize) || readerSize < 20 || readerSize > 36) readerSize = 25;
 document.documentElement.style.setProperty('--reader-size', `${readerSize}px`);
+// These controls need JavaScript already. Keep one shared copy instead of
+// repeating their markup in every reading page. Cached older pages contain
+// the same controls and must retain their existing nodes.
+const readerToolbar = one('[data-reader] .reader-toolbar');
+if (readerToolbar && !readerToolbar.childElementCount) {
+  readerToolbar.innerHTML = `
+  <div class="type-controls" role="group" aria-label="גודל האותיות"><button class="tool-button" type="button" data-font-size="decrease" aria-label="הקטנת אותיות">א−</button><button class="tool-button" type="button" data-font-size="increase" aria-label="הגדלת אותיות">א+</button></div>
+  <button class="tool-button" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 14a9 9 0 0 1-10.8-10.8A9 9 0 1 0 20.8 14Z"/></svg><span>מצב כהה</span></button>
+  <button class="tool-button" type="button" data-bookmark aria-pressed="false"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg><span>שמירה</span></button>
+  <button class="tool-button" type="button" data-copy-link><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 13 4-4m-6 6-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m2 2 1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 0)"/></svg><span>העתקת קישור</span></button>
+`;
+}
 all('[data-enhance]').forEach(element => { element.hidden = false; });
 
 document.addEventListener('keydown', event => {
@@ -168,14 +176,14 @@ if (searchRegion) {
   const more = one('[data-search-more]');
   const categorySelect = one('[data-search-category]');
   const controls = one('[data-search-controls]');
-  let pagefindPromise;
+  let clientPromise;
+  let searchClient;
   let request = 0;
   let pendingTimer;
   let currentResults = [];
   let shown = 0;
   let desiredCategory = new URLSearchParams(location.search).get('category') || '';
   const batchSize = 15;
-  const mergeConcurrency = 4;
 
   function setCategoryOptions(categories) {
     const values = [...new Set(categories.filter(category => typeof category === 'string' && category))].sort((a, b) => a.localeCompare(b, 'he'));
@@ -192,38 +200,23 @@ if (searchRegion) {
   if (initialCategories.length) setCategoryOptions(initialCategories);
 
   async function loadSearch() {
-    if (!pagefindPromise) {
-      pagefindPromise = (async () => {
-        const response = await fetch(pathFor('search-manifest.json'));
-        if (!response.ok) throw new Error('Search manifest unavailable');
-        const manifest = await response.json();
-        if (!Array.isArray(manifest.shards) || !manifest.shards.length) throw new Error('No search shards');
-        const bundlePaths = manifest.shards.map(shard => {
-          const url = new URL(shard.bundlePath, location.href);
-          if (url.origin !== location.origin || !url.pathname.startsWith(base) || !url.pathname.endsWith('/')) throw new Error('Invalid search bundle path');
-          return url.pathname;
+    if (!clientPromise) {
+      clientPromise = import(pathFor('search-client.mjs')).then(({ createStaticSearchClient }) => {
+        searchClient = createStaticSearchClient({
+          manifestUrl: pathFor('search-manifest.json'),
+          bundlePrefix: pathFor('pagefind/'),
+          origin: location.origin,
+          indexOptions: { highlightParam: 'highlight' },
+          onManifest: manifest => {
+            const categories = manifest.shards.flatMap(shard => Array.isArray(shard.categories) ? shard.categories : []);
+            if (categories.length) setCategoryOptions(categories);
+          },
         });
-        const categories = manifest.shards.flatMap(shard => Array.isArray(shard.categories) ? shard.categories : []);
-        if (categories.length) setCategoryOptions(categories);
-        const api = await import(`${bundlePaths[0]}pagefind.js`);
-        try {
-          await api.options({ baseUrl: '/', excerptLength: 34, highlightParam: 'highlight' });
-          // Each merge owns a separate index pointer. Bounded parallel loading
-          // avoids serial network round trips without flooding large libraries.
-          for (let start = 1; start < bundlePaths.length; start += mergeConcurrency) {
-            const merges = await Promise.allSettled(bundlePaths.slice(start, start + mergeConcurrency).map(bundlePath => api.mergeIndex(bundlePath, { baseUrl: '/', language: 'he', highlightParam: 'highlight' })));
-            const failed = merges.find(result => result.status === 'rejected');
-            if (failed) throw failed.reason;
-          }
-          return api;
-        } catch (error) {
-          await api.destroy().catch(() => {});
-          throw error;
-        }
-      })();
-      pagefindPromise.catch(() => { pagefindPromise = null; });
+        return searchClient;
+      });
+      clientPromise.catch(() => { clientPromise = null; });
     }
-    return pagefindPromise;
+    return clientPromise;
   }
 
   function highlightedExcerpt(html) {
@@ -271,7 +264,6 @@ if (searchRegion) {
     const token = ++request;
     clearTimeout(pendingTimer);
     const rawQuery = input.value.trim();
-    const query = normalizeSearch(rawQuery);
     if (updateUrl) {
       const url = new URL(location.href);
       if (rawQuery) url.searchParams.set('q', rawQuery); else url.searchParams.delete('q');
@@ -279,14 +271,14 @@ if (searchRegion) {
       history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     }
     more.hidden = true; resultsElement.replaceChildren(); currentResults = []; shown = 0;
-    if (!query) { status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
+    if (!rawQuery) { searchClient?.cancel(); status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
     status.textContent = 'מחפשים בספרייה...'; searchRegion.setAttribute('aria-busy', 'true');
     try {
       const api = await loadSearch();
       if (token !== request) return;
       const options = categorySelect.value ? { filters: { category: categorySelect.value } } : {};
-      const response = await api.search(query, options);
-      if (token !== request) return;
+      const response = await api.search(rawQuery, options);
+      if (token !== request || !response) return;
       currentResults = response.results || [];
       if (!currentResults.length) status.textContent = 'לא נמצאו תוצאות. נסו פחות מילים, כתיב אחר או תחום לימוד אחר.';
       else await displayMore(token);
@@ -299,11 +291,18 @@ if (searchRegion) {
   }
 
   form.addEventListener('submit', event => { event.preventDefault(); search(); });
-  input.addEventListener('input', () => { clearTimeout(pendingTimer); pendingTimer = setTimeout(() => search(), 300); });
+  input.addEventListener('input', () => {
+    // Invalidate immediately, including during the debounce interval. The
+    // owned worker is terminated when it still has pending search downloads.
+    request++; searchClient?.cancel(); more.hidden = true; clearTimeout(pendingTimer);
+    if (!input.value.trim()) search();
+    else pendingTimer = setTimeout(() => search(), 300);
+  });
   categorySelect.addEventListener('change', () => { desiredCategory = categorySelect.value; search(); });
   more.addEventListener('click', async () => {
-    try { await displayMore(request); }
-    catch { more.disabled = false; status.textContent = 'טעינת התוצאות נוספות נכשלה. אפשר לנסות שוב.'; }
+    const token = request;
+    try { await displayMore(token); }
+    catch { if (token === request) { more.disabled = false; status.textContent = 'טעינת תוצאות נוספות נכשלה. נסו לחפש שוב.'; } }
   });
   addEventListener('popstate', () => {
     const params = new URLSearchParams(location.search);

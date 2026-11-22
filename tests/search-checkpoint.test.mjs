@@ -6,8 +6,8 @@ import path from 'node:path';
 import {checkpointIdentity, readCheckpoint, writeCheckpoint} from '../src/search-checkpoint.mjs';
 
 const pages = [
-  {path: 'books/b-1/s-1.html', bookId: 'b-1', bytes: 220, category: 'תנ״ך'},
-  {path: 'books/b-1/s-2.html', bookId: 'b-1', bytes: 310, category: 'תנ״ך'},
+  {path: 'books/b-1/s-1.html', bookId: 'b-1', bytes: 220, category: 'תנ״ך', contentSha256: 'a'.repeat(64)},
+  {path: 'books/b-1/s-2.html', bookId: 'b-1', bytes: 310, category: 'תנ״ך', contentSha256: 'b'.repeat(64)},
 ];
 
 async function bundleFixture(directory, count = pages.length) {
@@ -39,30 +39,32 @@ async function fixture(t) {
   return {directory, bundle, options, identity: checkpointIdentity(options)};
 }
 
-test('resume requires the same generated build, indexer and complete planned page identities', async t => {
+test('portable reuse ignores output directory and build time but requires actual content, URLs and indexer', async t => {
   const {bundle, options, identity} = await fixture(t);
   await writeCheckpoint(identity, bundle);
   assert.equal(await readCheckpoint(identity, bundle), true);
   const changes = [
-    {outputDir: `${options.outputDir}-other`},
     {basePath: '/other/'},
-    {builtAt: '2026-11-22T11:00:01Z'},
     {indexerSource: 'indexer revision two'},
     {pages: [pages[0], {...pages[1], path: 'books/b-1/s-3.html'}]},
-    {pages: [pages[0], {...pages[1], bytes: pages[1].bytes + 1}]},
-    {pages: [...pages].reverse()},
+    {pages: [pages[0], {...pages[1], contentSha256: 'c'.repeat(64)}]},
+    {options: {maxFragments: 16}},
     {key: '001'},
   ];
   for (const change of changes) {
     assert.equal(await readCheckpoint(checkpointIdentity({...options, ...change}), bundle), false, JSON.stringify(change));
   }
   assert.equal(await readCheckpoint(identity, bundle), true);
+  for (const change of [{outputDir: `${options.outputDir}-other`}, {builtAt: '2026-11-23T00:00:00Z'}, {pages: [...pages].reverse()}]) {
+    assert.equal(await readCheckpoint(checkpointIdentity({...options, ...change}), bundle), true);
+  }
 });
 
 test('a missing, truncated or renamed bundle file and an altered entry invalidate a receipt', async t => {
   const changes = {
     missing: bundle => fs.rm(path.join(bundle, 'fragment/second.pagefind')),
     truncated: bundle => fs.truncate(path.join(bundle, 'fragment/first.pagefind'), 4),
+    sameLengthCorruption: bundle => fs.writeFile(path.join(bundle, 'fragment/first.pagefind'), 'first CORRUPT! fragment'),
     renamed: bundle => fs.rename(path.join(bundle, 'fragment/first.pagefind'), path.join(bundle, 'fragment/replaced.pagefind')),
     entry: bundle => fs.writeFile(path.join(bundle, 'pagefind-entry.json'), JSON.stringify({version: '1.6.0', languages: {he: {page_count: pages.length, extra: true}}})),
   };

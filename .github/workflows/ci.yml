@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       LIBRARY_PROFILE: starter
@@ -76,5 +76,45 @@ jobs:
           name: starter-static-site
           path: dist/
           if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  partition-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        base_path: ['/', '/otzaria-web/']
+    env:
+      LIBRARY_PROFILE: starter
+      SOURCE_CATALOG: data/starter/catalog.json
+      SITE_URL: https://nhlocal.github.io
+      BASE_PATH: ${{ matrix.base_path }}
+      DEPLOY_TARGET: cloudflare-r2
+      BUILD_PARTITIONS: '2'
+      SEARCH_CONCURRENCY: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Install the partition transfer compressor
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y zstd
+      - name: Verify clean versus partitioned builds and cache invalidation
+        run: node scripts/profile-command.mjs partition-integration -- node tests/partition-build.mjs
+      - name: Keep partition test diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: partition-reports-${{ strategy.job-index }}
+          path: .cache/performance
+          if-no-files-found: warn
           retention-days: 7
           include-hidden-files: true

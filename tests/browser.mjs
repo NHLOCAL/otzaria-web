@@ -142,7 +142,7 @@ try {
   const authorRecord = (await readBuiltJson(otzar.pages[0].url)).records.find(record => record.authors?.length);
   assert(authorRecord, 'The actual external fixture needs an author query');
 
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}) });
   const desktop = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL', reducedMotion: 'reduce' });
   const page = await desktop.newPage(); activePage = page; monitor(page, 'desktop');
   page.setDefaultTimeout(20_000);
@@ -229,6 +229,29 @@ try {
     return { highlights: words.length };
   });
 
+  let legacyToolbarMarkup;
+  await step('Shared reader controls mount once and copy the canonical paragraph link', async () => {
+    const toolbar = page.locator('.reader-toolbar');
+    await expectUI(toolbar).toBeVisible();
+    await expectUI(toolbar.locator('button')).toHaveCount(5);
+    await desktop.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    const paragraph = await page.locator('.reading-text p[id]').first().getAttribute('id');
+    const previousUrl = page.url();
+    await page.evaluate(id => history.replaceState(null, '', `${location.pathname}${location.search}#${id}`), paragraph);
+    await toolbar.locator('[data-copy-link]').click();
+    await expectUI.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`${canonical}#${paragraph}`);
+    await expectUI(page.locator('.toast')).toContainText('הקישור הועתק');
+    await page.evaluate(url => history.replaceState(null, '', url), previousUrl);
+    legacyToolbarMarkup = await toolbar.evaluate(element => {
+      const old = element.cloneNode(true);
+      old.hidden = true;
+      old.querySelector('button').setAttribute('data-cached-control', 'true');
+      return old.outerHTML;
+    });
+    return { controls: 5, copiedCanonicalParagraph: true };
+  });
+
   let savedReaderPath;
   await step('Reader typography, theme persistence, and bookmark', async () => {
     const initialSize = await page.locator('.reading-text').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize));
@@ -301,6 +324,69 @@ try {
     await expectUI(page.locator('.search-result')).toHaveCount(0);
   });
 
+  await step('A fresh category search loads only relevant shard metadata', async () => {
+    const manifest = await readBuiltJson(localUrl('search-manifest.json'));
+    const category = genesis.categories[0];
+    const relevant = manifest.shards.filter(shard => !shard.categories?.length || shard.categories.includes(category));
+    const allowed = new Set(relevant.map(shard => new URL(`${shard.bundlePath}pagefind-entry.json`, origin).pathname));
+    const requested = new Set();
+    const inFlight = new Set();
+    let peak = 0;
+    let wasmRequests = 0;
+    const context = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL' });
+    context.on('request', request => {
+      const url = new URL(request.url());
+      if (url.pathname.endsWith('/pagefind-entry.json')) requested.add(url.pathname);
+      if (url.pathname.includes('/pagefind/') && !url.pathname.endsWith('.js')) {
+        inFlight.add(request); peak = Math.max(peak, inFlight.size);
+        if (/\/wasm\..+\.pagefind$/.test(url.pathname)) wasmRequests++;
+      }
+    });
+    context.on('requestfinished', request => inFlight.delete(request));
+    context.on('requestfailed', request => inFlight.delete(request));
+    const scoped = await context.newPage(); activePage = scoped; monitor(scoped, 'category-search');
+    try {
+      await scoped.goto(localUrl('search.html'), { waitUntil: 'networkidle' });
+      assert.equal(requested.size, 0, 'An empty search loaded an index');
+      await scoped.locator('[data-search-category]').selectOption(category);
+      await scoped.locator('[data-search-input]').fill('"בראשית ברא"');
+      await scoped.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await settledSearch(scoped);
+      assert(requested.size > 0, 'The scoped query never loaded a real search index');
+      assert.deepEqual([...requested].sort(), [...allowed].sort(), 'Category search loaded unrelated indexes or skipped relevant ones');
+      assert.equal(wasmRequests, 1, 'A selected scope must share one WASM download');
+      await expectUI(scoped.locator(`.search-result h2 a[href*="/books/${genesis.id}/"]`).first()).toBeVisible();
+      await scoped.locator('[data-search-category]').selectOption('');
+      await settledSearch(scoped);
+      assert.equal(requested.size, manifest.shards.length, 'Expanding the scope failed to include the remaining shards');
+      assert.equal(wasmRequests, 2, 'The global replacement worker must share one WASM download too');
+      assert(peak <= 8, `Search exceeded its eight-download bound: ${peak}`);
+      return { category, scopedShards: relevant.length, allShards: manifest.shards.length, wasmRequests, peakConcurrentDownloads: peak };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  await step('A failed worker chunk is visible and a new query retries successfully', async () => {
+    const context = await browser.newContext({ locale: 'he-IL' });
+    const failed = await context.newPage(); activePage = failed;
+    // Expected injected failures are kept out of the site's general clean
+    // network report. The UI must expose them instead of presenting partial hits.
+    const errors = [];
+    failed.on('pageerror', error => errors.push(error.message));
+    await context.route('**/*.pf_index', route => route.fulfill({ status: 503, body: 'Injected index failure' }));
+    try {
+      await failed.goto(localUrl('search.html'), { waitUntil: 'networkidle' });
+      await failed.locator('[data-search-input]').fill('בראשית ברא');
+      await failed.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await expectUI(failed.locator('[data-search-status]')).toContainText('לא ניתן לטעון');
+      await expectUI(failed.locator('.search-result')).toHaveCount(0);
+      await context.unroute('**/*.pf_index');
+      await failed.locator('[data-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+      await settledSearch(failed);
+      assert.deepEqual(errors, [], 'A rejected worker RPC escaped as an unhandled page error');
+      return { failureVisible: true, retrySucceeded: true };
+    } finally { await context.close(); activePage = page; }
+  });
+
   await step('Complete source and chapter navigation without JavaScript', async () => {
     const context = await browser.newContext({ viewport: report.viewports.desktop, javaScriptEnabled: false, locale: 'he-IL' });
     const noJs = await context.newPage(); activePage = noJs; monitor(noJs, 'no-js');
@@ -320,6 +406,28 @@ try {
       assert.equal(new URL(noJs.url()).pathname, new URL(href, origin).pathname);
       await expectUI(noJs.locator('.reading-chapter')).toContainText('פרק ב');
       return { paragraphs, characters: text.length, nextChapter: noJs.url() };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  await step('Cached HTML retains its existing reader controls without duplication', async () => {
+    const context = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL' });
+    const cached = await context.newPage(); activePage = cached; monitor(cached, 'cached-reader-controls');
+    await context.route(firstReading, async route => {
+      const response = await route.fetch();
+      const html = await response.text();
+      const placeholder = /<div class="reader-toolbar"[^>]*><\/div>/;
+      assert(placeholder.test(html), 'The generated reading page must contain the empty toolbar placeholder');
+      await route.fulfill({ response, body: html.replace(placeholder, legacyToolbarMarkup).replace('app.js?v=2', 'app.js') });
+    });
+    try {
+      await cached.goto(firstReading, { waitUntil: 'networkidle' });
+      await expectUI(cached.locator('.reader-toolbar button')).toHaveCount(5);
+      await expectUI(cached.locator('[data-cached-control]')).toHaveCount(1);
+      const before = await cached.locator('.reading-text').evaluate(element => getComputedStyle(element).fontSize);
+      await cached.getByRole('button', { name: 'הגדלת אותיות', exact: true }).click();
+      const after = await cached.locator('.reading-text').evaluate(element => getComputedStyle(element).fontSize);
+      assert(Number.parseFloat(after) > Number.parseFloat(before), 'Cached controls lost their event handlers');
+      return { controls: 5, cachedNodeRetained: true, typographyWorking: true };
     } finally { await context.close(); activePage = page; }
   });
 

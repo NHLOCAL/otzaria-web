@@ -46,10 +46,12 @@ function safeNode(node, images) {
 }
 
 export function stripMarkup(value) {
+  if (!/[<&]/.test(String(value))) return String(value).replace(/\s+/g, ' ').trim();
   return textOf(parseFragment(String(value))).replace(/\s+/g, ' ').trim();
 }
 
 export function sanitizeInline(value, {images=null}={}) {
+  if (!/[<&]/.test(String(value))) return escapeHtml(value);
   return parseFragment(String(value)).childNodes.map(node => safeNode(node,images)).join('');
 }
 
@@ -75,6 +77,14 @@ export function tokenize(source, {images=null}={}) {
   for(let index=0;index<lines.length;index++){
     const sourceLine=index+1;
     let line=lines[index];
+    // Most corpus rows are plain Hebrew. With neither '<' nor '&', the HTML
+    // parser cannot change the text. Avoid millions of fragment DOM allocations
+    // while keeping entity decoding and every markup case on the parser path.
+    if(!/[<&]/.test(line)){
+      const text=line.trim();
+      if(text)tokens.push({kind:'paragraph',html:escapeHtml(text),text,line:sourceLine});
+      continue;
+    }
     // Some official database rows split an HTML start tag from its attributes.
     // Parse the complete tag while retaining the first original line's anchor.
     while(incompleteTag(line)&&index+1<lines.length&&/^\s*(?:[a-z_:][\w:.-]*\s*=|\/?>)/i.test(lines[index+1]))line+='\n'+lines[++index];

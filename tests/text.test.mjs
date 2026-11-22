@@ -3,6 +3,20 @@ import assert from 'node:assert/strict';
 import { tokenize,parseBook,sanitizeInline,normalizeHebrew,hash } from '../src/text.mjs';
 import { normalizeBase,getConfig } from '../src/config.mjs';
 import { sitemapDocuments } from '../src/sitemap.mjs';
+import { parseFragment } from 'parse5';
+
+test('plain text fast path retains parser-equivalent Unicode, escaping and source lines',()=>{
+  const samples=['  בְּרֵאשִׁית בָּרָא  ', 'אב > גד', '"quoted" and \'apostrophe\'', 'שלום\tעולם', 'A 😀 Z', '\u00a0טקסט\u00a0', '  '];
+  for(const value of samples){
+    const tree=parseFragment(value);
+    const expected=tree.childNodes.map(node=>node.value||'').join('').trim();
+    const tokens=tokenize(`\n${value}\n`);
+    assert.equal(tokens.length,expected?1:0);
+    if(expected){assert.equal(tokens[0].text,expected);assert.equal(tokens[0].line,2);assert.equal(parseFragment(tokens[0].html).childNodes.map(node=>node.value||'').join(''),expected);}
+  }
+  assert.equal(tokenize('א &amp; ב')[0].text,'א & ב');
+  assert.equal(tokenize('<b>א</b>')[0].html,'<b>א</b>');
+});
 
 test('upstream markup cannot execute scripts or inject unsafe attributes',()=>{
   const input='<b onclick="alert(1)">טקסט</b><script>alert(1)</script><img src=x onerror=alert(1)><a href="javascript:alert(1)">קישור</a><svg><script>attack</script></svg>';
