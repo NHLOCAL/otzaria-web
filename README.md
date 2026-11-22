@@ -64,6 +64,8 @@ npm run sync -- --profile full --offline
 BASE_PATH=/ DEPLOY_TARGET=cloudflare-pages npm run build
 BASE_PATH=/otzaria-web/ DEPLOY_TARGET=github-pages npm run build
 SEARCH_SHARDS=3 npm run build
+# Use one indexing process on low-memory machines, or two by default.
+SEARCH_CONCURRENCY=1 npm run build
 npm exec playwright install chromium
 node tests/browser.mjs
 ```
