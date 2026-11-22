@@ -6,10 +6,11 @@ import { spawnSync } from 'node:child_process';
 import { ROOT } from '../src/config.mjs';
 
 async function fixture({ outsideDist = false } = {}) {
-  const parent = outsideDist ? path.join(ROOT, '.cache') : ROOT;
-  await fs.mkdir(parent, { recursive: true });
+  const cacheRoot = path.join(ROOT, '.cache');
+  await fs.mkdir(cacheRoot, { recursive: true });
+  const parent = outsideDist ? cacheRoot : ROOT;
   const output = await fs.mkdtemp(path.join(parent, outsideDist ? 'external-index-guard-' : 'dist-external-index-'));
-  const cache = await fs.mkdtemp(path.join(ROOT, '.cache/external-index-input-'));
+  const cache = await fs.mkdtemp(path.join(cacheRoot, 'external-index-input-'));
   await fs.mkdir(path.join(output, 'external/pagefind'), { recursive: true });
   await fs.mkdir(path.join(output, 'pagefind'), { recursive: true });
   await fs.writeFile(path.join(output, 'external/pagefind/stale.txt'), 'old external index');
