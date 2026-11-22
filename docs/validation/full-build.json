@@ -1,0 +1,3279 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-22T01:30:41.846003+00:00",
+  "status": "passed",
+  "scope": "Locally generated complete native-source corpus; this is not a live deployment or a full-corpus browser timing measurement.",
+  "build": {
+    "schemaVersion": 1,
+    "builtAt": "2026-11-21T23:39:00.909Z",
+    "codeRevision": null,
+    "sourceGeneratedAt": "2026-11-21T23:32:14.514789Z",
+    "profile": "full",
+    "scope": {
+      "complete": true,
+      "description": "כל הספרים, המהדורות הזמינות וקישורי המקורות במסד הנתונים הרשמי של תוכנת אוצריא.",
+      "content": "All canonical application books, primary text, inline notes, available alternate edition texts, edition metadata, source notices and outgoing links with range/anchor/suppression metadata. Companion Talmud PDFs are imported separately. The external provider catalog is downloaded by the native installer and published separately as link metadata; provider listings are disabled by default. The lexical search database is a separate application download. Embedded raster images are preserved as content-addressed static media; original missing image sources are explicitly reported.",
+      "externalCatalog": {
+        "downloadedByNativeInstaller": true,
+        "providerListingsEnabledByDefault": false,
+        "publishedSeparatelyAsMetadata": true,
+        "remotePdfPayloadsImported": false
+      }
+    },
+    "siteUrl": "https://nhlocal.github.io/",
+    "basePath": "/",
+    "sources": [
+      {
+        "id": "otzaria-database",
+        "name": "ספריית אוצריא הרשמית",
+        "repository": "Otzaria/SeforimLibrary",
+        "release": "v39-20261119190809",
+        "commit": "8bb3ae051543e23b12ad47ab1c935a49ddd80cc5",
+        "publishedAt": "2026-11-19T23:21:11Z",
+        "checkedAt": "2026-11-21T23:30:42.296094Z",
+        "databaseVersion": 39,
+        "databaseSchemaVersion": 7,
+        "archiveSha256": "ff092324534637be9498e98dddc9a8b2644f717dfbb0c754bebe72f86cfdaf55",
+        "manifestSha256": "70b2e192f138fb1d2088de2d90de05198d516d8e5aa74ed9c2055f5fe167a98a",
+        "libraryCommit": "8a6f9f5ebd464a7db078df72222a36412a5fee86",
+        "libraryHead": "752d22c2748d6fe4c49392ec8b8edb7d7af5ee78",
+        "licenseUrl": "https://github.com/Otzaria/otzaria-library/blob/main/README.md"
+      },
+      {
+        "id": "talmud-pdfs",
+        "repository": "Otzaria/otzaria-library",
+        "release": "library-links-44591723892-1-8a6f9f5ebd46",
+        "publishedAt": "2026-11-19T19:03:36Z",
+        "url": "https://github.com/Otzaria/otzaria-library/releases/download/library-links-44591723892-1-8a6f9f5ebd46/talmud_bavli_latest.tar.zst",
+        "archiveSha256": "0729aae1b9a8276e4e0e52ab11896b636c71e994d8f4498b89ca9c761d00a31e",
+        "archiveBytes": 470768597,
+        "appCommit": "cee59520a8e6d35d5350b8f51cde322d4b4b99cf",
+        "policyUrl": "https://github.com/Otzaria/otzaria/blob/cee59520a8e6d35d5350b8f51cde322d4b4b99cf/lib/library_update/services/companion_assets_service.dart",
+        "attribution": "קובצי התלמוד הבבלי המצורפים להפצה הרשמית של אוצריא. פרטי המקור נשמרים בקובצי ה-PDF."
+      },
+      {
+        "id": "otzaria-external-catalog",
+        "repository": "Otzaria/otzar-HB_catalog",
+        "release": "db-v10",
+        "publishedAt": "2026-11-01T21:54:06Z",
+        "version": 10,
+        "url": "https://github.com/Otzaria/otzar-HB_catalog/releases/download/db-v10/otzar-HB_catalog.db.zst",
+        "archiveSha256": "89fe6d51eeb9205fd12cd99c05db05047d36db568b3650e7a11a3de662fa07fc",
+        "archiveBytes": 6042798,
+        "appCommit": "cee59520a8e6d35d5350b8f51cde322d4b4b99cf",
+        "policyUrl": "https://github.com/Otzaria/otzaria/blob/cee59520a8e6d35d5350b8f51cde322d4b4b99cf/lib/external_catalog/repository/external_catalog_repository.dart"
+      }
+    ],
+    "counts": {
+      "books": 9799,
+      "baseBooks": 8258,
+      "editions": 1541,
+      "pdfs": 38,
+      "images": 1358,
+      "missingSourceImages": 82,
+      "sourceLinks": 7001655,
+      "sections": 378696,
+      "htmlPages": 390614,
+      "sourceBytes": 6710214495,
+      "externalRecords": 223835,
+      "externalProviders": 2,
+      "externalHtmlPages": 1370,
+      "externalMappings": 29463
+    },
+    "search": {
+      "status": "ready",
+      "pages": 378696,
+      "shards": 87,
+      "maxShardBytes": 134217728
+    },
+    "externalScope": {
+      "mode": "full",
+      "complete": true,
+      "content": "Bibliographic metadata and source links; no remote provider PDF payloads.",
+      "downloadedByNativeInstaller": true,
+      "providerListingsEnabledByDefault": false
+    },
+    "externalSearch": {
+      "status": "ready",
+      "records": 223835,
+      "shards": 45
+    }
+  },
+  "size": {
+    "target": "cloudflare-r2",
+    "limits": {
+      "htmlBytes": 1000000
+    },
+    "errors": [],
+    "ok": true,
+    "files": 870509,
+    "totalBytes": 25959563951,
+    "maxFileBytes": 62242573,
+    "htmlFiles": 390614,
+    "maxHtmlBytes": 668483,
+    "largestFiles": [
+      {
+        "path": "books/b-6049/text.txt",
+        "bytes": 62242573
+      },
+      {
+        "path": "books/b-5869/text.txt",
+        "bytes": 53294335
+      },
+      {
+        "path": "books/b-6050/text.txt",
+        "bytes": 43809385
+      },
+      {
+        "path": "pdfs/bavli-4c27fff8a5349bd7383a.pdf",
+        "bytes": 38164802
+      },
+      {
+        "path": "books/b-7577/text.txt",
+        "bytes": 38000726
+      },
+      {
+        "path": "books/b-390/text.txt",
+        "bytes": 34902955
+      },
+      {
+        "path": "books/b-7414/text.txt",
+        "bytes": 34556637
+      },
+      {
+        "path": "books/b-7558/text.txt",
+        "bytes": 34065274
+      },
+      {
+        "path": "books/b-3779/text.txt",
+        "bytes": 32651176
+      },
+      {
+        "path": "books/b-3900/text.txt",
+        "bytes": 30563423
+      }
+    ]
+  },
+  "htmlVerification": {
+    "command": "LIBRARY_PROFILE=full BASE_PATH=/ OUTPUT_DIR=dist-full node scripts/verify.mjs",
+    "status": "passed",
+    "documents": 390614,
+    "message": "Verified 390614 HTML documents: Hebrew/RTL, canonical URLs, internal links, anchors, structured data, complete search bodies, and deployment base.",
+    "logSha256": "1d572a09888cbf8f9feb99afa86a47857448838c0fcc9893eafcfa360476d91d"
+  },
+  "images": {
+    "passed": true,
+    "buildStartedAt": "2026-11-21T23:39:00.909Z",
+    "books": 9799,
+    "readingSections": 378696,
+    "verifiedImageFiles": 1358,
+    "imageInstances": 1588,
+    "missingUpstreamInstances": 82,
+    "expectedImageInstances": 1588,
+    "expectedMissingUpstreamInstances": 82,
+    "booksWithImages": [
+      {
+        "bookId": "b-105-v-434",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-108-v-443",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-303",
+        "images": 2,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-303-v-817",
+        "images": 2,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-439",
+        "images": 0,
+        "missing": 2,
+        "matched": true
+      },
+      {
+        "bookId": "b-447",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-518",
+        "images": 14,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-521",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-525",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-534",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-535",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-537",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-549",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-550",
+        "images": 28,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-555",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-557",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-558",
+        "images": 16,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-560",
+        "images": 11,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-562",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-563",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-565",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-569",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-573",
+        "images": 20,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-575",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-577",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-579",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-612-v-1283",
+        "images": 12,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-782",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-795",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-798",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-818",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-819",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1185",
+        "images": 14,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1212",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1215",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1217",
+        "images": 13,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1244",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1250",
+        "images": 17,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1268",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1329",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1638",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1655",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1656",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1659",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1857",
+        "images": 1,
+        "missing": 2,
+        "matched": true
+      },
+      {
+        "bookId": "b-1903",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1905",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1907",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1907-v-2705",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1908",
+        "images": 5,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1911",
+        "images": 18,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1923",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1929",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1930",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1933",
+        "images": 9,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1938",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1938-v-6912",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1944",
+        "images": 38,
+        "missing": 9,
+        "matched": true
+      },
+      {
+        "bookId": "b-1957",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1959",
+        "images": 23,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1963",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-1974",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2004",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2053",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2105",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2149",
+        "images": 22,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2156",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2156-v-2957",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2160",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2163",
+        "images": 10,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2166",
+        "images": 52,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2169",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2172",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2177",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2178",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2179",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2186",
+        "images": 21,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2191",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2195",
+        "images": 0,
+        "missing": 3,
+        "matched": true
+      },
+      {
+        "bookId": "b-2196",
+        "images": 0,
+        "missing": 3,
+        "matched": true
+      },
+      {
+        "bookId": "b-2197",
+        "images": 36,
+        "missing": 2,
+        "matched": true
+      },
+      {
+        "bookId": "b-2204",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-2205",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-2206",
+        "images": 0,
+        "missing": 4,
+        "matched": true
+      },
+      {
+        "bookId": "b-2208",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-2213",
+        "images": 0,
+        "missing": 2,
+        "matched": true
+      },
+      {
+        "bookId": "b-2217",
+        "images": 0,
+        "missing": 11,
+        "matched": true
+      },
+      {
+        "bookId": "b-2464",
+        "images": 0,
+        "missing": 7,
+        "matched": true
+      },
+      {
+        "bookId": "b-2482",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-2644",
+        "images": 77,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-2994",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3006",
+        "images": 14,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3021",
+        "images": 22,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3021-v-3832",
+        "images": 22,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3022",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3039",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3040",
+        "images": 25,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3044",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-3047",
+        "images": 12,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-3049",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3050",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3056",
+        "images": 46,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-3056-v-3877",
+        "images": 46,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-3058",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3193",
+        "images": 16,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3198",
+        "images": 6,
+        "missing": 2,
+        "matched": true
+      },
+      {
+        "bookId": "b-3262",
+        "images": 2,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-3268",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3473",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3474",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3498",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3513",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3513-v-4399",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3513-v-4402",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3554",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3554-v-4469",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3554-v-4470",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3754",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3770",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3770-v-4766",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3775",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3775-v-4773",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3779",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3779-v-4780",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3780",
+        "images": 78,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3822",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3829",
+        "images": 5,
+        "missing": 12,
+        "matched": true
+      },
+      {
+        "bookId": "b-3860",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3860-v-4882",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3876",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3876-v-4900",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3896",
+        "images": 29,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3896-v-4926",
+        "images": 29,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3939",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-3939-v-4995",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5706",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-5729",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5729-v-6791",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5740",
+        "images": 0,
+        "missing": 9,
+        "matched": true
+      },
+      {
+        "bookId": "b-5756",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5775",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5776",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5776-v-6849",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5778",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5789",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5790",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-5848",
+        "images": 8,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5849",
+        "images": 8,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5851",
+        "images": 10,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5870",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5944",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5947",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-5950",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6001",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6003",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6004",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6005",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6006",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6007",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6025",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6028",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6029",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6030",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6035",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6077",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6083",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6094",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6095",
+        "images": 45,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6124",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6136",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6150",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6198",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6211",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6217",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6218",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6222",
+        "images": 9,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6234",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6260",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6283",
+        "images": 10,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6288",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6305",
+        "images": 17,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6312",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6315",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6321",
+        "images": 17,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6344",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6415",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6427",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6449",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6553",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6557",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6560",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6565",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6634",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6646",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6648",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6649",
+        "images": 6,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6656",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6715",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6740",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6746",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6748",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6809",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6890",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6900",
+        "images": 26,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6937",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6939",
+        "images": 11,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6940",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6973",
+        "images": 11,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-6987",
+        "images": 8,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7278",
+        "images": 3,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7417",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7428",
+        "images": 0,
+        "missing": 1,
+        "matched": true
+      },
+      {
+        "bookId": "b-7444",
+        "images": 16,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7446",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7453",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7973",
+        "images": 5,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7974",
+        "images": 62,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7982",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7984",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-7985",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8013",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8043",
+        "images": 38,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8044",
+        "images": 8,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8049",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8091",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8109",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8126",
+        "images": 2,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8168",
+        "images": 4,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8445",
+        "images": 7,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8469",
+        "images": 1,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8502",
+        "images": 51,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8503",
+        "images": 8,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8535",
+        "images": 5,
+        "missing": 0,
+        "matched": true
+      },
+      {
+        "bookId": "b-8536",
+        "images": 13,
+        "missing": 0,
+        "matched": true
+      }
+    ],
+    "failures": [],
+    "seconds": 75.5
+  },
+  "publicTextHashes": {
+    "schemaVersion": 1,
+    "status": "passed",
+    "startedAt": "2026-11-22T00:52:00Z",
+    "source": ".cache/library/catalog.json",
+    "output": "dist-full",
+    "counts": {
+      "sourceBooks": 9799,
+      "bookFiles": 9799,
+      "catalogPages": 82,
+      "catalogEntries": 9799,
+      "textBytesHashed": 6485710397,
+      "correctedSourceNames": 318,
+      "bookFilesWritten": 9799,
+      "catalogPagesWritten": 82
+    },
+    "mismatches": [],
+    "preserved": [
+      "HTML",
+      "TXT",
+      "line/link sidecars",
+      "catalog.json",
+      "sources.json",
+      "build-manifest.json",
+      "book IDs",
+      "source content hashes",
+      "generated sections and navigation",
+      "catalog pagination and order"
+    ],
+    "sourceCatalogSha256": "0d42b4de31d7c7070194a420575e2c3f36962585d5e044ee9a6b6666330d3749",
+    "sourceMetadataRulesVersion": 1,
+    "sourceIdentityAggregateSha256": "d1929220d8107328e0c623d2e2abb28656b73f0937e0d2682fa4497a858e0df0",
+    "publicTextAggregateSha256": "5a335de1b6fccb4d996b5618a5b60e631a17fbe466891c8ccf009bae8c40b8d3",
+    "completedAt": "2026-11-22T00:52:37Z"
+  },
+  "htmlRefresh": {
+    "schemaVersion": 1,
+    "status": "passed",
+    "mode": "apply",
+    "startedAt": "2026-11-22T01:14:51.464Z",
+    "context": "53b787cd1665fddea67650b57e53d7f0cb013bba55d86121b257d7b410be58ee",
+    "builtAt": "2026-11-21T23:39:00.909Z",
+    "rendererSha256": "cb8cbaad64da6b2a6a17514756600f5774bab2e0a954c0b01449d358aab96703",
+    "counts": {
+      "htmlBefore": 390614,
+      "coreHtml": 389244,
+      "externalSkipped": 1370,
+      "books": 9799,
+      "readingPages": 378696,
+      "overviewPages": 10370,
+      "discoveryPages": 178,
+      "filesChanged": 389244,
+      "alreadyCurrent": 0,
+      "resumedBooks": 0,
+      "sourceLabelVerifiedPages": 13092,
+      "sourceLabelsChanged": 13092,
+      "readingArticleChanged": 0,
+      "headChanged": 0,
+      "htmlAfter": 390614
+    },
+    "errors": [],
+    "preserved": [
+      "reading article bytes",
+      "entire head bytes",
+      "existing breadcrumbs",
+      "HTML URL inventory",
+      "TXT",
+      "JSON",
+      "sidecars",
+      "search bundles",
+      "build/search state"
+    ],
+    "htmlInventorySha256": "5389744a3672c02ad74722a829e021c811c88a0a235ecfd48eb47ff1b6e5a62b",
+    "articleAggregateBeforeSha256": "d383998a7c016cbb2d1d820daed6bc92a7c1531fcc3dd79959ae83dbf1fbbaf8",
+    "articleAggregateAfterSha256": "d383998a7c016cbb2d1d820daed6bc92a7c1531fcc3dd79959ae83dbf1fbbaf8",
+    "completedAt": "2026-11-22T01:17:44.378Z"
+  },
+  "coreSearch": {
+    "startedAt": "2026-11-22T01:30:12.369Z",
+    "directory": "dist-full",
+    "mode": "lazy",
+    "concurrency": 4,
+    "latencyMs": 0,
+    "noNetwork": true,
+    "engine": "pagefind",
+    "engineVersion": "1.6.0",
+    "pages": 378696,
+    "shards": 87,
+    "phases": [
+      {
+        "name": "initialize-and-merge",
+        "milliseconds": 239.27,
+        "requests": 175,
+        "bytes": 3722087,
+        "rssBytes": 103030784
+      },
+      {
+        "name": "first-query",
+        "milliseconds": 716.43,
+        "requests": 116,
+        "bytes": 3721211,
+        "rssBytes": 240082944,
+        "query": "בראשית ברא",
+        "results": 40822
+      },
+      {
+        "name": "first-15-result-snippets",
+        "milliseconds": 146.46,
+        "requests": 15,
+        "bytes": 362052,
+        "rssBytes": 299196416,
+        "snippets": 15
+      },
+      {
+        "name": "known-source-probe-1",
+        "milliseconds": 2401.57,
+        "requests": 444,
+        "bytes": 25417040,
+        "rssBytes": 611389440,
+        "query": "\"(א) בראשית ברא אלהים את השמים\"",
+        "results": 105,
+        "expectedSources": 5
+      },
+      {
+        "name": "known-source-probe-2",
+        "milliseconds": 1390.69,
+        "requests": 360,
+        "bytes": 14197609,
+        "rssBytes": 773181440,
+        "query": "\"(א) אול מא כ̇לק אללה אלסמאואת\"",
+        "results": 3,
+        "expectedSources": 1
+      },
+      {
+        "name": "repeat-query-with-niqqud",
+        "milliseconds": 823.14,
+        "requests": 0,
+        "bytes": 0,
+        "rssBytes": 943607808,
+        "results": 40822,
+        "nativeRankingChanged": true,
+        "normalizedRankingIdentical": true
+      },
+      {
+        "name": "category-filtered-query",
+        "milliseconds": 224.83,
+        "requests": 87,
+        "bytes": 810387,
+        "rssBytes": 958156800,
+        "results": 10091
+      },
+      {
+        "name": "exact-phrase-query",
+        "milliseconds": 95.76,
+        "requests": 14,
+        "bytes": 592136,
+        "rssBytes": 950841344,
+        "results": 2822
+      },
+      {
+        "name": "no-match-query",
+        "milliseconds": 220.04,
+        "requests": 86,
+        "bytes": 2857017,
+        "rssBytes": 981970944,
+        "results": 0
+      }
+    ],
+    "checks": [
+      {
+        "name": "results-paths-metadata-highlights",
+        "passed": true
+      },
+      {
+        "name": "known-source-retrieval-from-public-paragraphs",
+        "passed": true
+      },
+      {
+        "name": "all-known-matching-genesis-sources-present",
+        "passed": true
+      },
+      {
+        "name": "niqqud-matching-set-and-ui-normalized-ranking",
+        "passed": true
+      },
+      {
+        "name": "category-filter-preserves-matching-source",
+        "passed": true
+      },
+      {
+        "name": "quoted-phrase-search",
+        "passed": true
+      },
+      {
+        "name": "no-match-query",
+        "passed": true
+      }
+    ],
+    "scriptBytes": {
+      "primaryModule": 47228,
+      "browserWorker": 42928,
+      "note": "Node imports the module directly. Browser transfer additionally includes these scripts."
+    },
+    "firstResults": [
+      {
+        "rank": 1,
+        "score": 53.31353759765625,
+        "url": "/books/b-6191/s-4540085.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "אור יקר על בראשית פירוש אור יקר על בראשית א:א",
+        "book": "אור יקר על בראשית",
+        "section": "פירוש אור יקר על בראשית א:א",
+        "excerpt": "על בראשית פירוש אור יקר על בראשית א:א. מלת בראשית ירמוז כמה עניינים. ראשונה אל. החכמה. ויאמ' שהבורא שהוא הכתר הנעלם שאין סוף שוכן בו ובורא על ידו ברא בראשית."
+      },
+      {
+        "rank": 2,
+        "score": 53.24205017089844,
+        "url": "/books/b-8452/s-10587690.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "תורת הגאונים - בראשית פרשת בראשית",
+        "book": "תורת הגאונים - בראשית",
+        "section": "פרשת בראשית",
+        "excerpt": "הגאונים - בראשית פרשת בראשית. {א, א} את השמים: נכללת בזה האש הגלגלית (ע\"פ פירוש רס\"ג לספר יצירה הקדמה עמ' כט). {א, א} בראשית ברא אלהים את השמים ואת הארץ:"
+      },
+      {
+        "rank": 3,
+        "score": 52.275413513183594,
+        "url": "/books/b-3520/s-2387512.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "בעל הטורים על בראשית פרק א",
+        "book": "בעל הטורים על בראשית",
+        "section": "פרק א",
+        "excerpt": "בעל הטורים על בראשית פרק א. פסוק א. בראשית ברא. בגימטריא בראש השנה נברא (העולם), בראשית נוטריקון בראשונה ראה אלהים שיקבלו ישראל תורה. בראשית ברא אלהים ס''ת אמת מלמד שברא"
+      },
+      {
+        "rank": 4,
+        "score": 52.186805725097656,
+        "url": "/books/b-3520-v-4423/s-2387512.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "בעל הטורים על בראשית · מקראות גדולות (ויקיטקסט) פרק א",
+        "book": "בעל הטורים על בראשית · מקראות גדולות (ויקיטקסט)",
+        "section": "פרק א",
+        "excerpt": "בעל הטורים על בראשית · מקראות גדולות (ויקיטקסט) פרק א. פסוק א. בראשית ברא. בגימטריא בראש השנה נברא (העולם), בראשית נוטריקון בראשונה ראה אלהים שיקבלו ישראל תורה. בראשית ברא אלהים"
+      },
+      {
+        "rank": 5,
+        "score": 50.76343536376953,
+        "url": "/books/b-3101/s-1829447.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "מתנות כהונה על בראשית רבה פרק א",
+        "book": "מתנות כהונה על בראשית רבה",
+        "section": "פרק א",
+        "excerpt": "כהונה על בראשית רבה פרק א. פסקה א. פדגוג. [פירש\"י והערוך] אומן המגדל תינוקות: [אומן ת\"י פדגוג וכ\"ה בש\"ר פ\"ל]: רבתא. גדול וחשוב לשון שררה: האמונים. פי' המלובשים והמכוסים בבגדי"
+      },
+      {
+        "rank": 6,
+        "score": 50.62471389770508,
+        "url": "/books/b-3703/s-2595381.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "תולדות יצחק על התורה בראשית",
+        "book": "תולדות יצחק על התורה",
+        "section": "בראשית",
+        "excerpt": "על התורה בראשית. פרק א. פסוק א. כל חכמה יש לה נושא שעליו תסוב כל אותה החכמה כמו שחכמת הרפואה נושא שלה האיברים והרוחות. וחכמת הטבע נושאה נמצא משתנה מצד"
+      },
+      {
+        "rank": 7,
+        "score": 48.129844665527344,
+        "url": "/books/b-282/s-206072.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "תנחומא בובר בראשית",
+        "book": "תנחומא בובר",
+        "section": "בראשית",
+        "excerpt": "בובר בראשית. סימן א. בראשית ברא אלהים את השמים ואת הארץ (בראשית א א). כתיב המקרה במים עליותיו השם עבים רכובו וגו' (תהלים קד ג), ר' יוחנן אמר שמים וארץ"
+      },
+      {
+        "rank": 8,
+        "score": 47.67731475830078,
+        "url": "/books/b-7660/s-8562289.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "אשכולות הגפן אשכול הגדת בראשית",
+        "book": "אשכולות הגפן",
+        "section": "אשכול הגדת בראשית",
+        "excerpt": "אשכול הגדת בראשית. ב\"ר פ\"א אימתי נבראו המלאכים ר' יוחנן אמר בב' נבראו המלאכים הה\"ד המקרה במים עליותיו וגומר וכתיב עושה מלאכיו רוחות ר' חנינא אמר בה' נבראו המלאכים הה\"ד"
+      },
+      {
+        "rank": 9,
+        "score": 47.26128387451172,
+        "url": "/books/b-3259/s-2071451.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "רש\"ר הירש על התורה בראשית",
+        "book": "רש\"ר הירש על התורה",
+        "section": "בראשית",
+        "excerpt": "רש\"ר הירש על התורה בראשית. פרק כב. פסקה יג. וישא עיניו. ויבט סביבותיו. היה לו צורך לעשות את הקרבת העקוד והנעקד הזה, את ההקרבה החופשית של כל הישות בידיים וברגליים"
+      },
+      {
+        "rank": 10,
+        "score": 46.454193115234375,
+        "url": "/books/b-7296/s-5872897.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "מדרש ילמדנו מדרש ילמדנו פרשת בראשית",
+        "book": "מדרש ילמדנו",
+        "section": "מדרש ילמדנו פרשת בראשית",
+        "excerpt": "ילמדנו פרשת בראשית. אות א. א בראשית ברא אלהים למשפטיך עמדו היום וגו' (תהלים קיט צא) במשפט בראת הכל שנאמר בראשית ברא אלהים כשברא הקדוש ברוך הוא את עולמו בראו"
+      },
+      {
+        "rank": 11,
+        "score": 45.6990852355957,
+        "url": "/books/b-6942/s-5639997.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "דברי יהונתן פרשת בראשית",
+        "book": "דברי יהונתן",
+        "section": "פרשת בראשית",
+        "excerpt": "יהונתן פרשת בראשית. אות א). בראשית ברא אלקים. במדרש הה\"ד ובצלאל עשה כאשר צוה ד' את משה כאשר צוה משה אין כתיב אלא כאשר צוה ד' מלמד שבצלאל עשה כאשר"
+      },
+      {
+        "rank": 12,
+        "score": 45.59053039550781,
+        "url": "/books/b-3001/s-1608777.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "רקנאטי על התורה בראשית",
+        "book": "רקנאטי על התורה",
+        "section": "בראשית",
+        "excerpt": "על התורה בראשית. בראשית ברא אלהים את השמים ואת הארץ. לפי דעת רז\"ל ומה שנראה מכוונתם בספר הזוהר כי מלת ראשית רומזת לחכמה העליונה הנקראת חכמת אלהים ונקראת בספר הזוהר"
+      },
+      {
+        "rank": 13,
+        "score": 45.569671630859375,
+        "url": "/books/b-243/s-144623.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "הערות ותיקונים על מדרש אגדה בראשית",
+        "book": "הערות ותיקונים על מדרש אגדה",
+        "section": "בראשית",
+        "excerpt": "על מדרש אגדה בראשית. פרק א. וישראל נקראו ראשית. תנחומא בראשית פ\"א אות ג', לקח טוב בראשית א' א', ורש\"י עה\"ת, ועיין בתנחומא שם הערה י', ובלקח טוב הערה ל\"א:"
+      },
+      {
+        "rank": 14,
+        "score": 45.491634368896484,
+        "url": "/books/b-3513/s-2373997.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "בכור שור בראשית",
+        "book": "בכור שור",
+        "section": "בראשית",
+        "excerpt": "שור בראשית. פרק א. פסוק א. בראשית ברא אלהים. כלו' בראשית בתחלת כל בריותיו ברא הבורא את השמים ואת הארץ כמו בראשית ממלכת יהויקים שהוא בראש ממלכת יהויקים: פסוק ב."
+      },
+      {
+        "rank": 15,
+        "score": 45.48793029785156,
+        "url": "/books/b-3513-v-4402/s-2373997.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+        "title": "בכור שור · בכור שור, לייפציג, תרט\"ז בראשית",
+        "book": "בכור שור · בכור שור, לייפציג, תרט\"ז",
+        "section": "בראשית",
+        "excerpt": "שור, לייפציג, תרט\"ז בראשית. פרק א. פסוק א. בראשית ברא אלהים. כלו' בראשית בתחלת כל בריותיו ברא הבורא את השמים ואת הארץ כמו בראשית ממלכת יהויקים שהוא בראש ממלכת יהויקים:"
+      }
+    ],
+    "sourceProbes": [
+      {
+        "query": "\"(א) בראשית ברא אלהים את השמים\"",
+        "results": 105,
+        "expectedSources": 5,
+        "sources": [
+          {
+            "bookId": "b-1",
+            "url": "/books/b-1/s-2.html",
+            "fragmentId": "he_79aa9a4"
+          },
+          {
+            "bookId": "b-1-v-3",
+            "url": "/books/b-1-v-3/s-2.html",
+            "fragmentId": "he_ed50b54"
+          },
+          {
+            "bookId": "b-1-v-6",
+            "url": "/books/b-1-v-6/s-2.html",
+            "fragmentId": "he_e843aeb"
+          },
+          {
+            "bookId": "b-1-v-5",
+            "url": "/books/b-1-v-5/s-2.html",
+            "fragmentId": "he_bb28616"
+          },
+          {
+            "bookId": "b-1-v-7",
+            "url": "/books/b-1-v-7/s-2.html",
+            "fragmentId": "he_eaf5b6e"
+          }
+        ]
+      },
+      {
+        "query": "\"(א) אול מא כ̇לק אללה אלסמאואת\"",
+        "results": 3,
+        "expectedSources": 1,
+        "sources": [
+          {
+            "bookId": "b-1-v-6942",
+            "url": "/books/b-1-v-6942/s-2.html",
+            "fragmentId": "he_b7e2363"
+          }
+        ]
+      }
+    ],
+    "genesisRanks": {
+      "ordinary": [
+        {
+          "bookId": "b-1",
+          "url": "/books/b-1/s-2.html",
+          "title": "בראשית",
+          "containsPhrase": true,
+          "rank": 1214,
+          "score": 30.81319808959961
+        },
+        {
+          "bookId": "b-1-v-3",
+          "url": "/books/b-1-v-3/s-2.html",
+          "title": "בראשית · מקרא על פי המסורה",
+          "containsPhrase": true,
+          "rank": 1217,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-6",
+          "url": "/books/b-1-v-6/s-2.html",
+          "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+          "containsPhrase": true,
+          "rank": 1216,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-5",
+          "url": "/books/b-1-v-5/s-2.html",
+          "title": "בראשית · תנ״ך עם ניקוד",
+          "containsPhrase": true,
+          "rank": 1213,
+          "score": 30.819355010986328
+        },
+        {
+          "bookId": "b-1-v-7",
+          "url": "/books/b-1-v-7/s-2.html",
+          "title": "בראשית · תנ״ך - טקסט בלבד",
+          "containsPhrase": true,
+          "rank": 905,
+          "score": 32.597625732421875
+        },
+        {
+          "bookId": "b-1-v-6942",
+          "url": "/books/b-1-v-6942/s-2.html",
+          "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+          "containsPhrase": false,
+          "rank": 2167,
+          "score": 28.41635513305664
+        }
+      ],
+      "nativePointed": [
+        {
+          "bookId": "b-1",
+          "url": "/books/b-1/s-2.html",
+          "title": "בראשית",
+          "containsPhrase": true,
+          "rank": 1048,
+          "score": 26.9185791015625
+        },
+        {
+          "bookId": "b-1-v-3",
+          "url": "/books/b-1-v-3/s-2.html",
+          "title": "בראשית · מקרא על פי המסורה",
+          "containsPhrase": true,
+          "rank": 1049,
+          "score": 26.91533660888672
+        },
+        {
+          "bookId": "b-1-v-6",
+          "url": "/books/b-1-v-6/s-2.html",
+          "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+          "containsPhrase": true,
+          "rank": 1050,
+          "score": 26.91533660888672
+        },
+        {
+          "bookId": "b-1-v-5",
+          "url": "/books/b-1-v-5/s-2.html",
+          "title": "בראשית · תנ״ך עם ניקוד",
+          "containsPhrase": true,
+          "rank": 1046,
+          "score": 26.923778533935547
+        },
+        {
+          "bookId": "b-1-v-7",
+          "url": "/books/b-1-v-7/s-2.html",
+          "title": "בראשית · תנ״ך - טקסט בלבד",
+          "containsPhrase": true,
+          "rank": 1060,
+          "score": 26.876220703125
+        },
+        {
+          "bookId": "b-1-v-6942",
+          "url": "/books/b-1-v-6942/s-2.html",
+          "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+          "containsPhrase": false,
+          "rank": 2025,
+          "score": 24.55329132080078
+        }
+      ],
+      "uiNormalized": [
+        {
+          "bookId": "b-1",
+          "url": "/books/b-1/s-2.html",
+          "title": "בראשית",
+          "containsPhrase": true,
+          "rank": 1214,
+          "score": 30.81319808959961
+        },
+        {
+          "bookId": "b-1-v-3",
+          "url": "/books/b-1-v-3/s-2.html",
+          "title": "בראשית · מקרא על פי המסורה",
+          "containsPhrase": true,
+          "rank": 1217,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-6",
+          "url": "/books/b-1-v-6/s-2.html",
+          "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+          "containsPhrase": true,
+          "rank": 1216,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-5",
+          "url": "/books/b-1-v-5/s-2.html",
+          "title": "בראשית · תנ״ך עם ניקוד",
+          "containsPhrase": true,
+          "rank": 1213,
+          "score": 30.819355010986328
+        },
+        {
+          "bookId": "b-1-v-7",
+          "url": "/books/b-1-v-7/s-2.html",
+          "title": "בראשית · תנ״ך - טקסט בלבד",
+          "containsPhrase": true,
+          "rank": 905,
+          "score": 32.597625732421875
+        },
+        {
+          "bookId": "b-1-v-6942",
+          "url": "/books/b-1-v-6942/s-2.html",
+          "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+          "containsPhrase": false,
+          "rank": 2167,
+          "score": 28.41635513305664
+        }
+      ],
+      "category": [
+        {
+          "bookId": "b-1",
+          "url": "/books/b-1/s-2.html",
+          "title": "בראשית",
+          "containsPhrase": true,
+          "rank": 524,
+          "score": 30.81319808959961
+        },
+        {
+          "bookId": "b-1-v-3",
+          "url": "/books/b-1-v-3/s-2.html",
+          "title": "בראשית · מקרא על פי המסורה",
+          "containsPhrase": true,
+          "rank": 527,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-6",
+          "url": "/books/b-1-v-6/s-2.html",
+          "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+          "containsPhrase": true,
+          "rank": 526,
+          "score": 30.809356689453125
+        },
+        {
+          "bookId": "b-1-v-5",
+          "url": "/books/b-1-v-5/s-2.html",
+          "title": "בראשית · תנ״ך עם ניקוד",
+          "containsPhrase": true,
+          "rank": 523,
+          "score": 30.819355010986328
+        },
+        {
+          "bookId": "b-1-v-7",
+          "url": "/books/b-1-v-7/s-2.html",
+          "title": "בראשית · תנ״ך - טקסט בלבד",
+          "containsPhrase": true,
+          "rank": 380,
+          "score": 32.597625732421875
+        },
+        {
+          "bookId": "b-1-v-6942",
+          "url": "/books/b-1-v-6942/s-2.html",
+          "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+          "containsPhrase": false,
+          "rank": 1201,
+          "score": 28.41635513305664
+        }
+      ],
+      "quoted": [
+        {
+          "bookId": "b-1",
+          "url": "/books/b-1/s-2.html",
+          "title": "בראשית",
+          "containsPhrase": true,
+          "rank": 1390,
+          "score": 1
+        },
+        {
+          "bookId": "b-1-v-3",
+          "url": "/books/b-1-v-3/s-2.html",
+          "title": "בראשית · מקרא על פי המסורה",
+          "containsPhrase": true,
+          "rank": 1386,
+          "score": 1
+        },
+        {
+          "bookId": "b-1-v-6",
+          "url": "/books/b-1-v-6/s-2.html",
+          "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+          "containsPhrase": true,
+          "rank": 1388,
+          "score": 1
+        },
+        {
+          "bookId": "b-1-v-5",
+          "url": "/books/b-1-v-5/s-2.html",
+          "title": "בראשית · תנ״ך עם ניקוד",
+          "containsPhrase": true,
+          "rank": 1387,
+          "score": 1
+        },
+        {
+          "bookId": "b-1-v-7",
+          "url": "/books/b-1-v-7/s-2.html",
+          "title": "בראשית · תנ״ך - טקסט בלבד",
+          "containsPhrase": true,
+          "rank": 1389,
+          "score": 1
+        },
+        {
+          "bookId": "b-1-v-6942",
+          "url": "/books/b-1-v-6942/s-2.html",
+          "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+          "containsPhrase": false,
+          "rank": null,
+          "score": null
+        }
+      ]
+    },
+    "primaryGenesisRank": 1214,
+    "primaryGenesisFirstPageRank": null,
+    "finishedAt": "2026-11-22T01:30:18.684Z",
+    "status": "passed",
+    "totalRequests": 1297,
+    "totalBytes": 51679539,
+    "peakConcurrentFetches": 357
+  },
+  "externalSearch": {
+    "startedAt": "2026-11-22T01:07:29.166Z",
+    "directory": "dist-full",
+    "engine": "pagefind",
+    "version": "1.6.0",
+    "basePath": "/",
+    "shards": 45,
+    "records": 223835,
+    "noNetwork": true,
+    "mergeConcurrency": 4,
+    "notes": [
+      "The actual generated Pagefind JavaScript and WebAssembly run in Node with file-backed fetch, without sockets or a browser.",
+      "Timings include local file I/O and CPU only; they are not CDN, mobile, or end-user latency measurements.",
+      "Fetch byte totals are generated response-body sizes, not HTTP wire bytes. The direct module import and browser worker script are listed separately.",
+      "RSS includes the Node process and shared WebAssembly runtime, so it is not a direct measurement of browser-tab memory."
+    ],
+    "phases": [
+      {
+        "name": "bootstrap",
+        "milliseconds": 128.63,
+        "requests": 91,
+        "bytes": 1660959,
+        "before": {
+          "rssBytes": 40431616,
+          "heapUsedBytes": 8171584,
+          "externalBytes": 3957827,
+          "arrayBufferBytes": 161357,
+          "peakRssBytes": 40431616
+        },
+        "after": {
+          "rssBytes": 88936448,
+          "heapUsedBytes": 8368504,
+          "externalBytes": 33811218,
+          "arrayBufferBytes": 13434100,
+          "peakRssBytes": 88936448
+        }
+      },
+      {
+        "name": "exact-title-all-providers:query",
+        "milliseconds": 121.18,
+        "requests": 85,
+        "bytes": 1129312,
+        "before": {
+          "rssBytes": 88936448,
+          "heapUsedBytes": 8409496,
+          "externalBytes": 33811218,
+          "arrayBufferBytes": 13434100,
+          "peakRssBytes": 88936448
+        },
+        "after": {
+          "rssBytes": 133885952,
+          "heapUsedBytes": 8306744,
+          "externalBytes": 70604228,
+          "arrayBufferBytes": 8284070,
+          "peakRssBytes": 133885952
+        }
+      },
+      {
+        "name": "exact-title-all-providers:first-20-records",
+        "milliseconds": 1.1,
+        "requests": 1,
+        "bytes": 1689,
+        "before": {
+          "rssBytes": 133885952,
+          "heapUsedBytes": 8320024,
+          "externalBytes": 70604228,
+          "arrayBufferBytes": 8284070,
+          "peakRssBytes": 133885952
+        },
+        "after": {
+          "rssBytes": 134017024,
+          "heapUsedBytes": 8427784,
+          "externalBytes": 70634609,
+          "arrayBufferBytes": 8314451,
+          "peakRssBytes": 134017024
+        }
+      },
+      {
+        "name": "ordinary-title-all-providers:query",
+        "milliseconds": 92.82,
+        "requests": 60,
+        "bytes": 875015,
+        "before": {
+          "rssBytes": 134410240,
+          "heapUsedBytes": 8856448,
+          "externalBytes": 70852867,
+          "arrayBufferBytes": 8532709,
+          "peakRssBytes": 134410240
+        },
+        "after": {
+          "rssBytes": 165019648,
+          "heapUsedBytes": 7240816,
+          "externalBytes": 98488443,
+          "arrayBufferBytes": 7205598,
+          "peakRssBytes": 165019648
+        }
+      },
+      {
+        "name": "ordinary-title-all-providers:first-20-records",
+        "milliseconds": 4.07,
+        "requests": 12,
+        "bytes": 19720,
+        "before": {
+          "rssBytes": 165019648,
+          "heapUsedBytes": 7269008,
+          "externalBytes": 98488443,
+          "arrayBufferBytes": 7205598,
+          "peakRssBytes": 165019648
+        },
+        "after": {
+          "rssBytes": 165019648,
+          "heapUsedBytes": 8270328,
+          "externalBytes": 98707492,
+          "arrayBufferBytes": 7424647,
+          "peakRssBytes": 165019648
+        }
+      },
+      {
+        "name": "ordinary-title-hebrewbooks:query",
+        "milliseconds": 25.77,
+        "requests": 45,
+        "bytes": 470713,
+        "before": {
+          "rssBytes": 172228608,
+          "heapUsedBytes": 15022048,
+          "externalBytes": 100142556,
+          "arrayBufferBytes": 8859711,
+          "peakRssBytes": 172228608
+        },
+        "after": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 15539936,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        }
+      },
+      {
+        "name": "ordinary-title-hebrewbooks:first-20-records",
+        "milliseconds": 0.07,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 15567232,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        },
+        "after": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 15595832,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        }
+      },
+      {
+        "name": "ordinary-title-otzar:query",
+        "milliseconds": 8.79,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 15625248,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        },
+        "after": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 16510376,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        }
+      },
+      {
+        "name": "ordinary-title-otzar:first-20-records",
+        "milliseconds": 0.27,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 16513112,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        },
+        "after": {
+          "rssBytes": 173408256,
+          "heapUsedBytes": 16678536,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173408256
+        }
+      },
+      {
+        "name": "quoted-source-title-ui-normalized:query",
+        "milliseconds": 3.32,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 173539328,
+          "heapUsedBytes": 16775296,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 173539328
+        },
+        "after": {
+          "rssBytes": 174456832,
+          "heapUsedBytes": 17673160,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 174456832
+        }
+      },
+      {
+        "name": "quoted-source-title-ui-normalized:first-20-records",
+        "milliseconds": 0.05,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 174456832,
+          "heapUsedBytes": 17674792,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 174456832
+        },
+        "after": {
+          "rssBytes": 174456832,
+          "heapUsedBytes": 17702320,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 174456832
+        }
+      },
+      {
+        "name": "quoted-source-title-native-raw:query",
+        "milliseconds": 2.92,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 174456832,
+          "heapUsedBytes": 17723632,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 174456832
+        },
+        "after": {
+          "rssBytes": 175505408,
+          "heapUsedBytes": 18623360,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 175505408
+        }
+      },
+      {
+        "name": "quoted-source-title-native-raw:first-20-records",
+        "milliseconds": 0.04,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 175505408,
+          "heapUsedBytes": 18624992,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 175505408
+        },
+        "after": {
+          "rssBytes": 175505408,
+          "heapUsedBytes": 18652240,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 175505408
+        }
+      },
+      {
+        "name": "author-otzar:query",
+        "milliseconds": 522.06,
+        "requests": 182,
+        "bytes": 2314915,
+        "before": {
+          "rssBytes": 175636480,
+          "heapUsedBytes": 18672848,
+          "externalBytes": 102634993,
+          "arrayBufferBytes": 10500180,
+          "peakRssBytes": 175636480
+        },
+        "after": {
+          "rssBytes": 272904192,
+          "heapUsedBytes": 15088864,
+          "externalBytes": 189603067,
+          "arrayBufferBytes": 7028574,
+          "peakRssBytes": 272904192
+        }
+      },
+      {
+        "name": "author-otzar:first-20-records",
+        "milliseconds": 0.31,
+        "requests": 0,
+        "bytes": 0,
+        "before": {
+          "rssBytes": 272904192,
+          "heapUsedBytes": 15090496,
+          "externalBytes": 189603067,
+          "arrayBufferBytes": 7028574,
+          "peakRssBytes": 272904192
+        },
+        "after": {
+          "rssBytes": 272904192,
+          "heapUsedBytes": 15104424,
+          "externalBytes": 189603067,
+          "arrayBufferBytes": 7028574,
+          "peakRssBytes": 272904192
+        }
+      }
+    ],
+    "checks": [
+      "All45 generated entry page_count values agree with the manifest and sum to223835",
+      "Provider filters partition the ordinary-title matches, without assuming one provider has no Genesis books",
+      "Both UI-normalized and native raw quoted source-title lookup include HB14020 after punctuation-only-token removal; source title metadata remains unchanged",
+      "Known exact title and author records are searchable with the correct native URLs and real generated local anchors",
+      "All fetches stayed within external/pagefind; no core index or remote provider content was fetched"
+    ],
+    "queries": [
+      {
+        "label": "exact-title-all-providers",
+        "rawQuery": "\"בעין בוחנת\"",
+        "query": "\"בעין בוחנת\"",
+        "normalized": true,
+        "provider": null,
+        "results": 1,
+        "expectedId": "external-otzar-1",
+        "expectedRank": 1,
+        "expected": {
+          "url": "/external/otzar/1.html#external-otzar-1",
+          "meta": {
+            "author": "שטיינר, צבי יהודה בן אהרן",
+            "provider": "otzar",
+            "provider_name": "אוצר החכמה",
+            "provider_url": "https://tablet.otzar.org/book/book.php?book=1",
+            "title": "בעין בוחנת"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/otzar/1.html#external-otzar-1",
+            "meta": {
+              "author": "שטיינר, צבי יהודה בן אהרן",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=1",
+              "title": "בעין בוחנת"
+            }
+          }
+        ]
+      },
+      {
+        "label": "ordinary-title-all-providers",
+        "rawQuery": "מקראות גדולות - בראשית",
+        "query": "מקראות גדולות בראשית",
+        "normalized": true,
+        "provider": null,
+        "results": 15,
+        "expectedId": "external-hebrewbooks-14020",
+        "expectedRank": 2,
+        "expected": {
+          "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+          "meta": {
+            "author": "",
+            "provider": "hebrewbooks",
+            "provider_name": "HebrewBooks",
+            "provider_url": "https://hebrewbooks.org/14020",
+            "title": "מקראות גדולות - בראשית"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/hebrewbooks/200.html#external-hebrewbooks-39996",
+            "meta": {
+              "author": "תנ\"ך. תורה. תרט\"ו. זיטומיר.",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/39996",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/14020",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/48.html#external-hebrewbooks-9597",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/9597",
+              "title": "חומש מקראות גדולות בראשית"
+            }
+          },
+          {
+            "url": "/external/otzar/751.html#external-otzar-150092",
+            "meta": {
+              "author": "מקראות גדולות",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=150092",
+              "title": "מקראות גדולות"
+            }
+          },
+          {
+            "url": "/external/otzar/886.html#external-otzar-177075",
+            "meta": {
+              "author": "פרלמן, מיכאל בן בנימין יעקב",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=177075",
+              "title": "המסורה לחומש מקראות גדולות"
+            }
+          }
+        ]
+      },
+      {
+        "label": "ordinary-title-hebrewbooks",
+        "rawQuery": "מקראות גדולות - בראשית",
+        "query": "מקראות גדולות בראשית",
+        "normalized": true,
+        "provider": "hebrewbooks",
+        "results": 3,
+        "expectedId": "external-hebrewbooks-14020",
+        "expectedRank": 2,
+        "expected": {
+          "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+          "meta": {
+            "author": "",
+            "provider": "hebrewbooks",
+            "provider_name": "HebrewBooks",
+            "provider_url": "https://hebrewbooks.org/14020",
+            "title": "מקראות גדולות - בראשית"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/hebrewbooks/200.html#external-hebrewbooks-39996",
+            "meta": {
+              "author": "תנ\"ך. תורה. תרט\"ו. זיטומיר.",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/39996",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/14020",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/48.html#external-hebrewbooks-9597",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/9597",
+              "title": "חומש מקראות גדולות בראשית"
+            }
+          }
+        ]
+      },
+      {
+        "label": "ordinary-title-otzar",
+        "rawQuery": "מקראות גדולות - בראשית",
+        "query": "מקראות גדולות בראשית",
+        "normalized": true,
+        "provider": "otzar",
+        "results": 12,
+        "expectedId": null,
+        "expectedRank": null,
+        "expected": null,
+        "firstResults": [
+          {
+            "url": "/external/otzar/751.html#external-otzar-150092",
+            "meta": {
+              "author": "מקראות גדולות",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=150092",
+              "title": "מקראות גדולות"
+            }
+          },
+          {
+            "url": "/external/otzar/886.html#external-otzar-177075",
+            "meta": {
+              "author": "פרלמן, מיכאל בן בנימין יעקב",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=177075",
+              "title": "המסורה לחומש מקראות גדולות"
+            }
+          },
+          {
+            "url": "/external/otzar/3011.html#external-otzar-602148",
+            "meta": {
+              "author": "מקראות גדולות עוז והדר",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=602148",
+              "title": "מקראות גדולות המבואר"
+            }
+          },
+          {
+            "url": "/external/otzar/3011.html#external-otzar-602149",
+            "meta": {
+              "author": "מקראות גדולות עוז והדר",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=602149",
+              "title": "מקראות גדולות המבואר"
+            }
+          },
+          {
+            "url": "/external/otzar/3011.html#external-otzar-602147",
+            "meta": {
+              "author": "מקראות גדולות עוז והדר",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=602147",
+              "title": "מקראות גדולות המבואר"
+            }
+          }
+        ]
+      },
+      {
+        "label": "quoted-source-title-ui-normalized",
+        "rawQuery": "\"מקראות גדולות - בראשית\"",
+        "query": "\"מקראות גדולות בראשית\"",
+        "normalized": true,
+        "provider": "hebrewbooks",
+        "results": 3,
+        "expectedId": "external-hebrewbooks-14020",
+        "expectedRank": 2,
+        "expected": {
+          "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+          "meta": {
+            "author": "",
+            "provider": "hebrewbooks",
+            "provider_name": "HebrewBooks",
+            "provider_url": "https://hebrewbooks.org/14020",
+            "title": "מקראות גדולות - בראשית"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/hebrewbooks/48.html#external-hebrewbooks-9597",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/9597",
+              "title": "חומש מקראות גדולות בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/14020",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/200.html#external-hebrewbooks-39996",
+            "meta": {
+              "author": "תנ\"ך. תורה. תרט\"ו. זיטומיר.",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/39996",
+              "title": "מקראות גדולות - בראשית"
+            }
+          }
+        ]
+      },
+      {
+        "label": "quoted-source-title-native-raw",
+        "rawQuery": "\"מקראות גדולות - בראשית\"",
+        "query": "\"מקראות גדולות - בראשית\"",
+        "normalized": false,
+        "provider": "hebrewbooks",
+        "results": 3,
+        "expectedId": "external-hebrewbooks-14020",
+        "expectedRank": 2,
+        "expected": {
+          "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+          "meta": {
+            "author": "",
+            "provider": "hebrewbooks",
+            "provider_name": "HebrewBooks",
+            "provider_url": "https://hebrewbooks.org/14020",
+            "title": "מקראות גדולות - בראשית"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/hebrewbooks/48.html#external-hebrewbooks-9597",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/9597",
+              "title": "חומש מקראות גדולות בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "meta": {
+              "author": "",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/14020",
+              "title": "מקראות גדולות - בראשית"
+            }
+          },
+          {
+            "url": "/external/hebrewbooks/200.html#external-hebrewbooks-39996",
+            "meta": {
+              "author": "תנ\"ך. תורה. תרט\"ו. זיטומיר.",
+              "provider": "hebrewbooks",
+              "provider_name": "HebrewBooks",
+              "provider_url": "https://hebrewbooks.org/39996",
+              "title": "מקראות גדולות - בראשית"
+            }
+          }
+        ]
+      },
+      {
+        "label": "author-otzar",
+        "rawQuery": "שטיינר, צבי יהודה בן אהרן",
+        "query": "שטיינר, צבי יהודה בן אהרן",
+        "normalized": true,
+        "provider": "otzar",
+        "results": 1,
+        "expectedId": "external-otzar-1",
+        "expectedRank": 1,
+        "expected": {
+          "url": "/external/otzar/1.html#external-otzar-1",
+          "meta": {
+            "author": "שטיינר, צבי יהודה בן אהרן",
+            "provider": "otzar",
+            "provider_name": "אוצר החכמה",
+            "provider_url": "https://tablet.otzar.org/book/book.php?book=1",
+            "title": "בעין בוחנת"
+          }
+        },
+        "firstResults": [
+          {
+            "url": "/external/otzar/1.html#external-otzar-1",
+            "meta": {
+              "author": "שטיינר, צבי יהודה בן אהרן",
+              "provider": "otzar",
+              "provider_name": "אוצר החכמה",
+              "provider_url": "https://tablet.otzar.org/book/book.php?book=1",
+              "title": "בעין בוחנת"
+            }
+          }
+        ]
+      }
+    ],
+    "beforeFixObservations": [
+      {
+        "kind": "Observed native Pagefind phrase behavior",
+        "provider": "hebrewbooks",
+        "recordId": "external-hebrewbooks-14020",
+        "sourceTitle": "מקראות גדולות - בראשית",
+        "rawQuotedQuery": "\"מקראות גדולות - בראשית\"",
+        "normalizedQuotedQuery": "\"מקראות גדולות בראשית\"",
+        "rawQuotedResults": 1,
+        "normalizedQuotedResults": 1,
+        "quotedReturnedRecord": "external-hebrewbooks-9597",
+        "expectedRecordReturnedByQuotedQueries": false,
+        "ordinaryNormalizedQuery": "מקראות גדולות בראשית",
+        "ordinaryProviderResults": 3,
+        "ordinaryKnownRecordRank": 2,
+        "conclusion": "Both the native raw query and the UI-normalized quoted query omit this hyphenated source title. Ordinary source-title lookup succeeds. This report does not claim that quoted matching spans every punctuation token.",
+        "diagnosticReport": ".cache/search-results/external-full-diagnostic.json",
+        "firstAttemptReport": ".cache/search-results/external-full-first-attempt.json"
+      }
+    ],
+    "changeUnderTest": "Remove standalone Unicode punctuation-only tokens from custom search content; preserve original source metadata and an empty-content fallback.",
+    "limitations": [
+      "This verifies the observed standalone hyphen title regression; it does not claim every possible punctuation-spanning phrase is equivalent."
+    ],
+    "entryPageCounts": [
+      {
+        "bundlePath": "/external/pagefind/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-001/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-002/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-003/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-004/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-005/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-006/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-007/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-008/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-009/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-010/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-011/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-012/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-013/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-014/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-015/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-016/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-017/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-018/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-019/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-020/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-021/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-022/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-023/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-024/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-025/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-026/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-027/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-028/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-029/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-030/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-031/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-032/",
+        "pageCount": 5000,
+        "providers": [
+          "otzar",
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-033/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-034/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-035/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-036/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-037/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-038/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-039/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-040/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-041/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-042/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-043/",
+        "pageCount": 5000,
+        "providers": [
+          "hebrewbooks"
+        ]
+      },
+      {
+        "bundlePath": "/external/pagefind/shard-044/",
+        "pageCount": 3835,
+        "providers": [
+          "hebrewbooks"
+        ]
+      }
+    ],
+    "entryPageCountSum": 223835,
+    "scriptBytes": {
+      "module": 47228,
+      "browserWorker": 42928,
+      "searchManifest": 6244
+    },
+    "finishedAt": "2026-11-22T01:07:30.097Z",
+    "status": "passed",
+    "totalFetchRequests": 476,
+    "totalFetchBytes": 6472323,
+    "peakConcurrentFetches": 182,
+    "finalMemory": {
+      "rssBytes": 272904192,
+      "heapUsedBytes": 15119040,
+      "externalBytes": 189603067,
+      "arrayBufferBytes": 7028574,
+      "peakRssBytes": 272904192
+    }
+  },
+  "notes": [
+    "Raw per-file fetch traces are omitted; phases, results, checks and measured totals are retained.",
+    "Search JavaScript and WebAssembly ran in Node with file-backed fetch and no network.",
+    "HTML, source import, images and text hashes were checked across the complete corpus.",
+    "Browser screenshots and CI results use the explicitly labelled development fixtures; see ../PREVIEW.md.",
+    "No Cloudflare account, public domain, deployment or crawler access through a live CDN is asserted by this report."
+  ]
+}

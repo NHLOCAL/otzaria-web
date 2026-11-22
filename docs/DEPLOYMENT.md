@@ -57,6 +57,18 @@ R2 מגיש מפתחות אובייקטים בדיוק כפי שנשמרו וא�
 
 מקור: [דלי R2 ציבורי ודומיינים](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 
+### הגדרות Cloudflare לגישה של מנועי חיפוש וסוכני AI
+
+בדומיין מותאם של R2 חלים גם כללי הבוטים וה-WAF של Cloudflare. לכן יש לבדוק את ההגדרות הפעילות של ה-zone המשרת את הספרייה, נוסף על `robots.txt` שבקוד. ההנחיות הבאות נבדקו מול התיעוד הרשמי ב-22 בנובמבר 2026.
+
+1. ב-**Security > Settings**, סננו **Bot traffic** ופתחו **AI Crawler and Agent access policies**, ההגדרה שאליה מפנה כיום תיעוד **Block AI bots**. הגדירו **Allow (do not block)** עבור **Search**, **Agent** ו-**Training**, ובדקו שגם ההגדרות הנפרדות של **Personal Agents** מאפשרות גישה. לפי התיעוד הנוכחי אלה גם ברירות המחדל לדומיינים חדשים. מדיניות Training עשויה לחול גם על זחלנים המשמשים לחיפוש ולאימון יחד. [מדיניות הזחלנים והסוכנים](https://developers.cloudflare.com/bots/additional-configurations/block-ai-bots/).
+2. להגשה של `robots.txt` שבפרויקט ללא תוספות, השאירו **Enable Bot Preference Sync** כבוי. כאשר הוא מופעל ומדיניות כלשהי מוגדרת לחסימה או ל-Disallow, Cloudflare עשויה להוסיף הוראות לפני הקובץ הקיים; Training עם Disallow וסנכרון פעיל מפעיל גם חסימה לזחלני אימון. כאשר כל המדיניות מאפשרת גישה, התיעוד מציין שהקובץ מוגש ללא תוספת. [Managed robots.txt ו-Bot Preference Sync](https://developers.cloudflare.com/bots/additional-configurations/managed-robots-txt/).
+3. בטבלת הזחלנים של **AI Crawl Control**, הגדירו **Action: Allow** לזחלנים שצריכים גישה פתוחה. בדקו שלא נשארו עבורם **Block** או **Charge**. Allow בממשק הזה אינו מבטל כלל WAF מוקדם יותר שחוסם את אותה בקשה. [ניהול זחלנים](https://developers.cloudflare.com/ai-crawl-control/features/manage-ai-crawlers/), [סדר הפעולה מול WAF](https://developers.cloudflare.com/ai-crawl-control/configuration/ai-crawl-control-with-waf/).
+4. כדי לאפשר קריאה בלי דפדפן ובלי JavaScript, השאירו **Bot Fight Mode** כבוי ב-zone של הספרייה והתאימו כללי WAF שמטילים Block או Managed Challenge על ה-hostname הציבורי שלה. Bot Fight Mode חל על הדומיין כולו ואינו ניתן לעקיפה באמצעות כלל Skip; יש לבדוק זאת במיוחד כשהספרייה היא תת-דומיין של zone קיים. אם מופעל **Super Bot Fight Mode**, הוא תומך בחריגת Skip ממוקדת ל-hostname הזה. [הגדרת Bot Fight Mode ומגבלותיו](https://developers.cloudflare.com/bots/get-started/bot-fight-mode/), [מקורות לאתגרי Cloudflare](https://developers.cloudflare.com/cloudflare-challenges/concepts/how-challenges-work/).
+5. באותו מסך Bot traffic, השאירו **AI Labyrinth** כבוי כדי שהתוכן הציבורי לא יקבל קישורי מלכודת שאינם חלק מהספרייה. [התנהגות AI Labyrinth](https://developers.cloudflare.com/bots/additional-configurations/ai-labyrinth/).
+
+אחרי חיבור הדומיין, בדקו בקשות GET רגילות אל `/robots.txt`, `/sitemap.xml`, `/catalog.json` ודף קריאה קיים. ודאו שמתקבלים התוכן וסוג הקובץ הצפויים, ללא דף אתגר; הכותרת `cf-mitigated: challenge` מזהה תגובת אתגר של Cloudflare. בדקו גם את `robots.txt` המוגש בפועל, ולא רק את העותק בריפו. לבדיקת גישת זחלנים אמיתיים, סננו לפי hostname ב-AI Crawl Control וב-Security Analytics ובדקו את תוצאות בקשותיהם. [זיהוי תגובת אתגר](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/challenge-pages/detect-response/), [ניתוח תעבורת זחלנים](https://developers.cloudflare.com/ai-crawl-control/features/analyze-ai-traffic/).
+
 ## מה עושה תהליך העדכון
 
 `publish.yml` רץ ב-03:23 UTC מדי יום, על push ל-`main`, ובבקשה ידנית. הבנייה נעשית ב-GitHub Actions, ולכן אינה כפופה למגבלת 20 הדקות של מערכת הבנייה ב-Cloudflare Pages.
@@ -87,7 +99,7 @@ R2 מגיש מפתחות אובייקטים בדיוק כפי שנשמרו וא�
 
 גם מטמון הארכיונים הדחוסים מוגבל ל-5 GiB אחרי יבוא מוצלח. יש עדיפות לחלקי המסד הנוכחי ולחבילת ה-PDF הנוכחית, לפי ה-digests שאומתו ביבוא. מקום שנותר יכול לשמש ארכיונים קודמים. אם אפילו ההפצה הנוכחית גדולה מהתקציב, חלק מהארכיונים לא יישמרו במטמון ויורדו שוב כשיידרשו. פינוי זה מסיר רק ארכיונים דחוסים בעלי שמות checksum מתוך תיקיית המטמון; הוא אינו מסיר ספרים מתמונת המצב או מהאתר. ב-runner פרטי אפשר להפעיל אותו במפורש באמצעות `python3 scripts/prune_archive_cache.py`.
 
-בדיקת הריצה המתוזמנת מורידה רק מניפסטים ומטאדאטה. היא מדלגת על הבנייה רק אחרי אימות שהאתר כולל בדיוק את אותה גרסת קוד ואותן שתי חבילות מקור. שינוי מקור, מניפסט ישן ללא `codeRevision`, היעדר פריסה ראשונה, חיפוש שלא הושלם או בעיה בקריאת האתר מחזירים את התהליך לבנייה רגילה. push ל-`main` והפעלה ידנית תמיד בונים, גם ללא שינוי בספרים. המטמון מצמצם הורדות, וההעלאה מצמצמת כתיבות. מטמוני Actions הם עזר ויכולים להימחק; הם אינם העותק היחיד של נתוני המקור.
+בדיקת הריצה המתוזמנת מורידה רק מניפסטים ומטאדאטה. היא מדלגת על הבנייה רק אחרי אימות שהאתר כולל בדיוק את אותה גרסת קוד ואת אותן הפצות של מסד הספרים, חבילת צילומי הבבלי והקטלוג החיצוני. שינוי מקור, מניפסט ישן ללא `codeRevision`, היעדר פריסה ראשונה, חיפוש שלא הושלם או בעיה בקריאת האתר מחזירים את התהליך לבנייה רגילה. push ל-`main` והפעלה ידנית תמיד בונים, גם ללא שינוי בספרים. המטמון מצמצם הורדות, וההעלאה מצמצמת כתיבות. מטמוני Actions הם עזר ויכולים להימחק; הם אינם העותק היחיד של נתוני המקור.
 
 ## עלות
 

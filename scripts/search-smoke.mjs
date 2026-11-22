@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { performance } from 'node:perf_hooks';
+import { parse } from 'parse5';
 import { ROOT } from '../src/config.mjs';
 
 const args = new Map();
@@ -84,6 +85,81 @@ async function measure(name, action) {
   return result;
 }
 
+function sourceText(node) {
+  if (node.attrs?.some(attribute => attribute.name === 'data-pagefind-ignore')) return '';
+  if (node.nodeName === '#text') return node.value;
+  if (node.tagName === 'br') return ' ';
+  return (node.childNodes || []).map(sourceText).join('');
+}
+
+function readingParagraphs(html) {
+  const pending = [parse(html)];
+  while (pending.length) {
+    const node = pending.pop();
+    if (node.attrs?.some(attribute => attribute.name === 'id' && attribute.value === 'reading-text')) {
+      return (node.childNodes || []).filter(child => child.tagName === 'p').map(sourceText);
+    }
+    pending.push(...(node.childNodes || []));
+  }
+  throw new Error('Known source has no reading-text region');
+}
+
+function knownSourceRanks(response, sources) {
+  const positions = new Map(response.results.map((item, index) => [item.id, index]));
+  return sources.map(source => {
+    const position = positions.get(source.fragmentId);
+    return { bookId: source.bookId, url: source.url, title: source.title, containsPhrase: source.containsPhrase, rank: position === undefined ? null : position + 1, score: position === undefined ? null : response.results[position].score };
+  });
+}
+
+async function discoverGenesisSources(genesis) {
+  const sources = [];
+  const probes = new Map();
+  for (const bookId of [genesis.id, ...(genesis.editions || []).map(edition => edition.id)]) {
+    const book = bookId === genesis.id ? genesis : JSON.parse(await fs.readFile(path.join(directory, 'books', bookId, 'book.json'), 'utf8'));
+    const section = book.sections?.[0];
+    assert(section?.url, `Known source has no first section: ${bookId}`);
+    const url = new URL(section.url, 'https://local-static.invalid');
+    assert(url.pathname.startsWith(`${basePath}books/${bookId}/`), 'Known source URL has an unexpected base');
+    const paragraphs = readingParagraphs(await fs.readFile(fileFor(section.url), 'utf8'));
+    assert(paragraphs.length, `Known source needs a reading paragraph: ${bookId}`);
+    // A six-word source phrase identifies the passage independently of broad
+    // query ranking. Stay within one paragraph: Pagefind adds punctuation at
+    // paragraph boundaries, and a longer probe fetches unnecessary term chunks.
+    const passage = normalize(paragraphs[0]).split(/\s+/).slice(0, 6).join(' ');
+    assert(passage.split(/\s+/).length === 6, `Known source needs a six-word passage: ${bookId}`);
+    const probe = `"${passage}"`;
+    const source = { bookId, url: url.pathname, title: book.title, containsPhrase: normalize(paragraphs[0]).includes(query), probe };
+    sources.push(source);
+    if (!probes.has(probe)) probes.set(probe, []);
+    probes.get(probe).push(source);
+  }
+  report.sourceProbes = [];
+  for (const [probe, expected] of probes) {
+    const found = await measure(`known-source-probe-${report.sourceProbes.length + 1}`, async () => {
+      const response = await api.search(probe);
+      const data = [];
+      // Inspect the complete targeted result set in bounded batches. No rank
+      // threshold decides whether a known source is considered indexed.
+      for (let start = 0; start < response.results.length; start += 16) {
+        const batch = response.results.slice(start, start + 16);
+        data.push(...await Promise.all(batch.map(async item => ({ id: item.id, data: await item.data() }))));
+      }
+      for (const source of expected) {
+        const match = data.find(item => new URL(item.data.url, 'https://local-static.invalid').pathname === source.url);
+        assert(match, `Source-derived phrase did not retrieve ${source.url}`);
+        assert(normalize(match.data.raw_content || match.data.content).includes(normalize(source.probe.slice(1, -1))), `Retrieved source lacks its probe passage: ${source.url}`);
+        source.fragmentId = match.id;
+      }
+      return { metrics: { query: probe, results: response.results.length, expectedSources: expected.length } };
+    });
+    report.sourceProbes.push({ ...found.metrics, sources: expected.map(({ bookId, url, fragmentId }) => ({ bookId, url, fragmentId })) });
+  }
+  assert(sources.some(source => source.containsPhrase), 'No source chapter contains the expected opening phrase');
+  report.checks.push({ name: 'known-source-retrieval-from-public-paragraphs', passed: true });
+  return sources;
+}
+
 try {
   const bundlePaths = manifest.shards.map(shard => {
     assert(shard.bundlePath.startsWith(basePath), `Bundle is outside base path: ${shard.bundlePath}`);
@@ -138,11 +214,19 @@ try {
 
   if (query === 'בראשית ברא') {
     const genesis = JSON.parse(await fs.readFile(path.join(directory, 'books/b-1/book.json'), 'utf8'));
-    const genesisIds = new Set([genesis.id, ...(genesis.editions || []).map(edition => edition.id)]);
-    const isGenesis = url => genesisIds.has(new URL(url, 'https://local-static.invalid').pathname.split('/books/')[1]?.split('/')[0]);
-    assert(fragments.data.some(result => isGenesis(result.url) && normalize(result.plain_excerpt).includes(query)), 'No Genesis edition with the opening verse appears in the first 15 snippets');
+    const sources = await discoverGenesisSources(genesis);
+    const assertSourceCoverage = (response, label, exact = false) => {
+      const ids = new Set(response.results.map(item => item.id));
+      for (const source of sources) {
+        if (source.containsPhrase) assert(ids.has(source.fragmentId), `${label} lost known matching source ${source.url}`);
+        else if (exact) assert(!ids.has(source.fragmentId), `${label} included a known source without the exact phrase: ${source.url}`);
+      }
+    };
+    assertSourceCoverage(first.result, 'Ordinary query');
+    report.genesisRanks = { ordinary: knownSourceRanks(first.result, sources) };
+    report.primaryGenesisRank = report.genesisRanks.ordinary.find(source => source.bookId === genesis.id)?.rank ?? null;
     report.primaryGenesisFirstPageRank = paths.findIndex(url => url.includes('/books/b-1/')) + 1 || null;
-    report.checks.push({ name: 'genesis-edition-opening-verse-on-first-page', passed: true });
+    report.checks.push({ name: 'all-known-matching-genesis-sources-present', passed: true });
     await measure('repeat-query-with-niqqud', async () => {
       const pointed = 'בְּרֵאשִׁית בָּרָא';
       const native = await api.search(pointed);
@@ -155,14 +239,16 @@ try {
       assert.equal(normalized, query);
       const result = await api.search(normalized);
       assert(result.results.map(item => item.id).join('|') === unpointedIds.join('|'), 'UI-normalized query changed result ordering');
+      report.genesisRanks.nativePointed = knownSourceRanks(native, sources);
+      report.genesisRanks.uiNormalized = knownSourceRanks(result, sources);
       report.checks.push({ name: 'niqqud-matching-set-and-ui-normalized-ranking', passed: true });
       return { metrics: { results: result.results.length, nativeRankingChanged: nativeIds.join('|') !== unpointedIds.join('|'), normalizedRankingIdentical: true } };
     });
     await measure('category-filtered-query', async () => {
       const result = await api.search(query, { filters: { category: 'תנ״ך' } });
       assert(result.results.length > 0 && result.results.length <= first.result.results.length, 'Category filtering failed');
-      const data = await Promise.all(result.results.slice(0, 15).map(item => item.data()));
-      assert(data.some(item => isGenesis(item.url) && normalize(item.plain_excerpt).includes(query)), 'Category filtering lost the opening verse in Genesis editions');
+      assertSourceCoverage(result, 'Category query');
+      report.genesisRanks.category = knownSourceRanks(result, sources);
       report.checks.push({ name: 'category-filter-preserves-matching-source', passed: true });
       return { metrics: { results: result.results.length } };
     });
@@ -170,7 +256,9 @@ try {
       const result = await api.search('"בראשית ברא"');
       assert(result.results.length > 0, 'Exact phrase query has no results');
       const data = await Promise.all(result.results.slice(0, 15).map(item => item.data()));
-      assert(data.every(item => normalize(item.plain_excerpt).includes(query)), 'Exact phrase search returned an excerpt without the phrase');
+      assert(data.every(item => normalize(item.raw_content || item.content).includes(query)), 'Exact phrase search returned full content without the phrase');
+      assertSourceCoverage(result, 'Exact phrase query', true);
+      report.genesisRanks.quoted = knownSourceRanks(result, sources);
       report.checks.push({ name: 'quoted-phrase-search', passed: true });
       return { metrics: { results: result.results.length } };
     });

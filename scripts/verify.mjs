@@ -13,6 +13,25 @@ const memoFile=async p=>{if(!cache.has(p))cache.set(p,await fs.access(p).then(()
 const manifest=JSON.parse(await fs.readFile(path.join(root,'build-manifest.json'),'utf8'));
 if(!htmlOnly&&manifest.search.status!=='ready') failures.push('Search index is not complete');
 if(!htmlOnly&&manifest.counts.externalRecords&&manifest.externalSearch?.status!=='ready')failures.push('External catalogue search index is not complete');
+const catalogue=JSON.parse(await fs.readFile(path.join(root,'catalog.json'),'utf8'));
+const cataloguePages=new Set(),catalogueIds=new Set();
+let nextCatalogue=catalogue.firstPage;
+while(nextCatalogue){
+  if(cataloguePages.has(nextCatalogue)||!nextCatalogue.startsWith(`${config.basePath}catalog/`))throw new Error('Invalid public catalogue pagination');
+  cataloguePages.add(nextCatalogue);
+  const data=JSON.parse(await fs.readFile(path.join(root,nextCatalogue.slice(config.basePath.length)),'utf8'));
+  for(const book of data.books){
+    if(catalogueIds.has(book.id))failures.push(`Duplicate public catalogue book: ${book.id}`);
+    catalogueIds.add(book.id);
+    if(['file','lineIdsFile','linksFile'].some(key=>Object.hasOwn(book,key)))failures.push(`Public catalogue exposes unpublished snapshot paths: ${book.id}`);
+    for(const key of ['url','textUrl','jsonUrl','linksUrl','pdfUrl','primaryUrl']){
+      if(!book[key])continue;
+      if(!book[key].startsWith(config.basePath)||!(await memoFile(path.join(root,book[key].slice(config.basePath.length)))))failures.push(`Broken public catalogue ${key}: ${book.id}`);
+    }
+  }
+  nextCatalogue=data.next;
+}
+if(catalogueIds.size!==manifest.counts.books)failures.push('Public catalogue does not enumerate every book exactly once');
 for await(const file of walk(root)){
   if(!file.endsWith('.html'))continue;
   const relative=path.relative(root,file);const content=await fs.readFile(file,'utf8');const all=nodes(parse(content));count++;

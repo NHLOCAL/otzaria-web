@@ -149,7 +149,7 @@ for(const sourceBook of catalog.books){
     searchPages.push({path:relative,bookId:book.id,familyId:book.editionOf||book.id,category:book.categories[0],bytes:Buffer.byteLength(section.html)});
   }
   sectionCount+=sections.length;
-  books.push({...enriched,sections:undefined,file:undefined});
+  books.push({...enriched,sections:undefined,file:undefined,lineIdsFile:undefined,linksFile:undefined});
   if(books.length%100===0) console.log(`Rendered ${books.length}/${catalog.books.length} books, ${sectionCount} reading pages`);
 }
 books.sort((a,b)=>a.title.localeCompare(b.title,'he'));

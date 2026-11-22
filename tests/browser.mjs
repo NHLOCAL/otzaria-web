@@ -390,12 +390,19 @@ try {
     assert(externalRequests.some(url => new URL(url).pathname.startsWith(`${config.basePath}external/pagefind/`)), 'External search never requested its static index');
     assert(!externalRequests.some(url => new URL(url).pathname.startsWith(`${config.basePath}pagefind/`)), 'External metadata search loaded the core full-text index');
     await screenshot('external-search-desktop');
+    // Preserve ordinary source-title lookup and exact matching across the
+    // standalone separator present in the real HB14020 source title.
+    await page.locator('[data-external-search-input]').fill(`"${externalGenesis.title}"`);
+    await page.locator('[data-external-search-form]').getByRole('button', { name: 'חיפוש', exact: true }).click();
+    await expectUI(target).toBeVisible();
+    await expectUI(page.locator('[data-external-search]')).not.toHaveAttribute('aria-busy', 'true');
+    assert.equal(new URL(await target.getAttribute('href'), origin).href, new URL(externalGenesis.url, origin).href, 'Quoted source title lost its punctuation-separated record');
     await page.locator('[data-external-search-provider]').selectOption('otzar');
     await expectUI(page.locator('[data-external-search-status]')).toContainText('לא נמצאו');
     await expectUI(page.locator('.external-result')).toHaveCount(0);
     await page.locator('[data-external-search-provider]').selectOption('hebrewbooks');
     await expectUI(target).toBeVisible();
-    return { query: externalGenesis.title, target: externalGenesis.url, isolatedIndex: true };
+    return { query: externalGenesis.title, target: externalGenesis.url, isolatedIndex: true, quotedSourceTitle: true };
   });
 
   await step('External author search preserves source identity and does not invent local mappings', async () => {
