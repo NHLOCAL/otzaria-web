@@ -19,8 +19,8 @@ if(!resume)await fs.rm(path.join(config.outputDir,'pagefind'),{recursive:true,fo
 build.search={status:'pending',pages:input.pages.length};
 await fs.writeFile(manifestPath,JSON.stringify(build,null,2));
 const totalBytes=input.pages.reduce((sum,p)=>sum+p.bytes,0);
-// Large libraries are indexed in bounded sequential subprocesses. Memory is
-// released between shards. The browser merges the static Pagefind bundles.
+// Large libraries are indexed in bounded subprocesses; each releases its
+// memory on exit. The browser merges the static Pagefind bundles.
 const maxBytes=Number(process.env.SEARCH_SHARD_BYTES || DEFAULT_MAX_SHARD_BYTES);
 if(!Number.isSafeInteger(maxBytes)||maxBytes<1_000_000||maxBytes>512*1024*1024)throw new Error('SEARCH_SHARD_BYTES must be between 1,000,000 and 536,870,912 bytes');
 const requested=Number(process.env.SEARCH_SHARDS || Math.min(64,Math.max(1,Math.ceil(totalBytes/maxBytes))));
