@@ -229,6 +229,29 @@ try {
     return { highlights: words.length };
   });
 
+  let legacyToolbarMarkup;
+  await step('Shared reader controls mount once and copy the canonical paragraph link', async () => {
+    const toolbar = page.locator('.reader-toolbar');
+    await expectUI(toolbar).toBeVisible();
+    await expectUI(toolbar.locator('button')).toHaveCount(5);
+    await desktop.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    const paragraph = await page.locator('.reading-text p[id]').first().getAttribute('id');
+    const previousUrl = page.url();
+    await page.evaluate(id => history.replaceState(null, '', `${location.pathname}${location.search}#${id}`), paragraph);
+    await toolbar.locator('[data-copy-link]').click();
+    await expectUI.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`${canonical}#${paragraph}`);
+    await expectUI(page.locator('.toast')).toContainText('הקישור הועתק');
+    await page.evaluate(url => history.replaceState(null, '', url), previousUrl);
+    legacyToolbarMarkup = await toolbar.evaluate(element => {
+      const old = element.cloneNode(true);
+      old.hidden = true;
+      old.querySelector('button').setAttribute('data-cached-control', 'true');
+      return old.outerHTML;
+    });
+    return { controls: 5, copiedCanonicalParagraph: true };
+  });
+
   let savedReaderPath;
   await step('Reader typography, theme persistence, and bookmark', async () => {
     const initialSize = await page.locator('.reading-text').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize));
@@ -383,6 +406,28 @@ try {
       assert.equal(new URL(noJs.url()).pathname, new URL(href, origin).pathname);
       await expectUI(noJs.locator('.reading-chapter')).toContainText('פרק ב');
       return { paragraphs, characters: text.length, nextChapter: noJs.url() };
+    } finally { await context.close(); activePage = page; }
+  });
+
+  await step('Cached HTML retains its existing reader controls without duplication', async () => {
+    const context = await browser.newContext({ viewport: report.viewports.desktop, locale: 'he-IL' });
+    const cached = await context.newPage(); activePage = cached; monitor(cached, 'cached-reader-controls');
+    await context.route(firstReading, async route => {
+      const response = await route.fetch();
+      const html = await response.text();
+      const placeholder = /<div class="reader-toolbar"[^>]*><\/div>/;
+      assert(placeholder.test(html), 'The generated reading page must contain the empty toolbar placeholder');
+      await route.fulfill({ response, body: html.replace(placeholder, legacyToolbarMarkup).replace('app.js?v=2', 'app.js') });
+    });
+    try {
+      await cached.goto(firstReading, { waitUntil: 'networkidle' });
+      await expectUI(cached.locator('.reader-toolbar button')).toHaveCount(5);
+      await expectUI(cached.locator('[data-cached-control]')).toHaveCount(1);
+      const before = await cached.locator('.reading-text').evaluate(element => getComputedStyle(element).fontSize);
+      await cached.getByRole('button', { name: 'הגדלת אותיות', exact: true }).click();
+      const after = await cached.locator('.reading-text').evaluate(element => getComputedStyle(element).fontSize);
+      assert(Number.parseFloat(after) > Number.parseFloat(before), 'Cached controls lost their event handlers');
+      return { controls: 5, cachedNodeRetained: true, typographyWorking: true };
     } finally { await context.close(); activePage = page; }
   });
 

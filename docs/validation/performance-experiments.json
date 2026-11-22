@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-11-22T04:50:16.307800+00:00",
+  "recordedAt": "2026-11-22T06:43:25.200529+00:00",
   "scope": "Controlled local experiments, full GitHub matrix verification and Chromium CI. No mobile or CDN performance claim.",
   "baselineGitHub": {
     "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44972240960",
@@ -2368,5 +2368,2558 @@
     "indexConcurrencyPerPartition": 1,
     "publication": "skipped in pull request",
     "testedPullRequestMergeCommit": "794c1bc58f003af8ee02443838a3a77f9081da57"
+  },
+  "githubFollowupStarterValidation": {
+    "commit": "57bc4fc1d6997a34fad6f07fd03d605e78652672",
+    "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44990167015",
+    "jobUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44990167015/job/137109261684",
+    "artifactUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44990167015/artifacts/14741313431",
+    "status": "success",
+    "nodeTests": 96,
+    "pythonTests": 41,
+    "partitionBasePaths": [
+      "/",
+      "/otzaria-web/"
+    ],
+    "browser": {
+      "startedAt": "2026-11-22T05:38:10.046Z",
+      "origin": "http://127.0.0.1:4175",
+      "basePath": "/",
+      "viewports": {
+        "desktop": {
+          "width": 1488,
+          "height": 1056
+        },
+        "mobile": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      "steps": [
+        {
+          "name": "Preview server serves actual built HTML",
+          "status": "passed",
+          "milliseconds": 175,
+          "details": {
+            "url": "http://127.0.0.1:4175/index.html"
+          }
+        },
+        {
+          "name": "Desktop home, fonts, semantic content, and layout",
+          "status": "passed",
+          "milliseconds": 642,
+          "details": {
+            "fonts": {
+              "ui": true,
+              "reading": true
+            },
+            "sizing": {
+              "viewport": 1488,
+              "document": 1488
+            }
+          }
+        },
+        {
+          "name": "Real unpointed Hebrew query returns complete-text results",
+          "status": "passed",
+          "milliseconds": 338,
+          "details": {
+            "status": "נמצאו 309 תוצאות, מוצגות 15.",
+            "resultsShown": 15
+          }
+        },
+        {
+          "name": "Niqqud and plain Hebrew queries agree",
+          "status": "passed",
+          "milliseconds": 72,
+          "details": {
+            "resultPathsEqual": true
+          }
+        },
+        {
+          "name": "Quoted phrase search finds the opening verse across editions",
+          "status": "passed",
+          "milliseconds": 62,
+          "details": {
+            "resultsShown": 5,
+            "editions": [
+              "b-1",
+              "b-1-v-5",
+              "b-1-v-6",
+              "b-1-v-7",
+              "b-1-v-3"
+            ]
+          }
+        },
+        {
+          "name": "Category filter and search result navigation",
+          "status": "passed",
+          "milliseconds": 775,
+          "details": {
+            "category": "תנ״ך",
+            "url": "http://127.0.0.1:4175/books/b-1/s-2.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90"
+          }
+        },
+        {
+          "name": "Search terms highlight in pointed source text",
+          "status": "passed",
+          "milliseconds": 61,
+          "details": {
+            "highlights": 7
+          }
+        },
+        {
+          "name": "Reader typography, theme persistence, and bookmark",
+          "status": "passed",
+          "milliseconds": 752,
+          "details": {
+            "initialSize": 25,
+            "largerSize": 27,
+            "persistedSize": 27
+          }
+        },
+        {
+          "name": "Saved page is discoverable from the home page",
+          "status": "passed",
+          "milliseconds": 1168,
+          "details": {
+            "restored": "/books/b-1/s-2.html"
+          }
+        },
+        {
+          "name": "Book continuation restores the last reading section",
+          "status": "passed",
+          "milliseconds": 2188,
+          "details": {
+            "lastPath": "/books/b-1/s-34.html"
+          }
+        },
+        {
+          "name": "Empty search and no-match states remain usable",
+          "status": "passed",
+          "milliseconds": 820
+        },
+        {
+          "name": "A fresh category search loads only relevant shard metadata",
+          "status": "passed",
+          "milliseconds": 998,
+          "details": {
+            "category": "תנ״ך",
+            "scopedShards": 2,
+            "allShards": 9,
+            "wasmRequests": 2,
+            "peakConcurrentDownloads": 8
+          }
+        },
+        {
+          "name": "A failed worker chunk is visible and a new query retries successfully",
+          "status": "passed",
+          "milliseconds": 1010,
+          "details": {
+            "failureVisible": true,
+            "retrySucceeded": true
+          }
+        },
+        {
+          "name": "Complete source and chapter navigation without JavaScript",
+          "status": "passed",
+          "milliseconds": 685,
+          "details": {
+            "paragraphs": 31,
+            "characters": 2333,
+            "nextChapter": "http://127.0.0.1:4175/books/b-1/s-34.html"
+          }
+        },
+        {
+          "name": "Mobile home, readable text, and accessible contents",
+          "status": "passed",
+          "milliseconds": 1283,
+          "details": {
+            "homeSize": {
+              "viewport": 390,
+              "document": 390
+            },
+            "readerSize": {
+              "viewport": 390,
+              "document": 390
+            }
+          }
+        },
+        {
+          "name": "External records and verified local-reader links work without JavaScript",
+          "status": "passed",
+          "milliseconds": 897,
+          "details": {
+            "providerPages": 5,
+            "recordId": "external-hebrewbooks-14020",
+            "localBook": "b-1"
+          }
+        },
+        {
+          "name": "External title search loads on demand and filters its own provider index",
+          "status": "passed",
+          "milliseconds": 810,
+          "details": {
+            "query": "מקראות גדולות - בראשית",
+            "target": "/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+            "isolatedIndex": true,
+            "quotedSourceTitle": true
+          }
+        },
+        {
+          "name": "External author search preserves source identity and does not invent local mappings",
+          "status": "passed",
+          "milliseconds": 641,
+          "details": {
+            "author": "שטיינר, צבי יהודה בן אהרן",
+            "providerUrl": "https://tablet.otzar.org/book/book.php?book=1",
+            "localMappings": 0
+          }
+        },
+        {
+          "name": "External catalogue and metadata remain readable on mobile",
+          "status": "passed",
+          "milliseconds": 1152,
+          "details": {
+            "landingSize": {
+              "viewport": 390,
+              "document": 390
+            },
+            "recordSize": {
+              "viewport": 390,
+              "document": 390
+            }
+          }
+        },
+        {
+          "name": "No JavaScript errors or failed static asset requests",
+          "status": "passed",
+          "milliseconds": 1,
+          "details": {
+            "consoleErrors": 0,
+            "runtimeErrors": 0,
+            "failedRequests": 0,
+            "warnings": []
+          }
+        }
+      ],
+      "screenshots": [
+        {
+          "name": "home-desktop",
+          "file": ".cache/browser-screenshots/home-desktop.png",
+          "url": "http://127.0.0.1:4175/index.html",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "search-desktop",
+          "file": ".cache/browser-screenshots/search-desktop.png",
+          "url": "http://127.0.0.1:4175/search.html?q=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA+%D7%91%D7%A8%D7%90",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "reader-desktop",
+          "file": ".cache/browser-screenshots/reader-desktop.png",
+          "url": "http://127.0.0.1:4175/books/b-1/s-2.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "reader-dark",
+          "file": ".cache/browser-screenshots/reader-dark.png",
+          "url": "http://127.0.0.1:4175/books/b-1/s-2.html?highlight=%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA&highlight=%D7%91%D7%A8%D7%90",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "search-empty",
+          "file": ".cache/browser-screenshots/search-empty.png",
+          "url": "http://127.0.0.1:4175/search.html?q=%22%D7%96%D7%96%D7%96%D7%96%D7%91%D7%93%D7%99%D7%A7%D7%AA%D7%9E%D7%99%D7%9C%D7%94%D7%A9%D7%90%D7%99%D7%A0%D7%94%D7%A7%D7%99%D7%99%D7%9E%D7%AA%D7%96%D7%96%D7%96%D7%96%22",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "reader-no-javascript",
+          "file": ".cache/browser-screenshots/reader-no-javascript.png",
+          "url": "http://127.0.0.1:4175/books/b-1/s-2.html",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "home-mobile",
+          "file": ".cache/browser-screenshots/home-mobile.png",
+          "url": "http://127.0.0.1:4175/index.html",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "fullPage": false
+        },
+        {
+          "name": "reader-mobile",
+          "file": ".cache/browser-screenshots/reader-mobile.png",
+          "url": "http://127.0.0.1:4175/books/b-1/s-2.html",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "fullPage": false
+        },
+        {
+          "name": "external-record-desktop",
+          "file": ".cache/browser-screenshots/external-record-desktop.png",
+          "url": "http://127.0.0.1:4175/external/hebrewbooks/71.html",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "external-search-desktop",
+          "file": ".cache/browser-screenshots/external-search-desktop.png",
+          "url": "http://127.0.0.1:4175/external/search.html?q=%D7%9E%D7%A7%D7%A8%D7%90%D7%95%D7%AA+%D7%92%D7%93%D7%95%D7%9C%D7%95%D7%AA+-+%D7%91%D7%A8%D7%90%D7%A9%D7%99%D7%AA",
+          "viewport": {
+            "width": 1488,
+            "height": 1056
+          },
+          "fullPage": false
+        },
+        {
+          "name": "external-home-mobile",
+          "file": ".cache/browser-screenshots/external-home-mobile.png",
+          "url": "http://127.0.0.1:4175/external/index.html",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "fullPage": false
+        },
+        {
+          "name": "external-record-mobile",
+          "file": ".cache/browser-screenshots/external-record-mobile.png",
+          "url": "http://127.0.0.1:4175/external/hebrewbooks/71.html#external-hebrewbooks-14020",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "fullPage": false
+        }
+      ],
+      "console": [],
+      "pageErrors": [],
+      "networkFailures": [],
+      "finishedAt": "2026-11-22T05:38:26.428Z",
+      "status": "passed"
+    }
+  },
+  "followupGitHubPartitions": {
+    "runId": 44990167097,
+    "commit": "57bc4fc1d6997a34fad6f07fd03d605e78652672",
+    "rows": [
+      {
+        "partition": 0,
+        "renderSeconds": 118.64675,
+        "indexSeconds": 312.81284999999997,
+        "indexSampledPeakRssBytes": 6914183168,
+        "indexReductionPercentVsFirstRun": 45.44643838124885,
+        "resultZipBytes": 1149433745,
+        "partitionCacheBytes": 1177341067,
+        "resultFits": true,
+        "sourceArchiveBytes": 237887434,
+        "initialDiskBytes": 94820925440,
+        "afterSetupDiskBytes": 94818549760
+      },
+      {
+        "partition": 1,
+        "renderSeconds": 222.15716,
+        "indexSeconds": 450.25286,
+        "indexSampledPeakRssBytes": 6941757440,
+        "indexReductionPercentVsFirstRun": 38.26926631038331,
+        "resultZipBytes": 1490556236,
+        "partitionCacheBytes": 1556050860,
+        "resultFits": true,
+        "sourceArchiveBytes": 314407572,
+        "initialDiskBytes": 91373420544,
+        "afterSetupDiskBytes": 91243335680
+      },
+      {
+        "partition": 2,
+        "renderSeconds": 149.20004999999998,
+        "indexSeconds": 340.03004,
+        "indexSampledPeakRssBytes": 7540768768,
+        "indexReductionPercentVsFirstRun": 41.52385014230806,
+        "resultZipBytes": 1159765441,
+        "partitionCacheBytes": 1211256368,
+        "resultFits": true,
+        "sourceArchiveBytes": 244740184,
+        "initialDiskBytes": 94820945920,
+        "afterSetupDiskBytes": 94818578432
+      },
+      {
+        "partition": 3,
+        "renderSeconds": 215.09715,
+        "indexSeconds": 462.05157,
+        "indexSampledPeakRssBytes": 7915962368,
+        "indexReductionPercentVsFirstRun": 47.34034965752253,
+        "resultZipBytes": 1438582099,
+        "partitionCacheBytes": 1447387398,
+        "resultFits": true,
+        "sourceArchiveBytes": 292451596,
+        "initialDiskBytes": 91374669824,
+        "afterSetupDiskBytes": 91244589056
+      },
+      {
+        "partition": 4,
+        "renderSeconds": 117.50963,
+        "indexSeconds": 267.15067,
+        "indexSampledPeakRssBytes": 7460020224,
+        "indexReductionPercentVsFirstRun": 42.68137015104703,
+        "resultZipBytes": 942920268,
+        "partitionCacheBytes": 948882678,
+        "resultFits": true,
+        "sourceArchiveBytes": 191726316,
+        "initialDiskBytes": 94820925440,
+        "afterSetupDiskBytes": 94818549760
+      },
+      {
+        "partition": 5,
+        "renderSeconds": 69.80791,
+        "indexSeconds": 185.41444,
+        "indexSampledPeakRssBytes": 7652585472,
+        "indexReductionPercentVsFirstRun": 55.31622275562238,
+        "resultZipBytes": 851222392,
+        "partitionCacheBytes": 863696136,
+        "resultFits": true,
+        "sourceArchiveBytes": 174513965,
+        "initialDiskBytes": 91374768128,
+        "afterSetupDiskBytes": 91244687360
+      },
+      {
+        "partition": 6,
+        "renderSeconds": 119.45727000000001,
+        "indexSeconds": 247.37335000000002,
+        "indexSampledPeakRssBytes": 7611912192,
+        "indexReductionPercentVsFirstRun": 42.89099870717518,
+        "resultZipBytes": 876382732,
+        "partitionCacheBytes": 880419870,
+        "resultFits": true,
+        "sourceArchiveBytes": 177893076,
+        "initialDiskBytes": 91374624768,
+        "afterSetupDiskBytes": 91244539904
+      },
+      {
+        "partition": 7,
+        "renderSeconds": 84.44976,
+        "indexSeconds": 225.05798000000001,
+        "indexSampledPeakRssBytes": 8145649664,
+        "indexReductionPercentVsFirstRun": 42.58358823904585,
+        "resultZipBytes": 797712180,
+        "partitionCacheBytes": 914965619,
+        "resultFits": true,
+        "sourceArchiveBytes": 184873211,
+        "initialDiskBytes": 91374727168,
+        "afterSetupDiskBytes": 91244646400
+      }
+    ],
+    "cachePlan": {
+      "schemaVersion": 1,
+      "policy": "compressed-source-proportional-v1",
+      "totalBudgetBytes": 9000000000,
+      "sourceArchiveBytes": 1818493354,
+      "allocatedBytes": 8999999996,
+      "unusedBytes": 4,
+      "allocations": [
+        {
+          "key": "p-000",
+          "sourceArchiveBytes": 237887434,
+          "partitionCacheBytes": 1177341067,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-001",
+          "sourceArchiveBytes": 314407572,
+          "partitionCacheBytes": 1556050860,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-002",
+          "sourceArchiveBytes": 244740184,
+          "partitionCacheBytes": 1211256368,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-003",
+          "sourceArchiveBytes": 292451596,
+          "partitionCacheBytes": 1447387398,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-004",
+          "sourceArchiveBytes": 191726316,
+          "partitionCacheBytes": 948882678,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-005",
+          "sourceArchiveBytes": 174513965,
+          "partitionCacheBytes": 863696136,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-006",
+          "sourceArchiveBytes": 177893076,
+          "partitionCacheBytes": 880419870,
+          "searchCacheBytes": 536870912
+        },
+        {
+          "key": "p-007",
+          "sourceArchiveBytes": 184873211,
+          "partitionCacheBytes": 914965619,
+          "searchCacheBytes": 536870912
+        }
+      ]
+    },
+    "maxIndexSeconds": 462.05157,
+    "sumIndexSeconds": 2490.14376,
+    "maxIndexSampledPeakRssBytes": 8145649664,
+    "totalResultZipBytes": 8706575093,
+    "allArchivesFit": true,
+    "notes": [
+      "Measured on separate standard GitHub runners; per-run timing variance is expected.",
+      "Index concurrency request was2 and remained CPU/memory clamped.",
+      "Eligibility plus successful cache-save logs must not be called an observed warm cache hit."
+    ]
+  },
+  "htmlStorageAnalysis": {
+    "schemaVersion": 1,
+    "recordedAt": "2026-11-22T06:02:17.703Z",
+    "reviewedSourceCommit": "57bc4fc1d6997a34fad6f07fd03d605e78652672",
+    "artifact": "dist-full before toolbar deduplication",
+    "method": {
+      "populationReadingPages": 378696,
+      "samplePages": 160,
+      "sampledBooks": 160,
+      "selection": "Positions floor((i+0.5)*378696/160), i=0..159, across cumulative sectionCount in dist-full/catalog.json order; corresponding sections from each book.json",
+      "measurement": "UTF8 source byte spans from parse5 sourceCodeLocationInfo; Node gzip level6 and Brotli quality5 in memory",
+      "scope": "Read-only existing HTML; no new render. Named examples measured additionally. Aggregate sample measurements retained; no claim of exact full-corpus byte breakdown."
+    },
+    "referenceCompleteOutputBytes": 25850150962,
+    "sample": {
+      "sums": {
+        "html": 5339416,
+        "article": 3744717,
+        "sourceHtml": 3658507,
+        "shell": 1594699,
+        "head": 424368,
+        "jsonLd": 138982,
+        "siteHeader": 131200,
+        "siteFooter": 157440,
+        "breadcrumbs": 44581,
+        "toc": 287581,
+        "toolbar": 237920,
+        "chapterNav": 110741,
+        "sourceNote": 126207,
+        "shellSvgCount": 1463,
+        "shellSvg": 346690,
+        "spriteReplacementEstimate": 149226,
+        "shellWhitespace": 17120,
+        "paragraphs": 3305,
+        "paragraphAnchors": 359839,
+        "paragraphTags": 249946,
+        "gzip6": 1309202,
+        "brotli5": 1193017
+      },
+      "meanHtml": 33371.35,
+      "medianHtml": 18060,
+      "p10Html": 10907,
+      "p90Html": 123213,
+      "meanShell": 9966.86875,
+      "shellShare": 0.2986654345718708,
+      "meanShellSvg": 2166.8125,
+      "meanShellWhitespace": 107,
+      "gzip6Ratio": 0.2451957292707667,
+      "brotli5Ratio": 0.22343585890292122
+    },
+    "examples": [
+      {
+        "book": "b-28",
+        "title": "תהילים",
+        "section": "פרק קיז",
+        "path": "/books/b-28/s-17935.html",
+        "html": 10985,
+        "article": 1151,
+        "shell": 9834,
+        "gzip6": 3074,
+        "brotli5": 2780
+      },
+      {
+        "book": "b-40",
+        "title": "משנה ברכות",
+        "section": "פרק א",
+        "path": "/books/b-40/s-24176.html",
+        "html": 15321,
+        "article": 6098,
+        "shell": 9223,
+        "gzip6": 4310,
+        "brotli5": 3793
+      },
+      {
+        "book": "b-1",
+        "title": "בראשית",
+        "section": "פרק א",
+        "path": "/books/b-1/s-2.html",
+        "html": 24600,
+        "article": 13890,
+        "shell": 10710,
+        "gzip6": 5666,
+        "brotli5": 4863,
+        "paragraphs": 31,
+        "paragraphAnchors": 3379,
+        "paragraphTags": 2287
+      },
+      {
+        "book": "b-103",
+        "title": "ברכות",
+        "section": "דף ב:",
+        "path": "/books/b-103/s-28971.html",
+        "html": 21479,
+        "article": 10387,
+        "shell": 11092,
+        "gzip6": 4971,
+        "brotli5": 4352
+      },
+      {
+        "book": "b-382",
+        "title": "שולחן ערוך, אורח חיים",
+        "section": "פתיחה",
+        "path": "/books/b-382/intro.html",
+        "html": 11420,
+        "article": 753,
+        "shell": 10667,
+        "gzip6": 2945,
+        "brotli5": 2653
+      },
+      {
+        "book": "b-296",
+        "title": "משנה תורה, הלכות יסודי התורה",
+        "section": "פרק א",
+        "path": "/books/b-296/s-236297.html",
+        "html": 25172,
+        "article": 15671,
+        "shell": 9501,
+        "gzip6": 6387,
+        "brotli5": 5762
+      },
+      {
+        "book": "b-5751",
+        "title": "שו\"ת הרשב\"א חלק א",
+        "section": "תשובה רנג",
+        "path": "/books/b-5751/s-3503984.html",
+        "html": 15269,
+        "article": 5887,
+        "shell": 9382,
+        "gzip6": 4457,
+        "brotli5": 3971
+      },
+      {
+        "book": "b-6049",
+        "title": "אספקלריה אותיות א - מ",
+        "section": "ח (המשך 19)",
+        "path": "/books/b-6049/s-4185563-19.html",
+        "html": 129712,
+        "article": 119960,
+        "shell": 9752,
+        "gzip6": 33295,
+        "brotli5": 30884
+      }
+    ],
+    "opportunities": {
+      "toolbar": {
+        "beforeBytes": 1487,
+        "emptyPlaceholderBytes": 95,
+        "grossBytesSavedPerReadingPage": 1392,
+        "grossProjectedSavingBytes": 527144832,
+        "note": "Projection from constant template; final net savings also subtract app.js cache-version query on every HTML page and one shared JS markup copy. See toolbar-evidence/final.json."
+      },
+      "svgSprite": {
+        "estimatedSavingPerPage": 1234.15,
+        "estimatedWholeReadingSavingBytes": 467367668.40000004,
+        "note": "Alternative not implemented; overlaps toolbar savings and must not be added."
+      },
+      "shellWhitespace": {
+        "upperBoundSavingPerPage": 107,
+        "projectedUpperBoundBytes": 40520472,
+        "note": "Not implemented; generic removal can affect whitespace semantics."
+      },
+      "compression": {
+        "note": "Sampled HTML compression only. No live wire/CDN measurements and no corpus-wide compression claim. CDN compression alone does not reduce uncompressed origin object size; encoded origin storage needs correct Content-Encoding and validation/deployment changes."
+      }
+    },
+    "notes": [
+      "JSON-LD is part of head; inlineSVG appears inside several shell regions, so component figures overlap.",
+      "Preserve all readingHTML, source/SEO metadata, paragraph anchors, source-line attributes and static navigation."
+    ]
+  },
+  "sharedToolbar": {
+    "schemaVersion": 1,
+    "recordedAt": "2026-11-22T06:03:24.834Z",
+    "baselineCommit": "57bc4fc1d6997a34fad6f07fd03d605e78652672",
+    "workspace": "/workspace/scratch/ef91728a4a33/otzaria-web/.cache/toolbar-validation/workspace",
+    "markup": {
+      "oldBytes": 1487,
+      "placeholderBytes": 95,
+      "savingPerReadingPage": 1392,
+      "mountedInteriorByteIdentical": true,
+      "mountedCompleteToolbarByteIdentical": true,
+      "accessibleButtons": 5
+    },
+    "migration": {
+      "appQuery": "?v=2",
+      "addedBytesPerHtml": 4,
+      "oldAppJsBytes": 16701,
+      "newAppJsBytes": 18454,
+      "addedSharedJsBytes": 1753
+    },
+    "starter": {
+      "htmlPages": 1627,
+      "readingPages": 1545,
+      "beforeHtmlBytes": 30540764,
+      "afterHtmlBytes": 28396632,
+      "htmlSavingBytes": 2144132,
+      "netSavingIncludingSharedJs": 2142379,
+      "everyHtmlChangedOnlyForToolbarAndAppVersion": true,
+      "searchableContentHashesUnchanged": 1545,
+      "verification": "1627HTML verified;22focused existingtests passed"
+    },
+    "fullProjection": {
+      "readingPages": 378696,
+      "htmlPages": 390614,
+      "grossToolbarSavingBytes": 527144832,
+      "appQueryCostBytes": 1562456,
+      "addedSharedJsBytes": 1753,
+      "netSavingBytes": 525580623,
+      "note": "Projection from constant markup and complete first-run page counts. Actual full rebuilt bytes must be checked after CI; no changes to reading URLs, article text or metadata."
+    },
+    "rootFullSearchInputPreserved": {
+      "bytes": 129369919,
+      "mtimeMs": 1795323302302.993
+    },
+    "browserGate": "Added actual clipboard canonical paragraph check and cached-control identity/nonduplication check; pending GitHubCI because local Chromium is blocked by environment socket policy."
+  },
+  "toolbarLocalValidation": {
+    "status": "passed",
+    "nodeTests": 96,
+    "pythonTests": 41,
+    "partitionIntegration": {
+      "root": {
+        "status": "passed",
+        "basePath": "/",
+        "books": 60,
+        "readingPages": 1545,
+        "htmlPages": 1627,
+        "identicalHtmlAndTextFiles": 1687,
+        "checks": [
+          "real partition archives",
+          "bounded cache allocation",
+          "immutable source plan",
+          "over-budget archive remains usable",
+          "exact coverage",
+          "missing partition rejected",
+          "same-size corruption rejected",
+          "all HTML/TXT identical",
+          "search finalized",
+          "all HTML verified",
+          "cross-build cache reuse",
+          "metadata invalidation"
+        ],
+        "commands": [
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 2.2400367190000003,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.2667625240000002,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
+            "seconds": 0.028847423000000164,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 1.1479337799999998,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 0.07275511499999993,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 4.51676546,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+            "seconds": 0.3652225999999991,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
+            "seconds": 0.014182709000000614,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.5045867940000007,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 0.06455372399999942,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 1.9450072040000013,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+            "seconds": 0.13246146999999836,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
+            "seconds": 0.006475501000000804,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
+            "seconds": 0.1799109389999994,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.4988599809999996,
+            "exitCode": 1
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
+            "seconds": 0.05231688799999938,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.11077600600000005,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.7807624329999999,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 0.221571731,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
+            "seconds": 0.16492230999999993,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
+            "seconds": 0.20449583900000107,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 1.1284079459999994,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.24880914999999915,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.6758545440000017,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 0.1867090160000007,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.2475767100000012,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.1283643149999989,
+            "exitCode": 1
+          }
+        ]
+      },
+      "project": {
+        "status": "passed",
+        "basePath": "/otzaria-web/",
+        "books": 60,
+        "readingPages": 1545,
+        "htmlPages": 1627,
+        "identicalHtmlAndTextFiles": 1687,
+        "checks": [
+          "real partition archives",
+          "bounded cache allocation",
+          "immutable source plan",
+          "over-budget archive remains usable",
+          "exact coverage",
+          "missing partition rejected",
+          "same-size corruption rejected",
+          "all HTML/TXT identical",
+          "search finalized",
+          "all HTML verified",
+          "cross-build cache reuse",
+          "metadata invalidation"
+        ],
+        "commands": [
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 2.436457531,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.26829860599999983,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -tf .cache/transfer/source-000.tar.zst",
+            "seconds": 0.03534201900000016,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 1.1126832139999996,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 0.13755126099999962,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 4.485536224,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+            "seconds": 0.29269357500000115,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -tf .cache/transfer/source-001.tar.zst",
+            "seconds": 0.010031342000000222,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.4871334509999997,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 0.06534716900000058,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 1.9087782119999992,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/package-build-part.mjs",
+            "seconds": 0.13683252100000026,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/source-global.tar.zst",
+            "seconds": 0.007535237000000052,
+            "exitCode": 0
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/result-000.tar.zst",
+            "seconds": 0.19580440199999977,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.45475930900000094,
+            "exitCode": 1
+          },
+          {
+            "command": "tar --zstd -xf .cache/transfer/result-001.tar.zst",
+            "seconds": 0.048078841999998984,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.11434654799999953,
+            "exitCode": 1
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.7735379399999983,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 0.1931851970000007,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-external-search.mjs",
+            "seconds": 0.16106083399999988,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-size.mjs",
+            "seconds": 0.21002081399999953,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/verify.mjs",
+            "seconds": 1.213084381999999,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.25697939300000144,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.6554649309999986,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/index-search.mjs",
+            "seconds": 0.19265906600000016,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/prepare-build-parts.mjs",
+            "seconds": 0.2695423649999975,
+            "exitCode": 0
+          },
+          {
+            "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/build.mjs",
+            "seconds": 0.13315665699999954,
+            "exitCode": 1
+          }
+        ]
+      }
+    },
+    "browserChecks": "Two new browser checks await GitHub CI"
+  },
+  "secondGitHubFullBuild": {
+    "runId": 44990167097,
+    "runUrl": "https://github.com/NHLOCAL/otzaria-web/actions/runs/44990167097",
+    "commit": "57bc4fc1d6997a34fad6f07fd03d605e78652672",
+    "testedPullRequestMergeCommit": "97fbcf626059b8845c80e7dd911ebeb8703cd44a",
+    "status": "failure",
+    "createdAt": "2026-11-22T05:36:55Z",
+    "updatedAt": "2026-11-22T06:05:41Z",
+    "workflowElapsedSeconds": 1726,
+    "durationMethod": "Run created_at to updated_at, including queues and artifact transfer. This failed acceptance and is not a successful full-build benchmark.",
+    "publication": "skipped; pull request build, no deployment",
+    "artifact": {
+      "id": 14742546490,
+      "name": "build-inventory-44990167097",
+      "sha256": "b3e9d45c071ee3cc6e0b884cd3673cc3257462b0ea36f135372eee50551ba3e5",
+      "files": [
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/assemble.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/resources-assemble-initial.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/external-search.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/finalize-search.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/resources-assemble.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/search-global.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/size-check.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/performance/verify.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/build-plan.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/build-size.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/verification.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/.cache/search-results/dist-worker-c4-latency0.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/dist/build-manifest.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/dist/search-manifest.json",
+        ".cache/full-ci-search-44990167097/reports/build-inventory-44990167097/dist/external/search-manifest.json"
+      ]
+    },
+    "counts": {
+      "books": 9799,
+      "baseBooks": 8258,
+      "editions": 1541,
+      "pdfs": 38,
+      "images": 1358,
+      "missingSourceImages": 82,
+      "sourceLinks": 7001655,
+      "sections": 378696,
+      "htmlPages": 390614,
+      "sourceBytes": 6710214495,
+      "externalRecords": 223835,
+      "externalProviders": 2,
+      "externalHtmlPages": 1370,
+      "externalMappings": 29463
+    },
+    "coreSearch": {
+      "status": "ready",
+      "pages": 378696,
+      "shards": 106,
+      "maxShardBytes": 134217728,
+      "fingerprint": "4442734c2124b2550c8d3cc1190bc4e5745600f87e3f6deadc3bd2555a85428b",
+      "finalizedPartitions": 8,
+      "durationSeconds": 43.855780224
+    },
+    "externalSearch": {
+      "status": "ready",
+      "records": 223835,
+      "shards": 45
+    },
+    "output": {
+      "target": "cloudflare-r2",
+      "limits": {
+        "htmlBytes": 1000000
+      },
+      "errors": [],
+      "ok": true,
+      "files": 684853,
+      "totalBytes": 25850150962,
+      "maxFileBytes": 62242573,
+      "htmlFiles": 390614,
+      "maxHtmlBytes": 668483,
+      "largestFiles": [
+        {
+          "path": "books/b-6049/text.txt",
+          "bytes": 62242573
+        },
+        {
+          "path": "books/b-5869/text.txt",
+          "bytes": 53294335
+        },
+        {
+          "path": "books/b-6050/text.txt",
+          "bytes": 43809385
+        },
+        {
+          "path": "pdfs/bavli-4c27fff8a5349bd7383a.pdf",
+          "bytes": 38164802
+        },
+        {
+          "path": "books/b-7577/text.txt",
+          "bytes": 38000726
+        },
+        {
+          "path": "books/b-390/text.txt",
+          "bytes": 34902955
+        },
+        {
+          "path": "books/b-7414/text.txt",
+          "bytes": 34556637
+        },
+        {
+          "path": "books/b-7558/text.txt",
+          "bytes": 34065274
+        },
+        {
+          "path": "books/b-3779/text.txt",
+          "bytes": 32651176
+        },
+        {
+          "path": "books/b-3900/text.txt",
+          "bytes": 30563423
+        }
+      ]
+    },
+    "verification": {
+      "schemaVersion": 1,
+      "status": "passed",
+      "htmlOnly": false,
+      "documents": 390614,
+      "files": 684853,
+      "workers": 4,
+      "durationSeconds": 210.126924483,
+      "failureCount": 0,
+      "failures": []
+    },
+    "assemblyPhases": {
+      "assemble": {
+        "schemaVersion": 1,
+        "label": "assemble",
+        "startedAt": "2026-11-22T05:57:01.928Z",
+        "completedAt": "2026-11-22T05:59:55.677Z",
+        "wallTimeMs": 173747.66,
+        "exitCode": 0,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 1202860032,
+        "sampledPeakProcessCount": 1,
+        "sampleCount": 694,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15333756928,
+          "memoryAvailableToProcessBytes": 15333756928,
+          "diskAvailableBytes": 67600371712,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15323348992,
+          "memoryAvailableToProcessBytes": 15323348992,
+          "diskAvailableBytes": 66287677440,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "finalize-search": {
+        "schemaVersion": 1,
+        "label": "finalize-search",
+        "startedAt": "2026-11-22T05:59:55.757Z",
+        "completedAt": "2026-11-22T06:00:40.404Z",
+        "wallTimeMs": 44647.1,
+        "exitCode": 0,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 951451648,
+        "sampledPeakProcessCount": 1,
+        "sampleCount": 179,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15330697216,
+          "memoryAvailableToProcessBytes": 15330697216,
+          "diskAvailableBytes": 66287640576,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15175331840,
+          "memoryAvailableToProcessBytes": 15175331840,
+          "diskAvailableBytes": 66287566848,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "external-search": {
+        "schemaVersion": 1,
+        "label": "external-search",
+        "startedAt": "2026-11-22T06:00:40.441Z",
+        "completedAt": "2026-11-22T06:01:41.126Z",
+        "wallTimeMs": 60684.05,
+        "exitCode": 0,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 465788928,
+        "sampledPeakProcessCount": 3,
+        "sampleCount": 243,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15179075584,
+          "memoryAvailableToProcessBytes": 15179075584,
+          "diskAvailableBytes": 66287521792,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 14942339072,
+          "memoryAvailableToProcessBytes": 14942339072,
+          "diskAvailableBytes": 66197725184,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "size-check": {
+        "schemaVersion": 1,
+        "label": "size-check",
+        "startedAt": "2026-11-22T06:01:41.165Z",
+        "completedAt": "2026-11-22T06:01:59.135Z",
+        "wallTimeMs": 17969.03,
+        "exitCode": 0,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 123138048,
+        "sampledPeakProcessCount": 1,
+        "sampleCount": 72,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 14948102144,
+          "memoryAvailableToProcessBytes": 14948102144,
+          "diskAvailableBytes": 66197688320,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15038812160,
+          "memoryAvailableToProcessBytes": 15038812160,
+          "diskAvailableBytes": 66197700608,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "verify": {
+        "schemaVersion": 1,
+        "label": "verify",
+        "startedAt": "2026-11-22T06:01:59.173Z",
+        "completedAt": "2026-11-22T06:05:29.534Z",
+        "wallTimeMs": 210360.15,
+        "exitCode": 0,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 1407664128,
+        "sampledPeakProcessCount": 3,
+        "sampleCount": 841,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15056097280,
+          "memoryAvailableToProcessBytes": 15056097280,
+          "diskAvailableBytes": 66197655552,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15268446208,
+          "memoryAvailableToProcessBytes": 15268446208,
+          "diskAvailableBytes": 66197671936,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      },
+      "search-global": {
+        "schemaVersion": 1,
+        "label": "search-global",
+        "startedAt": "2026-11-22T06:05:29.609Z",
+        "completedAt": "2026-11-22T06:05:38.328Z",
+        "wallTimeMs": 8718.51,
+        "exitCode": 1,
+        "signal": null,
+        "launchError": null,
+        "sampledPeakRssBytes": 1028476928,
+        "sampledPeakProcessCount": 1,
+        "sampleCount": 35,
+        "sampleIntervalMs": 250,
+        "rssMeasurement": "Sampled sum of RSS for the child and descendants on Linux; shared pages can be counted more than once and short peaks can be missed.",
+        "before": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 15283908608,
+          "memoryAvailableToProcessBytes": 15283908608,
+          "diskAvailableBytes": 66197639168,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        },
+        "after": {
+          "memoryTotalBytes": 16464306176,
+          "memoryFreeBytes": 14768652288,
+          "memoryAvailableToProcessBytes": 14768652288,
+          "diskAvailableBytes": 66197262336,
+          "diskTotalBytes": 154894188544,
+          "cpuCount": 4
+        }
+      }
+    },
+    "searchBeforeCorrection": {
+      "status": "failed",
+      "pages": 378696,
+      "shards": 106,
+      "phases": [
+        {
+          "name": "initialize-and-merge",
+          "milliseconds": 0.3,
+          "requests": 0,
+          "bytes": 0,
+          "rssBytes": 61165568
+        },
+        {
+          "name": "first-query",
+          "milliseconds": 1355.54,
+          "requests": 352,
+          "bytes": 9674011,
+          "rssBytes": 324702208,
+          "query": "בראשית ברא",
+          "results": 40788
+        },
+        {
+          "name": "first-15-result-snippets",
+          "milliseconds": 66.88,
+          "requests": 12,
+          "bytes": 439951,
+          "rssBytes": 365371392,
+          "snippets": 15
+        },
+        {
+          "name": "known-source-probe-1",
+          "milliseconds": 3672.64,
+          "requests": 528,
+          "bytes": 29261793,
+          "rssBytes": 753807360,
+          "query": "\"(א) בראשית ברא אלהים את השמים\"",
+          "results": 105,
+          "expectedSources": 5
+        },
+        {
+          "name": "known-source-probe-2",
+          "milliseconds": 1310.08,
+          "requests": 412,
+          "bytes": 16551722,
+          "rssBytes": 936431616,
+          "query": "\"(א) אול מא כ̇לק אללה אלסמאואת\"",
+          "results": 3,
+          "expectedSources": 1
+        },
+        {
+          "name": "repeat-query-with-niqqud",
+          "milliseconds": 924.88,
+          "requests": 0,
+          "bytes": 0,
+          "rssBytes": 1058586624,
+          "results": 40788,
+          "nativeRankingChanged": true,
+          "normalizedRankingIdentical": true
+        },
+        {
+          "name": "category-filtered-query",
+          "milliseconds": 342.7,
+          "requests": 43,
+          "bytes": 1033880,
+          "rssBytes": 536977408,
+          "results": 10065
+        }
+      ],
+      "checks": [
+        {
+          "name": "results-paths-metadata-highlights",
+          "passed": true
+        },
+        {
+          "name": "known-source-retrieval-from-public-paragraphs",
+          "passed": true
+        },
+        {
+          "name": "all-known-matching-genesis-sources-present",
+          "passed": true
+        },
+        {
+          "name": "niqqud-matching-set-and-ui-normalized-ranking",
+          "passed": true
+        },
+        {
+          "name": "category-filter-preserves-matching-source",
+          "passed": true
+        }
+      ],
+      "firstInteraction": {
+        "milliseconds": 1422.72,
+        "requests": 364,
+        "bytes": 10113962,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 106,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+      },
+      "genesisRanks": {
+        "ordinary": [
+          {
+            "bookId": "b-1",
+            "url": "/books/b-1/s-2.html",
+            "title": "בראשית",
+            "containsPhrase": true,
+            "rank": 2341,
+            "score": 15.805638313293457
+          },
+          {
+            "bookId": "b-1-v-3",
+            "url": "/books/b-1-v-3/s-2.html",
+            "title": "בראשית · מקרא על פי המסורה",
+            "containsPhrase": true,
+            "rank": 2345,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-6",
+            "url": "/books/b-1-v-6/s-2.html",
+            "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+            "containsPhrase": true,
+            "rank": 2344,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-5",
+            "url": "/books/b-1-v-5/s-2.html",
+            "title": "בראשית · תנ״ך עם ניקוד",
+            "containsPhrase": true,
+            "rank": 2337,
+            "score": 15.808408737182617
+          },
+          {
+            "bookId": "b-1-v-7",
+            "url": "/books/b-1-v-7/s-2.html",
+            "title": "בראשית · תנ״ך - טקסט בלבד",
+            "containsPhrase": true,
+            "rank": 1662,
+            "score": 16.871444702148438
+          },
+          {
+            "bookId": "b-1-v-6942",
+            "url": "/books/b-1-v-6942/s-2.html",
+            "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+            "containsPhrase": false,
+            "rank": 4398,
+            "score": 14.399396896362305
+          }
+        ],
+        "nativePointed": [
+          {
+            "bookId": "b-1",
+            "url": "/books/b-1/s-2.html",
+            "title": "בראשית",
+            "containsPhrase": true,
+            "rank": 1693,
+            "score": 13.929221153259277
+          },
+          {
+            "bookId": "b-1-v-3",
+            "url": "/books/b-1-v-3/s-2.html",
+            "title": "בראשית · מקרא על פי המסורה",
+            "containsPhrase": true,
+            "rank": 1695,
+            "score": 13.927724838256836
+          },
+          {
+            "bookId": "b-1-v-6",
+            "url": "/books/b-1-v-6/s-2.html",
+            "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+            "containsPhrase": true,
+            "rank": 1694,
+            "score": 13.927724838256836
+          },
+          {
+            "bookId": "b-1-v-5",
+            "url": "/books/b-1-v-5/s-2.html",
+            "title": "בראשית · תנ״ך עם ניקוד",
+            "containsPhrase": true,
+            "rank": 1692,
+            "score": 13.931620597839355
+          },
+          {
+            "bookId": "b-1-v-7",
+            "url": "/books/b-1-v-7/s-2.html",
+            "title": "בראשית · תנ״ך - טקסט בלבד",
+            "containsPhrase": true,
+            "rank": 1702,
+            "score": 13.90964126586914
+          },
+          {
+            "bookId": "b-1-v-6942",
+            "url": "/books/b-1-v-6942/s-2.html",
+            "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+            "containsPhrase": false,
+            "rank": 3351,
+            "score": 12.53628158569336
+          }
+        ],
+        "uiNormalized": [
+          {
+            "bookId": "b-1",
+            "url": "/books/b-1/s-2.html",
+            "title": "בראשית",
+            "containsPhrase": true,
+            "rank": 2341,
+            "score": 15.805638313293457
+          },
+          {
+            "bookId": "b-1-v-3",
+            "url": "/books/b-1-v-3/s-2.html",
+            "title": "בראשית · מקרא על פי המסורה",
+            "containsPhrase": true,
+            "rank": 2345,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-6",
+            "url": "/books/b-1-v-6/s-2.html",
+            "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+            "containsPhrase": true,
+            "rank": 2344,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-5",
+            "url": "/books/b-1-v-5/s-2.html",
+            "title": "בראשית · תנ״ך עם ניקוד",
+            "containsPhrase": true,
+            "rank": 2337,
+            "score": 15.808408737182617
+          },
+          {
+            "bookId": "b-1-v-7",
+            "url": "/books/b-1-v-7/s-2.html",
+            "title": "בראשית · תנ״ך - טקסט בלבד",
+            "containsPhrase": true,
+            "rank": 1662,
+            "score": 16.871444702148438
+          },
+          {
+            "bookId": "b-1-v-6942",
+            "url": "/books/b-1-v-6942/s-2.html",
+            "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+            "containsPhrase": false,
+            "rank": 4398,
+            "score": 14.399396896362305
+          }
+        ],
+        "category": [
+          {
+            "bookId": "b-1",
+            "url": "/books/b-1/s-2.html",
+            "title": "בראשית",
+            "containsPhrase": true,
+            "rank": 1721,
+            "score": 15.805638313293457
+          },
+          {
+            "bookId": "b-1-v-3",
+            "url": "/books/b-1-v-3/s-2.html",
+            "title": "בראשית · מקרא על פי המסורה",
+            "containsPhrase": true,
+            "rank": 1724,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-6",
+            "url": "/books/b-1-v-6/s-2.html",
+            "title": "בראשית · תנ״ך מלווה בטעמי מקרא",
+            "containsPhrase": true,
+            "rank": 1723,
+            "score": 15.803909301757812
+          },
+          {
+            "bookId": "b-1-v-5",
+            "url": "/books/b-1-v-5/s-2.html",
+            "title": "בראשית · תנ״ך עם ניקוד",
+            "containsPhrase": true,
+            "rank": 1718,
+            "score": 15.808408737182617
+          },
+          {
+            "bookId": "b-1-v-7",
+            "url": "/books/b-1-v-7/s-2.html",
+            "title": "בראשית · תנ״ך - טקסט בלבד",
+            "containsPhrase": true,
+            "rank": 1279,
+            "score": 16.871444702148438
+          },
+          {
+            "bookId": "b-1-v-6942",
+            "url": "/books/b-1-v-6942/s-2.html",
+            "title": "בראשית · Saadia Gaon's Judeo-Arabic Torah",
+            "containsPhrase": false,
+            "rank": 2974,
+            "score": 14.399396896362305
+          }
+        ]
+      },
+      "primaryGenesisRank": 2341,
+      "sourceProbes": [
+        {
+          "query": "\"(א) בראשית ברא אלהים את השמים\"",
+          "results": 105,
+          "expectedSources": 5,
+          "sources": [
+            {
+              "bookId": "b-1",
+              "url": "/books/b-1/s-2.html",
+              "fragmentId": "he_79aa9a4"
+            },
+            {
+              "bookId": "b-1-v-3",
+              "url": "/books/b-1-v-3/s-2.html",
+              "fragmentId": "he_ed50b54"
+            },
+            {
+              "bookId": "b-1-v-6",
+              "url": "/books/b-1-v-6/s-2.html",
+              "fragmentId": "he_e843aeb"
+            },
+            {
+              "bookId": "b-1-v-5",
+              "url": "/books/b-1-v-5/s-2.html",
+              "fragmentId": "he_bb28616"
+            },
+            {
+              "bookId": "b-1-v-7",
+              "url": "/books/b-1-v-7/s-2.html",
+              "fragmentId": "he_eaf5b6e"
+            }
+          ]
+        },
+        {
+          "query": "\"(א) אול מא כ̇לק אללה אלסמאואת\"",
+          "results": 3,
+          "expectedSources": 1,
+          "sources": [
+            {
+              "bookId": "b-1-v-6942",
+              "url": "/books/b-1-v-6942/s-2.html",
+              "fragmentId": "he_b7e2363"
+            }
+          ]
+        }
+      ],
+      "failure": {
+        "message": "Exact phrase search returned full content without the phrase",
+        "stack": "AssertionError [ERR_ASSERTION]: Exact phrase search returned full content without the phrase\n    at file:///home/runner/work/otzaria-web/otzaria-web/scripts/search-smoke.mjs:297:7\n    at async measure (file:///home/runner/work/otzaria-web/otzaria-web/scripts/search-smoke.mjs:88:18)\n    at async file:///home/runner/work/otzaria-web/otzaria-web/scripts/search-smoke.mjs:293:5"
+      },
+      "totalRequests": 1713,
+      "totalBytes": 67580378,
+      "peakConcurrentFetches": 8
+    },
+    "cache": {
+      "exactResultHits": 0,
+      "wholePartitionSaves": 8,
+      "fallbackSaves": 0,
+      "allResultArchivesFitBudget": true,
+      "totalResultArchiveBytes": 8706575093,
+      "note": "Successful archive saves, not a verified warm-cache full run."
+    },
+    "notes": [
+      "All eight build/index partitions and complete HTML verification passed. The global query gate failed; the scoped gate was skipped in this revision.",
+      "The old literal-substring oracle rejected a valid native phrase containing internal ASCII acronym quotes in Bat Ayin, Tetzaveh.",
+      "The search measurements here belong to the previous merged broad-prefix worker, not the final namespaced complete-word worker.",
+      "The first interaction transferred 29.6 percent more response-body bytes than the historical 87-shard baseline. The new 106-shard layout must not be presented as improving every search metric.",
+      "Historical ordinary result counts changed from 40822 to 40788. The complete prior result identities were not retained, so the exact 34 differences cannot be attributed from these records."
+    ]
+  },
+  "nativePrefixInvestigation": {
+    "engine": "Pagefind 1.6.0",
+    "query": "בראשית ברא",
+    "root": "/workspace/scratch/ef91728a4a33/otzaria-web/.cache/count-investigation-bTlw1P",
+    "chunkConfiguration": "Native production default, 20,000 positions",
+    "experiments": [
+      {
+        "name": "fallback-one-lean",
+        "fullHtml": false,
+        "pages": 4,
+        "partitions": [
+          [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        ],
+        "ordinaryCount": 2,
+        "ordinary": [
+          {
+            "url": "/books/a/s-1.html",
+            "snippet": "בראשית ברא אלהים.",
+            "matched": 2
+          },
+          {
+            "url": "/books/d/s-1.html",
+            "snippet": "בראשיתה של תורה.",
+            "matched": 1
+          }
+        ],
+        "afterExactExtensionWarmup": null,
+        "quoted": [
+          "/books/a/s-1.html"
+        ],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 1
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_3234e7a.pf_index"
+        ]
+      },
+      {
+        "name": "fallback-two-lean",
+        "fullHtml": false,
+        "pages": 4,
+        "partitions": [
+          [
+            "a",
+            "d"
+          ],
+          [
+            "b",
+            "c"
+          ]
+        ],
+        "ordinaryCount": 3,
+        "ordinary": [
+          {
+            "url": "/books/b/s-1.html",
+            "snippet": "ברא עולם.",
+            "matched": 1
+          },
+          {
+            "url": "/books/a/s-1.html",
+            "snippet": "בראשית ברא אלהים.",
+            "matched": 2
+          },
+          {
+            "url": "/books/d/s-1.html",
+            "snippet": "בראשיתה של תורה.",
+            "matched": 1
+          }
+        ],
+        "afterExactExtensionWarmup": null,
+        "quoted": [
+          "/books/a/s-1.html"
+        ],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 1
+          },
+          {
+            "partition": 1,
+            "chunks": 1
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_3d78bd5.pf_index",
+          "pagefind/p-1/index/he_912f87a.pf_index"
+        ]
+      },
+      {
+        "name": "fallback-one-full",
+        "fullHtml": true,
+        "pages": 4,
+        "partitions": [
+          [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        ],
+        "ordinaryCount": 2,
+        "ordinary": [
+          {
+            "url": "/books/a/s-1.html",
+            "snippet": "בראשית ברא אלהים.",
+            "matched": 2
+          },
+          {
+            "url": "/books/d/s-1.html",
+            "snippet": "בראשיתה של תורה.",
+            "matched": 1
+          }
+        ],
+        "afterExactExtensionWarmup": null,
+        "quoted": [
+          "/books/a/s-1.html"
+        ],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 1
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_3234e7a.pf_index"
+        ]
+      },
+      {
+        "name": "fallback-two-full",
+        "fullHtml": true,
+        "pages": 4,
+        "partitions": [
+          [
+            "a",
+            "d"
+          ],
+          [
+            "b",
+            "c"
+          ]
+        ],
+        "ordinaryCount": 3,
+        "ordinary": [
+          {
+            "url": "/books/b/s-1.html",
+            "snippet": "ברא עולם.",
+            "matched": 1
+          },
+          {
+            "url": "/books/a/s-1.html",
+            "snippet": "בראשית ברא אלהים.",
+            "matched": 2
+          },
+          {
+            "url": "/books/d/s-1.html",
+            "snippet": "בראשיתה של תורה.",
+            "matched": 1
+          }
+        ],
+        "afterExactExtensionWarmup": null,
+        "quoted": [
+          "/books/a/s-1.html"
+        ],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 1
+          },
+          {
+            "partition": 1,
+            "chunks": 1
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_3d78bd5.pf_index",
+          "pagefind/p-1/index/he_912f87a.pf_index"
+        ]
+      },
+      {
+        "name": "chunks-one",
+        "fullHtml": false,
+        "pages": 5,
+        "partitions": [
+          [
+            "w-0",
+            "w-1",
+            "w-2",
+            "w-3",
+            "w-4"
+          ]
+        ],
+        "ordinaryCount": 1,
+        "ordinary": [
+          {
+            "url": "/books/w-1/s-1.html",
+            "snippet": "בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית ",
+            "matched": 20010
+          }
+        ],
+        "afterExactExtensionWarmup": [
+          "/books/w-1/s-1.html",
+          "/books/w-2/s-1.html"
+        ],
+        "quoted": [],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 6
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_113f618.pf_index",
+          "pagefind/p-0/index/he_effc1d5.pf_index"
+        ]
+      },
+      {
+        "name": "chunks-two",
+        "fullHtml": false,
+        "pages": 5,
+        "partitions": [
+          [
+            "w-0",
+            "w-1"
+          ],
+          [
+            "w-2",
+            "w-3",
+            "w-4"
+          ]
+        ],
+        "ordinaryCount": 4,
+        "ordinary": [
+          {
+            "url": "/books/w-1/s-1.html",
+            "snippet": "בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית בראשית ",
+            "matched": 20010
+          },
+          {
+            "url": "/books/w-3/s-1.html",
+            "snippet": "בראשיתב בראשיתב בראשיתב בראשיתב בראשיתב בראשיתב בראשיתב בראשיתב בראשית",
+            "matched": 20010
+          },
+          {
+            "url": "/books/w-2/s-1.html",
+            "snippet": "בראשיתא בראשיתא בראשיתא בראשיתא בראשיתא בראשיתא בראשיתא בראשיתא בראשית",
+            "matched": 20010
+          },
+          {
+            "url": "/books/w-4/s-1.html",
+            "snippet": "בראשיתג בראשיתג בראשיתג בראשיתג בראשיתג בראשיתג בראשיתג בראשיתג בראשית",
+            "matched": 20010
+          }
+        ],
+        "afterExactExtensionWarmup": [
+          "/books/w-1/s-1.html",
+          "/books/w-3/s-1.html",
+          "/books/w-2/s-1.html",
+          "/books/w-4/s-1.html"
+        ],
+        "quoted": [],
+        "indexChunks": [
+          {
+            "partition": 0,
+            "chunks": 3
+          },
+          {
+            "partition": 1,
+            "chunks": 4
+          }
+        ],
+        "chunkRequests": [
+          "pagefind/p-0/index/he_113f618.pf_index",
+          "pagefind/p-0/index/he_effc1d5.pf_index",
+          "pagefind/p-1/index/he_82e5c7e.pf_index",
+          "pagefind/p-1/index/he_ef5cfe1.pf_index",
+          "pagefind/p-1/index/he_9fe3a73.pf_index"
+        ]
+      }
+    ],
+    "notes": [
+      "Actual Pagefind 1.6.0 indexes using the production 20000-position chunk boundary.",
+      "Fixtures establish dependence of native broad-prefix membership on partitioning and warmed chunks. They do not identify the full-corpus historical 34-result delta.",
+      "Full-HTML and lean-HTML native index chunk hashes and memberships agreed in the paired fixtures."
+    ]
+  },
+  "wholeWordPolicyBenchmark": {
+    "kind": "Node file-backed production worker requests, not browser or mobile latency",
+    "directory": "/workspace/scratch/ef91728a4a33/otzaria-web/dist-bundle-two",
+    "pages": 1545,
+    "shards": 5,
+    "experiments": [
+      {
+        "architecture": "merged-native-prefix",
+        "query": "בראשית ברא",
+        "options": {},
+        "hits": 302,
+        "beforeSnippets": {
+          "requests": 17,
+          "bytes": 263617
+        },
+        "first15": {
+          "requests": 30,
+          "bytes": 316780
+        },
+        "wasmRequests": 1,
+        "peakFetches": 8,
+        "termChunks": [
+          "pagefind/shard-c-26e038c6f3caea49-b-000-/index/he_e85d762.pf_index",
+          "pagefind/shard-c-4e1a24b3e4c80592-b-000-/index/he_f95e8a8.pf_index",
+          "pagefind/shard-c-4f5e6181e8ce8c43-b-000-/index/he_5d997ef.pf_index",
+          "pagefind/shard-c-63379c4de4f96564-b-000-/index/he_210efc8.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      },
+      {
+        "architecture": "independent-whole-words",
+        "query": "בראשית ברא",
+        "options": {},
+        "hits": 12,
+        "beforeSnippets": {
+          "requests": 17,
+          "bytes": 263617
+        },
+        "first15": {
+          "requests": 29,
+          "bytes": 318984
+        },
+        "wasmRequests": 1,
+        "peakFetches": 8,
+        "termChunks": [
+          "pagefind/shard-c-26e038c6f3caea49-b-000-/index/he_e85d762.pf_index",
+          "pagefind/shard-c-4e1a24b3e4c80592-b-000-/index/he_f95e8a8.pf_index",
+          "pagefind/shard-c-4f5e6181e8ce8c43-b-000-/index/he_5d997ef.pf_index",
+          "pagefind/shard-c-63379c4de4f96564-b-000-/index/he_210efc8.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      },
+      {
+        "architecture": "merged-native-prefix",
+        "query": "\"בראשית ברא\"",
+        "options": {},
+        "hits": 5,
+        "beforeSnippets": {
+          "requests": 17,
+          "bytes": 263617
+        },
+        "first15": {
+          "requests": 22,
+          "bytes": 284494
+        },
+        "wasmRequests": 1,
+        "peakFetches": 6,
+        "termChunks": [
+          "pagefind/shard-c-26e038c6f3caea49-b-000-/index/he_e85d762.pf_index",
+          "pagefind/shard-c-4e1a24b3e4c80592-b-000-/index/he_f95e8a8.pf_index",
+          "pagefind/shard-c-4f5e6181e8ce8c43-b-000-/index/he_5d997ef.pf_index",
+          "pagefind/shard-c-63379c4de4f96564-b-000-/index/he_210efc8.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      },
+      {
+        "architecture": "independent-whole-words",
+        "query": "\"בראשית ברא\"",
+        "options": {},
+        "hits": 5,
+        "beforeSnippets": {
+          "requests": 17,
+          "bytes": 263617
+        },
+        "first15": {
+          "requests": 22,
+          "bytes": 284494
+        },
+        "wasmRequests": 1,
+        "peakFetches": 5,
+        "termChunks": [
+          "pagefind/shard-c-26e038c6f3caea49-b-000-/index/he_e85d762.pf_index",
+          "pagefind/shard-c-4e1a24b3e4c80592-b-000-/index/he_f95e8a8.pf_index",
+          "pagefind/shard-c-4f5e6181e8ce8c43-b-000-/index/he_5d997ef.pf_index",
+          "pagefind/shard-c-63379c4de4f96564-b-000-/index/he_210efc8.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      },
+      {
+        "architecture": "merged-native-prefix",
+        "query": "בראשית ברא",
+        "options": {
+          "filters": {
+            "category": "תנ״ך"
+          }
+        },
+        "hits": 251,
+        "beforeSnippets": {
+          "requests": 6,
+          "bytes": 129752
+        },
+        "first15": {
+          "requests": 19,
+          "bytes": 182915
+        },
+        "wasmRequests": 1,
+        "peakFetches": 8,
+        "termChunks": [
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      },
+      {
+        "architecture": "independent-whole-words",
+        "query": "בראשית ברא",
+        "options": {
+          "filters": {
+            "category": "תנ״ך"
+          }
+        },
+        "hits": 11,
+        "beforeSnippets": {
+          "requests": 6,
+          "bytes": 129752
+        },
+        "first15": {
+          "requests": 17,
+          "bytes": 176128
+        },
+        "wasmRequests": 1,
+        "peakFetches": 8,
+        "termChunks": [
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_5e6d521.pf_index",
+          "pagefind/shard-c-a0437d2af95bfa61-b-000-/index/he_a45d895.pf_index"
+        ]
+      }
+    ],
+    "notes": [
+      "Same 1545-page, five-shard input for both clients. Native response bodies only, excluding manifest and JavaScript imports.",
+      "Ordinary membership intentionally changed from prefix expansion to intersection of all complete words within each index.",
+      "The first15 field includes all available hits if fewer than 15. Different ordinary result sets do not provide identical snippet comparisons.",
+      "These are transfer measurements with file-backed resources, not browser or mobile latency."
+    ]
+  },
+  "nativeFragmentIdCollision": {
+    "id": "he_fb3efe5",
+    "documents": [
+      {
+        "url": "/books/collision-a-8532.html",
+        "text": "בראשית"
+      },
+      {
+        "url": "/books/collision-b-738.html",
+        "text": "ברא"
+      }
+    ],
+    "iterations": 8532,
+    "native": [
+      {
+        "id": "he_fb3efe5",
+        "raw": "{\"url\":\"/books/collision-a-8532.html\",\"content\":\"בראשית.\",\"word_count\":1,\"filters\":{},\"meta\":{},\"anchors\":[]}",
+        "data": {
+          "url": "/books/collision-a-8532.html",
+          "content": "בראשית.",
+          "word_count": 1,
+          "filters": {},
+          "meta": {},
+          "anchors": []
+        }
+      },
+      {
+        "id": "he_fb3efe5",
+        "raw": "{\"url\":\"/books/collision-b-738.html\",\"content\":\"ברא.\",\"word_count\":1,\"filters\":{},\"meta\":{},\"anchors\":[]}",
+        "data": {
+          "url": "/books/collision-b-738.html",
+          "content": "ברא.",
+          "word_count": 1,
+          "filters": {},
+          "meta": {},
+          "anchors": []
+        }
+      }
+    ],
+    "html": [
+      "<html lang=\"he\"><body><article data-pagefind-body>בראשית</article></body></html>",
+      "<html lang=\"he\"><body><article data-pagefind-body>ברא</article></body></html>"
+    ],
+    "directory": "/workspace/scratch/ef91728a4a33/otzaria-web/.cache/native-collision-lMQAxt",
+    "resolution": "Intersect exact-word IDs within each native index, then prefix IDs with the bundle path before combining results. The two single-word documents cannot manufacture a shared hit."
+  },
+  "phraseOracleValidation": {
+    "query": "\"בראשית ברא\"",
+    "pages": 2123,
+    "shards": 2,
+    "candidates": 118,
+    "invalid": 0,
+    "batAyin": {
+      "id": "/pagefind/shard-p-001-c-35def29837d03ddb-b-000-/he_02527df",
+      "url": "/books/b-440/s-420579.html",
+      "book": "בת עין",
+      "section": "תצוה",
+      "evidence": {
+        "engine": "pagefind",
+        "version": "1.6.0",
+        "language": "he",
+        "queryTokens": [
+          "בראשית",
+          "ברא"
+        ],
+        "matched": true,
+        "matchCount": 1,
+        "wordPositions": 4123,
+        "matches": [
+          {
+            "startPosition": 919,
+            "words": [
+              {
+                "position": 919,
+                "raw": "בראש\"ית",
+                "hebrewTokens": [
+                  "בראשית",
+                  "בראש",
+                  "ית"
+                ],
+                "hebrewTokenCount": 3,
+                "expectedToken": "בראשית",
+                "matched": true
+              },
+              {
+                "position": 920,
+                "raw": "ברא",
+                "hebrewTokens": [
+                  "ברא"
+                ],
+                "hebrewTokenCount": 1,
+                "expectedToken": "ברא",
+                "matched": true
+              }
+            ],
+            "rawExcerpt": "ריא אח\"ד, שיתעלו לבחינת ה' א\"חד כנ\"ל: או יאמר על זה הדרך, הנה כתיב (בראשית א א) בראש\"ית ברא כו', ואמרו חז\"ל (מדרש הנעלם פ' בראשית מאמר התורה שנברא במ' יום) בשביל יראה שנקר"
+          }
+        ]
+      }
+    },
+    "validatedResults": 118,
+    "nativeRegressionDocuments": 26,
+    "source": "scripts/search-phrase-oracle.mjs and tests/search-phrase-oracle.test.mjs",
+    "scope": "Pinned Pagefind 1.6.0 Hebrew whitespace positions, normalization and compound tokens. This is an independent acceptance oracle, not the production search engine.",
+    "negativeCases": [
+      "reversed words",
+      "intervening word",
+      "punctuation-only positional gap",
+      "two words concatenated into one position"
+    ]
+  },
+  "finalSearchLocalValidation": {
+    "nodeTests": 106,
+    "pythonTests": 41,
+    "unitStatus": "passed",
+    "nativeFocusedTests": 28,
+    "focusedStatus": "passed",
+    "includes": [
+      "actual native short-ID collision",
+      "complete-word membership across partitions and warmed chunks",
+      "one shared WASM download",
+      "bounded fetch bodies",
+      "category pruning",
+      "HTTP 503 and corrupt HTTP 200 retry",
+      "cancellation and stale result handles",
+      "quoted acronym and compound punctuation",
+      "independent native phrase and ordinary-query oracle",
+      "missing Worker support fails visibly without silent native fallback"
+    ],
+    "starterNativeSmoke": {
+      "status": "passed",
+      "pages": 1545,
+      "shards": 5,
+      "checks": [
+        {
+          "name": "results-paths-metadata-highlights",
+          "passed": true
+        },
+        {
+          "name": "ordinary-results-contain-all-complete-hebrew-words",
+          "passed": true
+        },
+        {
+          "name": "known-source-retrieval-from-public-paragraphs",
+          "passed": true
+        },
+        {
+          "name": "all-known-matching-genesis-sources-present",
+          "passed": true
+        },
+        {
+          "name": "niqqud-matching-set-and-ui-normalized-ranking",
+          "passed": true
+        },
+        {
+          "name": "category-filter-preserves-matching-source",
+          "passed": true
+        },
+        {
+          "name": "quoted-phrase-search",
+          "passed": true
+        },
+        {
+          "name": "no-match-query",
+          "passed": true
+        }
+      ],
+      "phases": [
+        {
+          "name": "initialize-and-merge",
+          "milliseconds": 0.31,
+          "requests": 0,
+          "bytes": 0,
+          "rssBytes": 47894528
+        },
+        {
+          "name": "first-query",
+          "milliseconds": 336.9,
+          "requests": 18,
+          "bytes": 261972,
+          "rssBytes": 90783744,
+          "query": "בראשית ברא",
+          "results": 12
+        },
+        {
+          "name": "first-15-result-snippets",
+          "milliseconds": 51.79,
+          "requests": 11,
+          "bytes": 208134,
+          "rssBytes": 105082880,
+          "snippets": 12
+        },
+        {
+          "name": "validate-ordinary-whole-words",
+          "milliseconds": 65.61,
+          "requests": 0,
+          "bytes": 0,
+          "rssBytes": 108945408,
+          "inspected": 12,
+          "queryWords": [
+            "בראשית",
+            "ברא"
+          ],
+          "additionalFetches": 0
+        },
+        {
+          "name": "known-source-probe-1",
+          "milliseconds": 19.91,
+          "requests": 8,
+          "bytes": 235409,
+          "rssBytes": 116154368,
+          "query": "\"(א) בראשית ברא אלהים את השמים\"",
+          "results": 5,
+          "expectedSources": 5
+        },
+        {
+          "name": "known-source-probe-2",
+          "milliseconds": 28.53,
+          "requests": 10,
+          "bytes": 311088,
+          "rssBytes": 121114624,
+          "query": "\"(א) אול מא כ̇לק אללה אלסמאואת\"",
+          "results": 1,
+          "expectedSources": 1
+        },
+        {
+          "name": "repeat-query-with-niqqud",
+          "milliseconds": 21.94,
+          "requests": 0,
+          "bytes": 0,
+          "rssBytes": 121638912,
+          "results": 12,
+          "coldToWarmRankingChanged": false,
+          "pointedQueryRankingChanged": false,
+          "rankingReference": "warm-unpointed",
+          "normalizedRankingIdentical": true,
+          "queryNormalization": "shared-static-client"
+        },
+        {
+          "name": "category-filtered-query",
+          "milliseconds": 125.64,
+          "requests": 6,
+          "bytes": 127292,
+          "rssBytes": 120963072,
+          "results": 11
+        },
+        {
+          "name": "exact-phrase-query",
+          "milliseconds": 272.83,
+          "requests": 22,
+          "bytes": 344298,
+          "rssBytes": 119427072,
+          "results": 5
+        },
+        {
+          "name": "no-match-query",
+          "milliseconds": 12.79,
+          "requests": 5,
+          "bytes": 165643,
+          "rssBytes": 122441728,
+          "results": 0
+        }
+      ],
+      "firstInteraction": {
+        "milliseconds": 389,
+        "requests": 29,
+        "bytes": 470106,
+        "peakConcurrentFetches": 8,
+        "shardMetadataRequests": 5,
+        "wasmRequests": 1,
+        "note": "File-backed Node/WASM response bodies and process RSS; not mobile, browser, CDN or wire performance."
+      },
+      "scriptBytes": {
+        "primaryModule": 47228,
+        "browserWorker": 8051,
+        "clientModule": 12481,
+        "queryModule": 2449,
+        "note": "Node imports modules directly. Browser transfer additionally includes these scripts."
+      }
+    },
+    "fullCorpusFinalAcceptance": "pending a fresh GitHub run of this revision",
+    "browserFinalAcceptance": "pending a fresh GitHub run including both new toolbar checks",
+    "partitionIntegration": {
+      "root": {
+        "status": "passed",
+        "basePath": "/",
+        "books": 60,
+        "readingPages": 1545,
+        "htmlPages": 1627,
+        "identicalHtmlAndTextFiles": 1687,
+        "checks": [
+          "real partition archives",
+          "bounded cache allocation",
+          "immutable source plan",
+          "over-budget archive remains usable",
+          "exact coverage",
+          "missing partition rejected",
+          "same-size corruption rejected",
+          "all HTML/TXT identical",
+          "search finalized",
+          "all HTML verified",
+          "cross-build cache reuse",
+          "metadata invalidation"
+        ]
+      },
+      "project": {
+        "status": "passed",
+        "basePath": "/otzaria-web/",
+        "books": 60,
+        "readingPages": 1545,
+        "htmlPages": 1627,
+        "identicalHtmlAndTextFiles": 1687,
+        "checks": [
+          "real partition archives",
+          "bounded cache allocation",
+          "immutable source plan",
+          "over-budget archive remains usable",
+          "exact coverage",
+          "missing partition rejected",
+          "same-size corruption rejected",
+          "all HTML/TXT identical",
+          "search finalized",
+          "all HTML verified",
+          "cross-build cache reuse",
+          "metadata invalidation"
+        ]
+      }
+    },
+    "rankingValidation": "Cold/warm matching sets must agree. Pointed and normalized rankings are compared at the same warm state; cold-to-warm rank differences are reported."
   }
 }

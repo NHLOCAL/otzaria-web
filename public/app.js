@@ -4,10 +4,6 @@ const pathFor = path => `${base}${path.replace(/^\/+/, '')}`;
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
 const normalize = value => String(value).normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'"“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-const normalizeSearch = value => {
-  const normalized = String(value).normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim();
-  return (normalized.match(/"/g) || []).length % 2 ? normalized.replace(/"/g, '') : normalized;
-};
 const readStored = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(`otzaria:${key}`)) ?? fallback; } catch { return fallback; }
 };
@@ -32,6 +28,18 @@ document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light
 let readerSize = Number(readStored('reader-size', 25));
 if (!Number.isFinite(readerSize) || readerSize < 20 || readerSize > 36) readerSize = 25;
 document.documentElement.style.setProperty('--reader-size', `${readerSize}px`);
+// These controls need JavaScript already. Keep one shared copy instead of
+// repeating their markup in every reading page. Cached older pages contain
+// the same controls and must retain their existing nodes.
+const readerToolbar = one('[data-reader] .reader-toolbar');
+if (readerToolbar && !readerToolbar.childElementCount) {
+  readerToolbar.innerHTML = `
+  <div class="type-controls" role="group" aria-label="גודל האותיות"><button class="tool-button" type="button" data-font-size="decrease" aria-label="הקטנת אותיות">א−</button><button class="tool-button" type="button" data-font-size="increase" aria-label="הגדלת אותיות">א+</button></div>
+  <button class="tool-button" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 14a9 9 0 0 1-10.8-10.8A9 9 0 1 0 20.8 14Z"/></svg><span>מצב כהה</span></button>
+  <button class="tool-button" type="button" data-bookmark aria-pressed="false"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg><span>שמירה</span></button>
+  <button class="tool-button" type="button" data-copy-link><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 13 4-4m-6 6-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m2 2 1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 0)"/></svg><span>העתקת קישור</span></button>
+`;
+}
 all('[data-enhance]').forEach(element => { element.hidden = false; });
 
 document.addEventListener('keydown', event => {
@@ -256,7 +264,6 @@ if (searchRegion) {
     const token = ++request;
     clearTimeout(pendingTimer);
     const rawQuery = input.value.trim();
-    const query = normalizeSearch(rawQuery);
     if (updateUrl) {
       const url = new URL(location.href);
       if (rawQuery) url.searchParams.set('q', rawQuery); else url.searchParams.delete('q');
@@ -264,13 +271,13 @@ if (searchRegion) {
       history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     }
     more.hidden = true; resultsElement.replaceChildren(); currentResults = []; shown = 0;
-    if (!query) { searchClient?.cancel(); status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
+    if (!rawQuery) { searchClient?.cancel(); status.textContent = 'הקלידו בשדה החיפוש כדי להתחיל.'; searchRegion.removeAttribute('aria-busy'); return; }
     status.textContent = 'מחפשים בספרייה...'; searchRegion.setAttribute('aria-busy', 'true');
     try {
       const api = await loadSearch();
       if (token !== request) return;
       const options = categorySelect.value ? { filters: { category: categorySelect.value } } : {};
-      const response = await api.search(query, options);
+      const response = await api.search(rawQuery, options);
       if (token !== request || !response) return;
       currentResults = response.results || [];
       if (!currentResults.length) status.textContent = 'לא נמצאו תוצאות. נסו פחות מילים, כתיב אחר או תחום לימוד אחר.';

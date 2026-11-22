@@ -1,10 +1,8 @@
 import { createStaticSearchClient } from './search-client.mjs';
+import { normalizeSearchQuery } from './search-query.mjs';
 
 /* External catalogue metadata only. The core full-text index is independent. */
-export function normalizeMetadataQuery(value) {
-  const normalized = String(value || '').normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '').replace(/[׳״'“”‘’]/g, '').replace(/[\u05be–-]/g, ' ').replace(/\s+/g, ' ').trim();
-  return (normalized.match(/"/g) || []).length % 2 ? normalized.replace(/"/g, '') : normalized;
-}
+export const normalizeMetadataQuery = normalizeSearchQuery;
 
 export function safeProviderUrl(value, provider, providerId = null) {
   try {

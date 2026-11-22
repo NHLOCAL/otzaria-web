@@ -16,7 +16,7 @@ function fixture(shards, { search = async ({ path }) => response([result(path)])
   const calls = { fetches: 0, imports: [], instances: [], merges: [], searches: [], warmups: [], destroyed: [] };
   const manifest = { schemaVersion: 1, engine: 'pagefind', version: '1.6.0', shards };
   const client = createStaticSearchClient({
-    manifestUrl: '/library/search-manifest.json', bundlePrefix: prefix, origin: 'https://example.test', concurrency, groupSize: 1,
+    manifestUrl: '/library/search-manifest.json', bundlePrefix: prefix, origin: 'https://example.test', concurrency, groupSize: 1, workerFactory: null,
     fetchManifest: async () => { calls.fetches++; return fetchManifest ? fetchManifest() : { ok: true, json: async () => manifest }; },
     importPagefind: async url => {
       calls.imports.push(url);
@@ -42,6 +42,23 @@ test('an empty query does not fetch a manifest or initialize an index', async ()
   for (const query of ['', '   ', null]) assert.deepEqual((await client.search(query)).results, []);
   assert.equal(calls.fetches, 0);
   assert.deepEqual(calls.imports, []);
+});
+
+test('production default rejects unavailable Worker support without initializing the native fallback', async () => {
+  const originalWorker = globalThis.Worker;
+  globalThis.Worker = undefined;
+  const { client, calls } = fixture([makeShard('a')], { workerFactory: undefined });
+  try {
+    await assert.rejects(client.search('בראשית'), /requires Web Worker support/);
+    assert.equal(calls.fetches, 1);
+    assert.deepEqual(calls.imports, []);
+    assert.deepEqual(calls.instances, []);
+    assert.deepEqual(calls.searches, []);
+  } finally {
+    await client.destroy();
+    if (originalWorker === undefined) delete globalThis.Worker;
+    else globalThis.Worker = originalWorker;
+  }
 });
 
 test('a stalled manifest download is aborted and permits retry', async () => {
@@ -74,7 +91,7 @@ test('category and provider scopes select before index loading, preserving unkno
   assert.deepEqual(selectSearchShards(shards, { category: { any: ['תנך'] } }, 'category', 'categories'), shards);
 });
 
-test('small groups share a primary runtime and never mix unrelated scopes', async () => {
+test('fallback bounds independent shard instances and skips unrelated scopes', async () => {
   const shards = Array.from({ length: 12 }, (_, index) => makeShard(String(index), index < 8 ? ['תנך'] : ['משנה']));
   const groups = groupSearchShards(shards, 'categories', 4);
   assert.deepEqual(groups.map(group => group.shards.length), [4, 4, 4]);
@@ -88,15 +105,15 @@ test('small groups share a primary runtime and never mix unrelated scopes', asyn
     activeShards -= paths.length;
     return response(paths.map(path => result(path)));
   } });
-  const pending = client.search('בראשית', { filters: { category: 'תנך' } });
+  const pending = client.search('"בראשית"', { filters: { category: 'תנך' } });
   await started.promise;
-  assert.equal(calls.instances.length, 2);
-  assert.equal(calls.merges.length, 6);
+  assert.equal(calls.instances.length, 8);
+  assert.equal(calls.merges.length, 0);
   assert(calls.searches.every(call => call.paths.every(path => shards.slice(0, 8).some(shard => shard.bundlePath === path))));
   gate.resolve();
   assert.equal((await pending).results.length, 8);
-  assert.equal((await client.search('בראשית')).results.length, 12);
-  assert.equal(calls.instances.length, 3, 'Existing scope groups should be reused');
+  assert.equal((await client.search('"בראשית"')).results.length, 12);
+  assert.equal(calls.instances.length, 12, 'Existing scope instances should be reused');
   assert.equal(peak, 8, 'No more than eight shard searches may be active by default');
 });
 
@@ -112,7 +129,7 @@ test('global search visits all shards with bounded work and deterministic score 
     active--;
     return response([result(String(index), index === 2 ? 4 : 1)]);
   } });
-  const pending = client.search('בראשית');
+  const pending = client.search('"בראשית"');
   await Promise.all([started[0].promise, started[1].promise]);
   assert.equal(calls.searches.length, 2);
   gates[1].resolve(); await started[2].promise;
@@ -120,9 +137,9 @@ test('global search visits all shards with bounded work and deterministic score 
   gates[3].resolve(); gates[0].resolve();
   const actual = await pending;
   assert.equal(peak, 2);
-  assert.deepEqual(actual.results.map(item => item.id), ['2', '0', '1', '3']);
-  assert.equal(actual.unfilteredResultCount, 4);
-  assert.equal(actual.filters.category['תנך'], 4);
+  assert.deepEqual(actual.results.map(item => item.id), ['c/2', 'a/0', 'b/1', 'd/3'].map(id => `${prefix}${id}`));
+  assert(!Object.hasOwn(actual, 'unfilteredResultCount'));
+  assert(!Object.hasOwn(actual, 'filters'), 'Native prefix counts must not describe whole-word membership');
   assert.equal(calls.imports.length, 1);
 });
 
@@ -130,19 +147,19 @@ test('a superseding query stops queued shards and skips obsolete queued queries'
   const gate = deferred(), started = deferred();
   const shards = ['a', 'b', 'c'].map(id => makeShard(id));
   const { client, calls } = fixture(shards, { concurrency: 1, search: async ({ query, path }) => {
-    if (query === 'old') { started.resolve(); await gate.promise; }
+    if (query === '"old"') { started.resolve(); await gate.promise; }
     return response([result(`${query}:${path}`)]);
   } });
-  const old = client.search('old');
+  const old = client.search('"old"');
   await started.promise;
-  const skipped = client.search('middle');
-  const latest = client.search('latest');
+  const skipped = client.search('"middle"');
+  const latest = client.search('"latest"');
   gate.resolve();
   assert.equal(await old, null);
   assert.equal(await skipped, null);
   assert.equal((await latest).results.length, 3);
-  assert.equal(calls.searches.filter(item => item.query === 'old').length, 1);
-  assert.equal(calls.searches.filter(item => item.query === 'middle').length, 0);
+  assert.equal(calls.searches.filter(item => item.query === '"old"').length, 1);
+  assert.equal(calls.searches.filter(item => item.query === '"middle"').length, 0);
 });
 
 test('cancel during debounce suppresses old results without starting more shards', async () => {
@@ -150,7 +167,7 @@ test('cancel during debounce suppresses old results without starting more shards
   const { client, calls } = fixture([makeShard('a'), makeShard('b')], { concurrency: 1, search: async () => {
     started.resolve(); await gate.promise; return response([result('old')]);
   } });
-  const pending = client.search('old');
+  const pending = client.search('"old"');
   await started.promise; client.cancel(); gate.resolve();
   assert.equal(await pending, null);
   assert.equal(calls.searches.length, 1);
@@ -179,13 +196,24 @@ test('failed searches await in-flight work and never start the remaining queue',
     await started.promise; failed.resolve(); throw new Error('failed shard');
   } });
   let settled = false;
-  const pending = client.search('query');
+  const pending = client.search('"query"');
   pending.then(() => { settled = true; }, () => { settled = true; });
   await failed.promise;
   assert.equal(settled, false);
   gate.resolve();
   await assert.rejects(pending, /failed shard/);
   assert.equal(calls.searches.length, 2);
+});
+
+test('whole-word intersections never conflate equal native IDs in different shards', async () => {
+  const { client, calls } = fixture([makeShard('first'), makeShard('second')], { search: async ({ path, query }) => {
+    const present = path.endsWith('/first/') ? '"בראשית"' : '"ברא"';
+    return response(query === present ? [result('he_shared')] : []);
+  } });
+  const actual = await client.search('בראשית ברא');
+  assert.deepEqual(actual.results, []);
+  assert(calls.searches.every(item => item.query.startsWith('"')), 'An empty intersection needs no broad ranking query');
+  await client.destroy();
 });
 
 test('failed manifest downloads can be retried', async () => {

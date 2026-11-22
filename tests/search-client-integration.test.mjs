@@ -54,8 +54,8 @@ test('actual Pagefind worker preserves Hebrew phrases, all results, bounded down
         notifyFetch?.(request);
       } }),
     });
-    // Cold global initialization exercises two simultaneously starting groups,
-    // real metadata, token chunks and the shared WebAssembly runtime.
+    // Cold global initialization exercises independent index instances, real
+    // metadata, token chunks and the shared WebAssembly runtime.
     const all = await client.search('בראשית ברא');
     assert.equal(all.results.length, 9);
     assert.equal(requestedEntries.size, 9);

@@ -1,12 +1,14 @@
 /* One owned worker contains one Pagefind runtime. Its fetch queue applies only
  * inside this worker, so search cannot change the page's networking behavior. */
+import { searchWholeWords } from './search-query.mjs';
+
 export function createSearchWorkerHandler({
   postMessage,
   fetchResource = globalThis.fetch.bind(globalThis),
   importPagefind = url => import(url),
   maximumRequests = 8,
 }) {
-  let api;
+  let indexes;
   let scope;
   let resultEpoch = 0;
   let results = [];
@@ -14,6 +16,7 @@ export function createSearchWorkerHandler({
   let failureCount = 0;
   let lastFailure;
   const queued = [];
+  const sharedWasm = new Map();
   const stats = { requests: 0, bytes: 0, active: 0, peak: 0, failures: 0 };
 
   function failure(error) {
@@ -31,17 +34,26 @@ export function createSearchWorkerHandler({
     failure(new Error(values.map(value => value instanceof Error ? value.message : String(value)).join(' ')));
     reportError(...values);
   };
+  function resourceUrl(input) {
+    const url = new URL(String(input), scope.origin);
+    if (url.origin !== scope.origin || !url.pathname.startsWith(scope.bundlePrefix) || url.hash || url.username || url.password) throw new Error('Search resource outside the static index');
+    return url;
+  }
+  const wasmKey = url => url.pathname.match(/\/wasm\.[a-zA-Z0-9_-]+\.pagefind$/)?.[0];
   async function download(job) {
     stats.active++; stats.peak = Math.max(stats.peak, stats.active);
     try {
-      const url = new URL(String(job.input), scope.origin);
-      if (url.origin !== scope.origin || !url.pathname.startsWith(scope.bundlePrefix) || url.hash || url.username || url.password) throw new Error('Search resource outside the static index');
       stats.requests++;
-      const response = await fetchResource(url.href, job.options);
+      const response = await fetchResource(job.url.href, job.options);
       if (!response.ok) { await response.body?.cancel(); throw new Error(`Search resource returned HTTP ${response.status}`); }
       // Hold the slot until the body has arrived, not merely until headers.
       const body = await response.arrayBuffer();
       stats.bytes += body.byteLength;
+      // Every shard is built with the same pinned Pagefind version. Its WASM
+      // file is identical for a given language; independent supported API
+      // instances can share this download and the initialized native runtime.
+      const key = wasmKey(job.url);
+      if (key) sharedWasm.set(key, { body, status: response.status, headers: response.headers });
       job.resolve(new Response(body, { status: response.status, headers: response.headers }));
     } catch (error) { job.reject(failure(error)); }
     finally { stats.active--; pump(); }
@@ -49,9 +61,13 @@ export function createSearchWorkerHandler({
   function pump() {
     while (queued.length && stats.active < maximumRequests) download(queued.shift());
   }
-  globalThis.fetch = (input, options) => new Promise((resolve, reject) => {
-    queued.push({ input, options, resolve, reject }); pump();
-  });
+  globalThis.fetch = async (input, options) => {
+    let url;
+    try { url = resourceUrl(input); } catch (error) { throw failure(error); }
+    const cached = sharedWasm.get(wasmKey(url));
+    if (cached) return new Response(cached.body, { status: cached.status, headers: cached.headers });
+    return new Promise((resolve, reject) => { queued.push({ url, options, resolve, reject }); pump(); });
+  };
 
   async function checked(action) {
     const before = failureCount;
@@ -66,42 +82,59 @@ export function createSearchWorkerHandler({
     return { baseUrl: '/', excerptLength: 34, ...config.indexOptions,
       ...(typeof cacheTag === 'string' ? { metaCacheTag: cacheTag } : {}) };
   }
+  async function eachIndex(action) {
+    const responses = new Array(indexes.length);
+    const before = failureCount;
+    let next = 0;
+    let failed;
+    await Promise.all(Array.from({ length: Math.min(4, indexes.length) }, async () => {
+      while (!failed && failureCount === before) {
+        const position = next++;
+        if (position >= indexes.length) return;
+        try { responses[position] = await action(indexes[position]); }
+        catch (error) { failed ||= error; }
+      }
+    }));
+    if (failed) throw failed;
+    if (failureCount !== before) throw lastFailure;
+    return responses;
+  }
   async function perform(message) {
     if (message.op === 'init') {
-      if (api) throw new Error('Search worker is already initialized');
+      if (indexes) throw new Error('Search worker is already initialized');
       scope = message.config;
       if (!Array.isArray(scope.shards) || !scope.shards.length || !scope.bundlePrefix?.endsWith('/')) throw new Error('Invalid search worker scope');
       for (const shard of scope.shards) {
         const url = new URL(shard.bundlePath, scope.origin);
         if (url.origin !== scope.origin || !url.pathname.startsWith(scope.bundlePrefix) || !url.pathname.endsWith('/') || url.search || url.hash) throw new Error('Invalid worker index path');
       }
-      const [first, ...additional] = scope.shards;
+      const [first] = scope.shards;
       const module = await importPagefind(new URL(`${first.bundlePath}pagefind.js`, scope.origin).href);
-      api = module.createInstance({ ...optionsFor(first, scope), basePath: first.bundlePath, noWorker: true });
-      await checked(() => api.search(''));
-      // There is one WASM primary. Every additional index shares it, and the
-      // worker's download queue independently bounds actual network activity.
-      for (let start = 0; start < additional.length; start += 4) {
-        await checked(async () => {
-          const merged = await Promise.allSettled(additional.slice(start, start + 4).map(shard => {
-            const { noWorker, ...options } = optionsFor(shard, scope);
-            return api.mergeIndex(shard.bundlePath, { ...options, language: 'he' });
-          }));
-          const failed = merged.find(item => item.status === 'rejected');
-          if (failed) throw failed.reason;
-        });
-      }
+      const initialize = async shard => {
+        const api = module.createInstance({ ...optionsFor(shard, scope), basePath: shard.bundlePath, noWorker: true });
+        await api.search('');
+        return { shard, api };
+      };
+      // Initialize the shared WASM before starting additional API instances.
+      // Keep each shard's identity: native seven-hex fragment IDs can collide
+      // across indexes, making intersection after mergeIndex unsafe.
+      const primary = await checked(() => initialize(first));
+      indexes = scope.shards.slice(1);
+      const additional = await checked(() => eachIndex(initialize));
+      indexes = [primary, ...additional];
       return true;
     }
-    if (!api) throw new Error('Search worker is not initialized');
+    if (!indexes) throw new Error('Search worker is not initialized');
     if (message.op === 'search') {
-      const response = await checked(() => api.search(message.query, message.options || {}));
-      results = response.results;
+      const responses = await checked(() => eachIndex(async ({ shard, api }) => {
+        const response = await searchWholeWords(api, message.query, message.options || {}, undefined, shard.bundlePath);
+        return response.results.map(result => ({ ...result, id: `${shard.bundlePath}${result.id}` }));
+      }));
+      results = responses.flat();
       results.sort((left, right) => right.score - left.score || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0));
       resultEpoch++;
       return { results: results.map((result, index) => ({ id: result.id, score: result.score, dataKey: index })),
-        resultEpoch, unfilteredResultCount: response.unfilteredResultCount,
-        filters: response.filters, totalFilters: response.totalFilters, timings: response.timings };
+        resultEpoch };
     }
     if (message.op === 'data') {
       if (message.resultEpoch !== resultEpoch || !Number.isSafeInteger(message.dataKey) || !results[message.dataKey]) throw new Error('Search result is no longer active');

@@ -455,8 +455,10 @@ jobs:
       - name: Verify every HTML page and link
         run: node scripts/profile-command.mjs verify -- npm run verify
       - name: Verify global queries with the generated native search engine
+        id: search-global
         run: node scripts/profile-command.mjs search-global -- node scripts/search-smoke.mjs --mode worker
       - name: Verify category queries load only relevant search indexes
+        if: ${{ !cancelled() && steps.search-global.outcome != 'skipped' }}
         run: node scripts/profile-command.mjs search-scoped -- node scripts/search-smoke.mjs --mode worker --category 'תנ״ך'
       - name: Publish changed objects to the configured R2 destination
         if: github.event_name != 'pull_request' && needs.preflight.outputs.publish == 'true' && env.DEPLOY_TARGET == 'cloudflare-r2'

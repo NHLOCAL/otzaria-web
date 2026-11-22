@@ -21,9 +21,6 @@ const icon = (name, className = '') => {
     left: '<path d="M19 12H5m6-6-6 6 6 6"/>',
     right: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
     down: '<path d="m6 9 6 6 6-6"/>',
-    moon: '<path d="M20.8 14a9 9 0 0 1-10.8-10.8A9 9 0 1 0 20.8 14Z"/>',
-    bookmark: '<path d="M6 3h12v18l-6-4-6 4V3Z"/>',
-    link: '<path d="m10 13 4-4m-6 6-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m2 2 1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 0)"/>',
     external: '<path d="M14 3h7v7m0-7L11 13m-1-8H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>',
     download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
   };
@@ -35,6 +32,8 @@ function navItem(base, path, label, active = false, className = '') {
 }
 
 export function layout({ title, description, path = 'index.html', baseUrl = '/', siteUrl = 'https://otzaria.org', body = '', breadcrumbs = [], jsonLd = [], active = 'library', noindex = false, hasPdfs = false, hasExternal = false }) {
+  // The v2 script mounts shared reader controls; new placeholder pages must
+  // not reuse the older cached app.js that expects pre-rendered controls.
   const canonical = new URL(sitePath(baseUrl, path), siteUrl).href;
   const structured = [...(Array.isArray(jsonLd) ? jsonLd : [jsonLd])];
   if (breadcrumbs.length && !structured.some(item => item?.['@type'] === 'BreadcrumbList')) {
@@ -69,7 +68,7 @@ export function layout({ title, description, path = 'index.html', baseUrl = '/',
 <link rel="stylesheet" href="${e(sitePath(baseUrl, 'styles.css'))}">
 <link rel="alternate" type="application/json" href="${e(sitePath(baseUrl, 'catalog.json'))}" title="קטלוג הספרייה">
 ${structured.filter(Boolean).map(data => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')}</script>`).join('\n')}
-<script type="module" src="${e(sitePath(baseUrl, 'app.js'))}"></script>
+<script type="module" src="${e(sitePath(baseUrl, 'app.js?v=2'))}"></script>
 </head>
 <body data-base="${e(baseUrl)}">
 <a class="skip-link" href="#main">דילוג לתוכן</a>
@@ -203,12 +202,7 @@ export function readingPage({ book, section, sections = book?.sections || [], pr
   return `<div class="reader-layout" data-reader data-book-id="${e(book.id)}" data-book-title="${e(book.title)}" data-section-title="${e(section.title)}">
 <aside class="reader-sidebar"><details class="toc-disclosure" open><summary><span>תוכן העניינים</span>${icon('down')}</summary><nav aria-label="תוכן העניינים"><ol>${nearby.map(item => `<li><a href="${e(sectionPath(baseUrl, book.id, item.id))}"${item.id === section.id ? ' aria-current="page"' : ''}>${e(item.title)}</a></li>`).join('')}</ol><a class="full-toc-link" href="${e(bookPath(baseUrl, book.id))}">תוכן עניינים מלא</a></nav></details></aside>
 <div class="reading-column">
-<div class="reader-toolbar" aria-label="אפשרויות קריאה" data-enhance hidden>
-  <div class="type-controls" role="group" aria-label="גודל האותיות"><button class="tool-button" type="button" data-font-size="decrease" aria-label="הקטנת אותיות">א−</button><button class="tool-button" type="button" data-font-size="increase" aria-label="הגדלת אותיות">א+</button></div>
-  <button class="tool-button" type="button" data-theme-toggle aria-pressed="false">${icon('moon')}<span>מצב כהה</span></button>
-  <button class="tool-button" type="button" data-bookmark aria-pressed="false">${icon('bookmark')}<span>שמירה</span></button>
-  <button class="tool-button" type="button" data-copy-link>${icon('link')}<span>העתקת קישור</span></button>
-</div>
+<div class="reader-toolbar" aria-label="אפשרויות קריאה" data-enhance hidden></div>
 ${readingArticle({ book, section })}
 <nav class="chapter-navigation" aria-label="מעבר בין חלקי הספר">${previous ? `<a href="${e(sectionPath(baseUrl, book.id, previous.id))}" rel="prev">${icon('right')}<span><small>הקודם</small>${e(previous.title)}</span></a>` : `<a href="${e(bookPath(baseUrl, book.id))}">${icon('right')}<span>לתוכן העניינים</span></a>`}${next ? `<a href="${e(sectionPath(baseUrl, book.id, next.id))}" rel="next"><span><small>הבא</small>${e(next.title)}</span>${icon('left')}</a>` : `<a href="${e(bookPath(baseUrl, book.id))}"><span>לתוכן העניינים</span>${icon('left')}</a>`}</nav>
 ${sourceNote(book, baseUrl)}
@@ -217,7 +211,7 @@ ${sourceNote(book, baseUrl)}
 
 export function searchPage({ baseUrl = '/', categories = [] } = {}) {
   const searchCategories = [...new Set(categories.map(category => category.title).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
-  return `<section class="page-heading search-heading"><h1>חיפוש בספרייה</h1><p>שם ספר, מילה או ציטוט. אפשר לחפש גם בלי ניקוד. לביטוי מדויק הקיפו את המילים במירכאות, למשל: "בראשית ברא".</p>${searchForm(baseUrl, { searchPage: true, id: 'search-query' })}</section>
+  return `<section class="page-heading search-heading"><h1>חיפוש בספרייה</h1><p>החיפוש מוצא את כל המילים השלמות שהקלדתם, גם בלי ניקוד ובכל סדר. לביטוי מדויק ברצף הקיפו את המילים במירכאות, למשל: "בראשית ברא".</p>${searchForm(baseUrl, { searchPage: true, id: 'search-query' })}</section>
 <section class="search-results-region" data-search-region aria-label="תוצאות חיפוש">
 <noscript><div class="notice"><p>החיפוש המלא פועל בדפדפן ודורש JavaScript. כל הספרים והטקסטים פתוחים לקריאה גם בלעדיו.</p><a href="${e(sitePath(baseUrl, 'catalog/index.html'))}">לגלישה בספרייה לפי נושא</a></div></noscript>
 <div class="search-controls" data-search-controls hidden><label for="search-category">תחום לימוד</label><select id="search-category" data-search-category><option value="">כל התחומים</option>${searchCategories.map(category => `<option value="${e(category)}">${e(category)}</option>`).join('')}</select></div>

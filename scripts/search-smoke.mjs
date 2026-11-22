@@ -19,7 +19,9 @@ import { performance } from 'node:perf_hooks';
 import { parse } from 'parse5';
 import { ROOT } from '../src/config.mjs';
 import { createStaticSearchClient, selectSearchShards } from '../public/search-client.mjs';
+import { normalizeSearchQuery } from '../public/search-query.mjs';
 import { createNodeSearchWorkerFactory } from './search-worker-node.mjs';
+import { hebrewPhraseEvidence } from './search-phrase-oracle.mjs';
 
 const args = new Map();
 for (let index = 2; index < process.argv.length; index += 2) {
@@ -29,6 +31,7 @@ for (let index = 2; index < process.argv.length; index += 2) {
 const directory = path.resolve(ROOT, args.get('--directory') || process.env.OUTPUT_DIR || 'dist');
 const mode = args.get('--mode') || 'worker';
 assert(['eager', 'lazy', 'grouped', 'worker'].includes(mode), 'mode must be eager, lazy, grouped or worker');
+const sharedClient = ['worker', 'grouped'].includes(mode);
 const concurrency = Number(args.get('--merge-concurrency') || (mode === 'grouped' ? 2 : 4));
 const groupSize = Number(args.get('--group-size') || 4);
 const category = args.get('--category') || '';
@@ -47,6 +50,8 @@ let phase = 'initialization';
 let activeFetches = 0;
 let peakFetches = 0;
 const report = { startedAt: new Date().toISOString(), directory, mode, concurrency, groupSize, category, latencyMs, noNetwork: true, engine: manifest.engine, engineVersion: manifest.version, pages: manifest.pages, shards: manifest.shards.length, phases: [], checks: [], fetched: [] };
+report.queryPolicy = sharedClient ? 'all-complete-words-and-native-quoted-phrases' : 'native-pagefind-prefixes-and-quoted-phrases';
+report.queryNormalization = sharedClient ? 'shared-static-client' : 'direct-pagefind';
 const outputDir = path.join(ROOT, '.cache/search-results');
 await fs.mkdir(outputDir, { recursive: true });
 
@@ -180,6 +185,7 @@ try {
   report.scriptBytes = { primaryModule: moduleBytes,
     browserWorker: mode === 'worker' ? (await fs.stat(path.join(ROOT, 'public/search-worker.mjs'))).size : workerBytes,
     clientModule: ['worker', 'grouped'].includes(mode) ? (await fs.stat(path.join(ROOT, 'public/search-client.mjs'))).size : 0,
+    queryModule: sharedClient ? (await fs.stat(path.join(ROOT, 'public/search-query.mjs'))).size : 0,
     note: 'Node imports modules directly. Browser transfer additionally includes these scripts.' };
 
   await measure('initialize-and-merge', async () => {
@@ -250,6 +256,36 @@ try {
   report.checks.push({ name: 'results-paths-metadata-highlights', passed: true });
   report.firstResults = fragments.data.map((result, index) => ({ rank: index + 1, score: first.result.results[index].score, url: result.url, title: result.meta.title, book: result.meta.book, section: result.meta.section, excerpt: result.plain_excerpt }));
 
+  const normalizedQuery = normalizeSearchQuery(query);
+  if (sharedClient && !/^".+"$/.test(normalizedQuery)) {
+    const queryWords = [...new Set(normalizedQuery.split(/\s+/).filter(word => /[\p{L}\p{N}]/u.test(word)))];
+    // The independent oracle is intentionally limited to plain Hebrew terms.
+    // Other --query values remain useful benchmarks, without claiming that
+    // their language or punctuation semantics were verified by this oracle.
+    const plainHebrew = queryWords.length && queryWords.every(word => /^\p{Letter}+$/u.test(word) && [...word].every(character => /\p{Script=Hebrew}/u.test(character)));
+    report.ordinaryCandidates = { query, normalizedQuery, queryWords, results: first.result.results.length, inspected: fragments.data.length };
+    if (plainHebrew) {
+      await measure('validate-ordinary-whole-words', async () => {
+        const requestStart = requests.length;
+        // Inspect the already loaded full fragment text, never another data()
+        // call. Each term is tested separately: order and gaps are allowed in
+        // AND mode, while the later phrase gate requires adjacent positions.
+        report.ordinaryCandidates.candidates = fragments.data.map((data, index) => {
+          const words = queryWords.map(word => ({ word, evidence: hebrewPhraseEvidence(data.raw_content || data.content, word, { version: manifest.version }) }));
+          return { ...report.firstResults[index], id: first.result.results[index].id, matched: words.every(item => item.evidence.matched), words };
+        });
+        report.ordinaryCandidates.additionalFetches = requests.length - requestStart;
+        const invalid = report.ordinaryCandidates.candidates.filter(item => !item.matched);
+        // This populated report survives a failed assertion through finally.
+        assert.equal(invalid.length, 0, `Whole-word result lacks a query word: ${invalid.map(item => `${item.url} (${item.words.filter(word => !word.evidence.matched).map(word => word.word).join(', ')})`).join('; ')}`);
+        report.checks.push({ name: 'ordinary-results-contain-all-complete-hebrew-words', passed: true });
+        return { metrics: { inspected: fragments.data.length, queryWords, additionalFetches: report.ordinaryCandidates.additionalFetches } };
+      });
+    } else {
+      report.ordinaryCandidates.oracleSkipped = 'The independent word oracle supports plain Hebrew query words only';
+    }
+  }
+
   if (query === 'בראשית ברא' && (!category || category === 'תנ״ך')) {
     const genesis = JSON.parse(await fs.readFile(path.join(directory, 'books/b-1/book.json'), 'utf8'));
     const sources = await discoverGenesisSources(genesis);
@@ -266,21 +302,33 @@ try {
     report.primaryGenesisFirstPageRank = paths.findIndex(url => url.includes('/books/b-1/')) + 1 || null;
     report.checks.push({ name: 'all-known-matching-genesis-sources-present', passed: true });
     await measure('repeat-query-with-niqqud', async () => {
+      const coldIds = first.result.results.map(item => item.id);
+      // Source probes can load additional prefix chunks and change native
+      // ranking. Warm the unpointed query before isolating normalization; keep
+      // cold/warm membership strict, but record their ordering independently.
+      const warmResponse = await api.search(query, initialSearchOptions);
+      const warmIds = warmResponse.results.map(item => item.id);
+      report.genesisRanks.warmUnpointed = knownSourceRanks(warmResponse, sources);
+      const coldToWarmRankingChanged = coldIds.join('|') !== warmIds.join('|');
+      report.coldToWarmRankingChanged = coldToWarmRankingChanged;
+      assert.equal([...warmIds].sort().join('|'), [...coldIds].sort().join('|'), 'Warming changed the matching set');
       const pointed = 'בְּרֵאשִׁית בָּרָא';
-      const native = await api.search(pointed, initialSearchOptions);
-      const unpointedIds = first.result.results.map(item => item.id);
-      const nativeIds = native.results.map(item => item.id);
-      // Pagefind can boost an exact written form, changing ranking while
-      // returning the same matching set. Our UI normalizes before searching.
-      assert.equal([...nativeIds].sort().join('|'), [...unpointedIds].sort().join('|'), 'Niqqud changed the native matching set');
+      const pointedResponse = await api.search(pointed, initialSearchOptions);
+      const pointedIds = pointedResponse.results.map(item => item.id);
+      // Worker/grouped modes normalize through the shared client, exactly as
+      // the UI does. Direct eager/lazy modes can retain native diacritic boosts
+      // in ranking. All modes must preserve the complete matching set.
+      assert.equal([...pointedIds].sort().join('|'), [...warmIds].sort().join('|'), 'Niqqud changed the matching set');
       const normalized = pointed.normalize('NFKD').replace(/[\u0591-\u05bd\u05bf-\u05c7]/g, '');
       assert.equal(normalized, query);
       const result = await api.search(normalized, initialSearchOptions);
-      assert(result.results.map(item => item.id).join('|') === unpointedIds.join('|'), 'UI-normalized query changed result ordering');
-      report.genesisRanks.nativePointed = knownSourceRanks(native, sources);
+      const normalizedIds = result.results.map(item => item.id);
+      assert.equal(normalizedIds.join('|'), warmIds.join('|'), 'UI-normalized query changed warm result ordering');
+      if (sharedClient) assert.equal(pointedIds.join('|'), normalizedIds.join('|'), 'Shared normalization changed warm result ordering');
+      report.genesisRanks.pointedQuery = knownSourceRanks(pointedResponse, sources);
       report.genesisRanks.uiNormalized = knownSourceRanks(result, sources);
       report.checks.push({ name: 'niqqud-matching-set-and-ui-normalized-ranking', passed: true });
-      return { metrics: { results: result.results.length, nativeRankingChanged: nativeIds.join('|') !== unpointedIds.join('|'), normalizedRankingIdentical: true } };
+      return { metrics: { results: result.results.length, coldToWarmRankingChanged, pointedQueryRankingChanged: pointedIds.join('|') !== warmIds.join('|'), rankingReference: 'warm-unpointed', normalizedRankingIdentical: true, queryNormalization: report.queryNormalization } };
     });
     await measure('category-filtered-query', async () => {
       const result = await api.search(query, { filters: { category: 'תנ״ך' } });
@@ -291,12 +339,30 @@ try {
       return { metrics: { results: result.results.length } };
     });
     await measure('exact-phrase-query', async () => {
-      const result = await api.search('"בראשית ברא"');
+      const phraseQuery = '"בראשית ברא"';
+      const result = await api.search(phraseQuery);
+      const inspected = result.results.slice(0, 15);
+      // Populate the report before asserting. The finally block persists it on
+      // failure, including native IDs, complete result count and token evidence.
+      // Displayed בראש"ית is a valid native בראשית token, but a punctuation-only
+      // position or two joined words must not accidentally pass the QA oracle.
+      report.phraseCandidates = {
+        query: phraseQuery, results: result.results.length, inspected: inspected.length,
+        candidates: inspected.map((item, index) => ({ rank: index + 1, id: item.id, score: item.score })),
+      };
+      await Promise.all(inspected.map(async (item, index) => {
+        const data = await item.data();
+        Object.assign(report.phraseCandidates.candidates[index], {
+          url: data.url, title: data.meta?.title, book: data.meta?.book, section: data.meta?.section,
+          excerpt: data.plain_excerpt,
+          evidence: hebrewPhraseEvidence(data.raw_content || data.content, query, { version: manifest.version }),
+        });
+      }));
       assert(result.results.length > 0, 'Exact phrase query has no results');
-      const data = await Promise.all(result.results.slice(0, 15).map(item => item.data()));
-      assert(data.every(item => normalize(item.raw_content || item.content).includes(query)), 'Exact phrase search returned full content without the phrase');
-      assertSourceCoverage(result, 'Exact phrase query', true);
+      const invalid = report.phraseCandidates.candidates.filter(item => !item.evidence.matched);
+      assert.equal(invalid.length, 0, `Exact phrase result has no consecutive native Hebrew tokens: ${invalid.map(item => item.url).join(', ')}`);
       report.genesisRanks.quoted = knownSourceRanks(result, sources);
+      assertSourceCoverage(result, 'Exact phrase query', true);
       report.checks.push({ name: 'quoted-phrase-search', passed: true });
       return { metrics: { results: result.results.length } };
     });

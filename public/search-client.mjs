@@ -1,11 +1,6 @@
 /* Static Pagefind federation. A query visits every relevant shard, with bounded
  * concurrency. Category/provider selection happens before loading any index. */
-function mergeCounts(target, source = {}) {
-  for (const [key, values] of Object.entries(source)) {
-    if (!Object.hasOwn(target, key)) Object.defineProperty(target, key, { value: Object.create(null), enumerable: true });
-    for (const [value, count] of Object.entries(values)) target[key][value] = (target[key][value] || 0) + count;
-  }
-}
+import { normalizeSearchQuery, searchWholeWords } from './search-query.mjs';
 
 export function selectSearchShards(shards, filters, scopeKey, scopeValuesKey) {
   const selected = filters?.[scopeKey];
@@ -45,8 +40,14 @@ export function createStaticSearchClient({
   onManifest = () => {},
   fetchManifest = (url, options) => fetch(url, options),
   importPagefind = url => import(url),
-  workerFactory = typeof Worker === 'undefined' ? null : url => new Worker(url, { type: 'module' }),
+  workerFactory = url => {
+    if (typeof Worker === 'undefined') throw new Error('Static search requires Web Worker support');
+    return new Worker(url, { type: 'module' });
+  },
 }) {
+  // Production search needs the owned worker's complete-download/error checks.
+  // The weaker nonworker path is an explicit Node benchmark/test opt-in only.
+  if (workerFactory !== null && typeof workerFactory !== 'function') throw new TypeError('Invalid search worker factory');
   if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 8) throw new RangeError('Invalid search concurrency');
   if (!Number.isFinite(manifestTimeoutMs) || manifestTimeoutMs < 1 || manifestTimeoutMs > 120_000) throw new RangeError('Invalid manifest timeout');
   groupSearchShards([], scopeValuesKey, groupSize);
@@ -84,7 +85,7 @@ export function createStaticSearchClient({
     });
   }
   async function workerSearch(shards, manifest, query, options, token) {
-    if (!shards.length) return { results: [], unfilteredResultCount: 0, filters: {}, totalFilters: {}, timings: [] };
+    if (!shards.length) return { results: [] };
     const key = shards.map(shard => shard.bundlePath).join('\n');
     if (!transport || transportKey !== key) {
       stopTransport();
@@ -177,62 +178,54 @@ export function createStaticSearchClient({
     };
   }
 
-  async function instanceFor(group, manifest) {
-    if (!instances.has(group.key)) {
+  async function instanceFor(shard, manifest) {
+    if (!instances.has(shard.bundlePath)) {
       const api = await loadModule(manifest);
       // The shared WASM bootstrap must finish once before another primary is
       // created. Pagefind's init() waits for its wrapper, not its WASM pointer;
       // an empty search waits for the pointer without loading any term chunks.
       // Concurrent first primaries can otherwise overwrite the WASM backend.
       if (runtimeReady) await runtimeReady;
-      const [first, ...additional] = group.shards;
       const instance = api.createInstance({
-        ...optionsFor(first, manifest), basePath: first.bundlePath,
+        ...optionsFor(shard, manifest), basePath: shard.bundlePath,
       });
-      instances.set(group.key, instance);
+      instances.set(shard.bundlePath, instance);
       if (!runtimeReady) {
         runtimeReady = instance.search('').then(() => {});
         runtimeReady.catch(() => { runtimeReady = null; });
         await runtimeReady;
       }
-      // Pagefind fetches WASM for each primary instance. A small group shares
-      // one primary download, while still bounding active shard searches.
-      const merged = await Promise.allSettled(additional.map(shard => {
-        const { noWorker, ...options } = optionsFor(shard, manifest);
-        return instance.mergeIndex(shard.bundlePath, { ...options, language: 'he' });
-      }));
-      const failed = merged.find(result => result.status === 'rejected');
-      if (failed) throw failed.reason;
     }
-    return instances.get(group.key);
+    return instances.get(shard.bundlePath);
   }
 
   async function run(query, options, token) {
     if (token !== generation) return null;
-    if (query === null || !String(query).trim()) return { results: [], unfilteredResultCount: 0, filters: {}, totalFilters: {}, timings: [] };
+    query = normalizeSearchQuery(query);
+    if (!query) return { results: [] };
     const manifest = await loadManifest();
     if (token !== generation) return null;
     const shards = selectSearchShards(manifest.shards, options.filters, scopeKey, scopeValuesKey);
     if (workerFactory) return workerSearch(shards, manifest, query, options, token);
-    const groups = groupSearchShards(shards, scopeValuesKey, groupSize);
-    const responses = new Array(groups.length);
+    const responses = new Array(shards.length);
     let next = 0;
     let failure;
     const worker = async () => {
       while (!failure && token === generation) {
         const position = next++;
-        if (position >= groups.length) return;
-        const group = groups[position];
+        if (position >= shards.length) return;
+        const shard = shards[position];
         try {
-          const api = await instanceFor(group, manifest);
+          const api = await instanceFor(shard, manifest);
           if (token !== generation || failure) return;
-          const response = await api.search(query, options);
+          const response = await searchWholeWords(api, query, options, () => token === generation && !failure, shard.bundlePath);
+          if (token !== generation || failure) return;
           if (!response || !Array.isArray(response.results)) throw new Error('Invalid search response');
-          responses[position] = response;
+          responses[position] = response.results.map(result => ({ ...result, id: `${shard.bundlePath}${result.id}` }));
         } catch (error) {
           failure ||= error;
-          const broken = instances.get(group.key);
-          instances.delete(group.key);
+          const broken = instances.get(shard.bundlePath);
+          instances.delete(shard.bundlePath);
           await Promise.resolve().then(() => broken?.destroy()).catch(() => {});
           if (!instances.size) runtimeReady = null;
         }
@@ -240,22 +233,14 @@ export function createStaticSearchClient({
     };
     // All started calls settle before a new query is admitted. The engine does
     // not offer abort, so cancellation skips queued shards and stale results.
-    await Promise.all(Array.from({ length: Math.min(concurrency, groups.length) }, worker));
+    await Promise.all(Array.from({ length: Math.min(concurrency * groupSize, shards.length) }, worker));
     if (token !== generation) return null;
     if (failure) throw failure; // A rejected group cannot become a partial success.
-    const results = responses.flatMap(response => response.results);
+    const results = responses.flat();
     // Same score merge as Pagefind's multisite API, with a stable ID tie-break
     // independent of group size, scope selection or network completion order.
     results.sort((left, right) => right.score - left.score || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0));
-    const filters = {};
-    const totalFilters = {};
-    let unfilteredResultCount = 0;
-    for (const response of responses) {
-      mergeCounts(filters, response.filters);
-      mergeCounts(totalFilters, response.totalFilters);
-      unfilteredResultCount += response.unfilteredResultCount ?? response.results.length;
-    }
-    return { results, filters, totalFilters, unfilteredResultCount, timings: responses.flatMap(response => response.timings || []) };
+    return { results };
   }
 
   return {
