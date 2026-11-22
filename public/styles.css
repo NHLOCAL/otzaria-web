@@ -94,7 +94,7 @@ main.shell{padding-block-end:var(--s6)}
 .button-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--on-accent)}
 .button-outline{color:var(--accent);border-color:var(--rule);background:var(--surface)}
 .button-outline:hover{background:var(--tint);border-color:var(--accent)}
-.search-form{display:flex;gap:var(--s2);max-width:720px;align-items:center;padding:var(--s1);background:var(--surface);border:1px solid var(--rule);border-radius:999px;box-shadow:0 1px 2px rgba(60,40,10,.06),0 6px 20px -10px rgba(60,40,10,.18)}
+.search-form{display:flex;gap:var(--s2);max-width:720px;align-items:center;padding:var(--s2);background:var(--surface);border:1px solid var(--rule);border-radius:999px;box-shadow:0 1px 2px rgba(60,40,10,.06),0 6px 20px -10px rgba(60,40,10,.18)}
 .search-form:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .search-input-wrap{min-width:0;flex:1;position:relative}
 .search-input-wrap>.icon{position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);color:var(--muted);width:21px;height:21px;pointer-events:none}
