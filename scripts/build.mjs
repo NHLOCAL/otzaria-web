@@ -55,8 +55,17 @@ await fs.mkdir(path.join(ROOT,'.cache'),{recursive:true});
 
 const sitemap=[];const pages=[];const books=[];const searchPages=[];
 const pathFor=relative=>sitePath(config.basePath,relative);
+// A full render writes hundreds of thousands of files, but only about one
+// directory per book. Avoid a redundant recursive mkdir/stat on every page.
+const preparedDirectories=new Set([output]);
 async function write(relative,content){
-  const file=path.join(output,relative);await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,content);
+  const file=path.join(output,relative);
+  const directory=path.dirname(file);
+  if(!preparedDirectories.has(directory)){
+    await fs.mkdir(directory,{recursive:true});
+    preparedDirectories.add(directory);
+  }
+  await fs.writeFile(file,content);
 }
 async function readSidecar(book,key,hashKey){
   if(!book[key])return null;
