@@ -27,10 +27,17 @@ function notify(message) {
   toastTimer = setTimeout(() => { toast.hidden = true; }, 3000);
 }
 
-const savedTheme = readStored('theme', 'light');
-document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
-let readerSize = Number(readStored('reader-size', 25));
-if (!Number.isFinite(readerSize) || readerSize < 20 || readerSize > 36) readerSize = 25;
+if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = readStored('theme', 'light') === 'dark' ? 'dark' : 'light';
+const themeButton = one('[data-theme-toggle]');
+const updateThemeButton = () => themeButton?.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+updateThemeButton();
+themeButton?.addEventListener('click', () => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  writeStored('theme', theme); updateThemeButton();
+});
+let readerSize = Number(readStored('reader-size', 20));
+if (!Number.isFinite(readerSize) || readerSize < 16 || readerSize > 32) readerSize = 20;
 document.documentElement.style.setProperty('--reader-size', `${readerSize}px`);
 all('[data-enhance]').forEach(element => { element.hidden = false; });
 
@@ -53,6 +60,8 @@ if (filterInput) {
     rows.forEach(row => { row.hidden = !normalize(row.dataset.title).includes(query); if (!row.hidden) visible++; });
     const empty = one('[data-filter-empty]');
     if (empty) empty.hidden = visible > 0;
+    const hint = one('[data-filter-hint]');
+    if (hint) hint.firstChild.textContent = query ? `מוצגים ${visible.toLocaleString('he-IL')} מתוך ${rows.length.toLocaleString('he-IL')} ספרים בעמוד. ` : 'הקלדה מסננת את הספרים בעמוד. ';
   });
 }
 
@@ -90,24 +99,11 @@ if (reader) {
       } });
     }).catch(() => { /* Highlighting is optional; the complete text remains readable. */ });
   }
-  const themeButton = one('[data-theme-toggle]');
-  const updateThemeButton = () => {
-    const isDark = document.documentElement.dataset.theme === 'dark';
-    themeButton?.setAttribute('aria-pressed', String(isDark));
-    const text = themeButton?.querySelector('span');
-    if (text) text.textContent = isDark ? 'מצב בהיר' : 'מצב כהה';
-  };
-  updateThemeButton();
-  themeButton?.addEventListener('click', () => {
-    const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = theme;
-    writeStored('theme', theme); updateThemeButton();
-  });
   const sizeButtons = all('[data-font-size]');
-  const updateSizeButtons = () => sizeButtons.forEach(button => { button.disabled = button.dataset.fontSize === 'decrease' ? readerSize <= 20 : readerSize >= 36; });
+  const updateSizeButtons = () => sizeButtons.forEach(button => { button.disabled = button.dataset.fontSize === 'decrease' ? readerSize <= 16 : readerSize >= 32; });
   updateSizeButtons();
   sizeButtons.forEach(button => button.addEventListener('click', () => {
-    readerSize = Math.max(20, Math.min(36, readerSize + (button.dataset.fontSize === 'increase' ? 2 : -2)));
+    readerSize = Math.max(16, Math.min(32, readerSize + (button.dataset.fontSize === 'increase' ? 2 : -2)));
     document.documentElement.style.setProperty('--reader-size', `${readerSize}px`);
     writeStored('reader-size', readerSize); updateSizeButtons();
   }));

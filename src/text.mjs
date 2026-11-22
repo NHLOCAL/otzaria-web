@@ -163,7 +163,7 @@ export function parseBook(source, book, {maxBytes=120_000,lineIds=null,images=nu
       const seen=(anchorCounts.get(plainKey)||0)+1;anchorCounts.set(plainKey,seen);
       const anchor=`p-${plainKey}${seen>1?`-${seen}`:''}`;
       if(t.kind==='heading') return `<h${Math.min(4,Math.max(2,t.level))} id="${anchor}">${escapeHtml(t.text)}</h${Math.min(4,Math.max(2,t.level))}>`;
-      return `<p id="${anchor}" data-source-line="${t.line}"${sourceId!=null?` data-upstream-line="${sourceId}"`:''}><a class="paragraph-anchor" href="#${anchor}" data-pagefind-ignore aria-label="קישור לפסקה">¶</a>${t.html}</p>`;
+      return `<p id="${anchor}" data-source-line="${t.line}"${sourceId!=null?` data-upstream-line="${sourceId}"`:''}>${t.html}</p>`;
     }).join('\n');
     sections.push({id,title,index:sections.length,html,text:items.map(t=>t.text).join('\n\n'),sourceLine:items[0].line});
     items=[];bytes=0;part++;

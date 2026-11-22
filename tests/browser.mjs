@@ -151,7 +151,7 @@ try {
     await page.goto(localUrl('index.html'), { waitUntil: 'networkidle' });
     await readyPage(page);
     await expectUI(page).toHaveTitle(/אוצריא/);
-    await expectUI(page.getByRole('heading', { name: 'כל ספר פותח עולם.' })).toBeVisible();
+    await expectUI(page.getByRole('heading', { name: 'ספריית אוצריא' })).toBeVisible();
     await expectUI(page.locator('.book-row').first()).toBeVisible();
     assert(await page.locator('.book-row').count() > 0, 'Catalogue preview is empty');
     const fonts = await page.evaluate(() => ({ ui: document.fonts.check('16px Heebo'), reading: document.fonts.check('24px "Frank Ruhl Libre"') }));
@@ -329,7 +329,7 @@ try {
     try {
       await mobile.goto(localUrl('index.html'), { waitUntil: 'networkidle' });
       await readyPage(mobile);
-      await expectUI(mobile.getByRole('heading', { name: 'כל ספר פותח עולם.' })).toBeVisible();
+      await expectUI(mobile.getByRole('heading', { name: 'ספריית אוצריא' })).toBeVisible();
       const homeSize = await noOverflow(mobile);
       await screenshot('home-mobile', mobile);
       await mobile.goto(firstReading, { waitUntil: 'networkidle' });
